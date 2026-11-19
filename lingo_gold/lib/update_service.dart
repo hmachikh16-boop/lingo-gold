@@ -7,9 +7,10 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 
 class UpdateService {
-  // Public GitHub release assets. Both URLs are HTTPS and work from any network.
+  // Public GitHub release assets. نستخدم رابط الإصدار الصريح بدل latest/download
+  // لأن إعادة التوجيه في latest/download تحفظ نسخة قديمة من version.json في الكاش.
   static const String _releaseBase =
-      'https://github.com/hmachikh16-boop/englishtok/releases/latest/download';
+      'https://github.com/hmachikh16-boop/englishtok/releases/download/gold-v1.1.105';
 
   static String get versionUrl =>
       '$_releaseBase/version.json?t=${DateTime.now().millisecondsSinceEpoch}';
@@ -17,7 +18,7 @@ class UpdateService {
   static String get apkUrl =>
       '$_releaseBase/app-release.apk?t=${DateTime.now().millisecondsSinceEpoch}';
 
-  static const int currentVersionCode = 52;
+  static const int currentVersionCode = 53;
 
   /// Last error message from check/download/install, for user feedback.
   static String? lastError;
