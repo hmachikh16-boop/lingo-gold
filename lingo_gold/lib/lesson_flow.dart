@@ -721,9 +721,12 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
       case 3:
         return 'درس الكتابة';
       case 4:
-        return _isSpecialLesson(_lessonIndex) ? 'الاختيار الذكي' : 'التلوين';
+        return _showsChoiceStep ? 'الاختيار الذكي' : 'التلوين';
       case 5:
-        return _isSpecialLesson(_lessonIndex) ? 'درس التلوين' : 'مراجعة الدرس';
+        if (_isSpecialLesson(_lessonIndex)) return 'درس التلوين';
+        return _hasChoiceOverride ? 'التلوين' : 'مراجعة الدرس';
+      case 6:
+        return 'مراجعة الدرس';
       default:
         return 'مراجعة الدرس';
     }
@@ -745,7 +748,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
     }
     final nextStep = _step + 1;
     setState(() => _step = nextStep);
-    if (nextStep == 6) {
+    if (nextStep == _resultStepIndex) {
       SoundService.instance.playComplete();
     }
   }
@@ -754,9 +757,11 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
     if (_coloringPage < 4) {
       setState(() => _coloringPage++);
     } else {
+      final nextStep = _hasChoiceOverride ? 6 : 5;
+      if (_hasChoiceOverride) SoundService.instance.playComplete();
       setState(() {
         _coloringPage = 0;
-        _step = 5;
+        _step = nextStep;
       });
     }
   }
@@ -869,6 +874,26 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
   Map<String, dynamic>? get _stepOverrides =>
       LessonContentService.instance.getStepOverrides(_lessonIndex);
 
+  // بعض الدروس غير الخاصة (مثل الدرس 131) بعد تعديلها من اللوحة تحتوي على
+  // خطوة اختيار محفوظة في stepOverrides. التطبيق كان يعرض الاختيار فقط للدروس
+  // الخاصة 1-20، فتختفي واجهة الاختيار في هذه الدروس رغم وجود بياناتها.
+  bool get _hasChoiceOverride {
+    final ov = _stepOverrides;
+    if (ov is! Map) return false;
+    final c = (ov as Map)['choice'];
+    if (c is! Map) return false;
+    final opts = (c as Map)['options'];
+    return opts is List && opts.length >= 2;
+  }
+
+  bool get _showsChoiceStep =>
+      _isSpecialLesson(_lessonIndex) || _hasChoiceOverride;
+
+  // الدروس الخاصة وغير الخاصة التي فيها اختيار تنتهي عند الخطوة 6،
+  // وبقية الدروس تنتهي عند الخطوة 5 كما كانت.
+  int get _resultStepIndex =>
+      (_isSpecialLesson(_lessonIndex) || _hasChoiceOverride) ? 6 : 5;
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
@@ -893,8 +918,8 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
                   step: _step,
                   intro: showIntro,
                   coloring: !showIntro &&
-                      _isSpecialLesson(_lessonIndex) &&
-                      _step == 5,
+                      _step == 5 &&
+                      (_isSpecialLesson(_lessonIndex) || _hasChoiceOverride),
                   lessonNumber: _lessonId,
                   groupName: group.name,
                   onBack: () => Navigator.of(context).pop(),
@@ -1068,7 +1093,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
         );
       }
       case 4: {
-        if (_isSpecialLesson(_lessonIndex)) {
+        if (_showsChoiceStep) {
           if (choiceOv is Map && choiceOv['options'] is List) {
             final rawOpts = choiceOv['options'] as List;
             if (rawOpts.length >= 2) {
@@ -1115,24 +1140,18 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
               );
             }
           }
-          final opts = _specialSmartChooseOptions(_lessonIndex);
-          return SmartChooseStep(
-            lesson: opts.first,
-            lessonIndex: _lessonIndex,
-            distractors: opts.sublist(1),
-            question: _specialSmartChooseQuestion(_lessonIndex),
-            onComplete: _onSimpleComplete,
-          );
+          if (_isSpecialLesson(_lessonIndex)) {
+            final opts = _specialSmartChooseOptions(_lessonIndex);
+            return SmartChooseStep(
+              lesson: opts.first,
+              lessonIndex: _lessonIndex,
+              distractors: opts.sublist(1),
+              question: _specialSmartChooseQuestion(_lessonIndex),
+              onComplete: _onSimpleComplete,
+            );
+          }
         }
-        return ColoringStep(
-          lesson: lesson,
-          lessonIndex: _lessonIndex,
-          page: _coloringPage,
-          coloringOverride: coloringOv is Map
-              ? Map<String, dynamic>.from(coloringOv)
-              : null,
-          onPageDone: _onColoringPageDone,
-        );
+        return _coloringStep(lesson, coloringOv);
       }
       case 5:
         if (_isSpecialLesson(_lessonIndex)) {
@@ -1145,10 +1164,25 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
             },
           );
         }
+        if (_hasChoiceOverride) return _coloringStep(lesson, coloringOv);
+        return _resultStep(lesson);
+      case 6:
         return _resultStep(lesson);
       default:
         return _resultStep(lesson);
     }
+  }
+
+  Widget _coloringStep(Lesson lesson, dynamic coloringOv) {
+    return ColoringStep(
+      lesson: lesson,
+      lessonIndex: _lessonIndex,
+      page: _coloringPage,
+      coloringOverride: coloringOv is Map
+          ? Map<String, dynamic>.from(coloringOv)
+          : null,
+      onPageDone: _onColoringPageDone,
+    );
   }
 
   Widget _resultStep(Lesson lesson) {

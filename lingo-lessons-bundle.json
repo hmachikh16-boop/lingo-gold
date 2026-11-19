@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-19T22:01:03.123Z",
+  "generatedAt": "2026-11-19T22:24:44.138Z",
   "source": "lingo-gold-admin-export",
   "lessons": [
     {
@@ -1457,7 +1457,7 @@
       "appIndex": 5,
       "word": "A big dog",
       "sentence": "A big dog.",
-      "spoken": "",
+      "spoken": "A big dog.",
       "translation": "",
       "options": [
         "Big",
@@ -1472,14 +1472,227 @@
       "order": 6,
       "category": "Adjectives",
       "isActive": true,
-      "imageUrl": ""
+      "imageUrl": "",
+      "stepOverrides": {
+        "intro": {
+          "items": [
+            {
+              "word": "A big dog",
+              "sentence": "A big dog.",
+              "spoken": "A big dog.",
+              "translation": "",
+              "imageFile": "q2",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "A small rabbit",
+              "sentence": "A small rabbit",
+              "spoken": "A small rabbit",
+              "translation": "",
+              "imageFile": "n47",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "A small dog",
+              "sentence": "A small dog",
+              "spoken": "A small dog",
+              "translation": "",
+              "imageFile": "n41",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Elephant",
+              "sentence": "",
+              "spoken": "",
+              "translation": "",
+              "imageFile": "n45",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": ""
+            }
+          ]
+        },
+        "speak": {
+          "word": "A big dog",
+          "sentence": "A big dog.",
+          "spoken": "A big dog.",
+          "translation": "",
+          "imageFile": "q2",
+          "isPack": false,
+          "indexInPack": 0,
+          "imageUrl": ""
+        },
+        "listen": {
+          "sentence": "A small rabbit",
+          "spoken": "A small rabbit",
+          "choices": [
+            {
+              "word": "A big dog",
+              "sentence": "A big dog.",
+              "spoken": "A big dog.",
+              "translation": "",
+              "imageFile": "q2",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "A big dog"
+            },
+            {
+              "word": "A small rabbit",
+              "sentence": "A small rabbit",
+              "spoken": "A small rabbit",
+              "translation": "",
+              "imageFile": "n47",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": true,
+              "label": "A small rabbit"
+            },
+            {
+              "word": "Cat",
+              "sentence": "",
+              "spoken": "",
+              "translation": "",
+              "imageFile": "q6",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "Cat"
+            },
+            {
+              "word": "A small dog",
+              "sentence": "A small dog",
+              "spoken": "A small dog",
+              "translation": "",
+              "imageFile": "n41",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "A small dog"
+            }
+          ],
+          "word": "A big dog",
+          "translation": "",
+          "imageFile": "q2",
+          "imageUrl": "",
+          "isPack": false,
+          "indexInPack": 0
+        },
+        "match": {
+          "pairs": [
+            {
+              "word": "A big dog",
+              "sentence": "A big dog.",
+              "spoken": "A big dog.",
+              "translation": "",
+              "imageFile": "q2",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "A small dog",
+              "sentence": "A small dog",
+              "spoken": "A small dog",
+              "translation": "",
+              "imageFile": "n41",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Elephant",
+              "sentence": "",
+              "spoken": "",
+              "translation": "",
+              "imageFile": "n45",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": ""
+            }
+          ]
+        },
+        "choice": {
+          "question": "Which picture is A small dog?",
+          "options": [
+            {
+              "word": "A big dog",
+              "sentence": "A big dog.",
+              "spoken": "A big dog.",
+              "translation": "",
+              "imageFile": "q2",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "A big dog"
+            },
+            {
+              "word": "A small rabbit",
+              "sentence": "",
+              "spoken": "",
+              "translation": "",
+              "imageFile": "n47",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "A small rabbit"
+            },
+            {
+              "word": "A small dog",
+              "sentence": "A small dog",
+              "spoken": "A small dog",
+              "translation": "",
+              "imageFile": "n41",
+              "isPack": true,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": true,
+              "label": "A small dog"
+            },
+            {
+              "word": "cat",
+              "sentence": "cat",
+              "spoken": "cat",
+              "translation": "",
+              "imageFile": "q6",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": " cat"
+            }
+          ]
+        },
+        "write": {
+          "word": "A small dog",
+          "sentence": "A big dog.",
+          "spoken": "A big dog.",
+          "translation": "",
+          "imageFile": "q2",
+          "isPack": false,
+          "indexInPack": 0,
+          "imageUrl": "https://raw.githubusercontent.com/hmachikh16-boop/lingo-gold-content/main/images/step_write_5_1795126327085_p1ii2.jpg"
+        }
+      }
     },
     {
       "seedIdx": 6,
       "appIndex": 6,
       "word": "A red apple",
       "sentence": "A red apple.",
-      "spoken": "",
+      "spoken": "A red apple.",
       "translation": "",
       "options": [
         "Red",
@@ -1500,7 +1713,7 @@
             {
               "word": "A red apple",
               "sentence": "A red apple.",
-              "spoken": "",
+              "spoken": "A red apple.",
               "translation": "",
               "imageFile": "q4",
               "isPack": false,
@@ -1509,8 +1722,8 @@
             },
             {
               "word": "A yellow banana",
-              "sentence": "",
-              "spoken": "",
+              "sentence": "A yellow banana",
+              "spoken": "A yellow banana",
               "translation": "",
               "imageFile": "n22",
               "isPack": true,
@@ -1518,9 +1731,9 @@
               "imageUrl": ""
             },
             {
-              "word": "An orange",
-              "sentence": "",
-              "spoken": "",
+              "word": "orange",
+              "sentence": "orange",
+              "spoken": "orange",
               "translation": "",
               "imageFile": "n27",
               "isPack": true,
@@ -1529,8 +1742,8 @@
             },
             {
               "word": "Grapes",
-              "sentence": "",
-              "spoken": "",
+              "sentence": "Grapes",
+              "spoken": "Grapes",
               "translation": "",
               "imageFile": "n29",
               "isPack": true,
@@ -1539,8 +1752,8 @@
             },
             {
               "word": "Green",
-              "sentence": "",
-              "spoken": "",
+              "sentence": "Green",
+              "spoken": "Green",
               "translation": "",
               "imageFile": "color_green",
               "isPack": false,
@@ -1549,8 +1762,8 @@
             },
             {
               "word": "Yellow",
-              "sentence": "",
-              "spoken": "",
+              "sentence": "Yellow",
+              "spoken": "Yellow",
               "translation": "",
               "imageFile": "color_yellow",
               "isPack": false,
@@ -1562,7 +1775,7 @@
         "speak": {
           "word": "A red apple",
           "sentence": "A red apple.",
-          "spoken": "",
+          "spoken": "A red apple.",
           "translation": "",
           "imageFile": "q4",
           "isPack": false,
@@ -1576,7 +1789,7 @@
             {
               "word": "A red apple",
               "sentence": "A red apple.",
-              "spoken": "",
+              "spoken": "A red apple.",
               "translation": "",
               "imageFile": "q4",
               "isPack": false,
@@ -1629,7 +1842,7 @@
             {
               "word": "A red apple",
               "sentence": "A red apple.",
-              "spoken": "",
+              "spoken": "A red apple.",
               "translation": "",
               "imageFile": "q4",
               "isPack": false,
@@ -1659,40 +1872,43 @@
           ]
         },
         "choice": {
-          "question": "Which picture is A red apple?",
+          "question": "Which picture is A yellow banana?",
           "options": [
             {
               "word": "A red apple",
               "sentence": "A red apple.",
-              "spoken": "",
+              "spoken": "A red apple.",
               "translation": "",
               "imageFile": "q4",
               "isPack": false,
               "indexInPack": 0,
               "imageUrl": "",
-              "correct": true
+              "correct": false,
+              "label": "A red apple"
             },
             {
               "word": "A yellow banana",
-              "sentence": "",
-              "spoken": "",
+              "sentence": "A yellow banana",
+              "spoken": "A yellow banana",
               "translation": "",
               "imageFile": "n22",
               "isPack": true,
               "indexInPack": 0,
               "imageUrl": "",
-              "correct": false
+              "correct": true,
+              "label": "A yellow banana"
             },
             {
-              "word": "An orange",
-              "sentence": "",
-              "spoken": "",
+              "word": "orange",
+              "sentence": "orange",
+              "spoken": "orange",
               "translation": "",
               "imageFile": "n27",
               "isPack": true,
               "indexInPack": 0,
               "imageUrl": "",
-              "correct": false
+              "correct": false,
+              "label": "orange"
             },
             {
               "word": "Grapes",
@@ -1703,14 +1919,15 @@
               "isPack": true,
               "indexInPack": 0,
               "imageUrl": "",
-              "correct": false
+              "correct": false,
+              "label": "Grapes"
             }
           ]
         },
         "write": {
           "word": "A red apple",
           "sentence": "A red apple.",
-          "spoken": "",
+          "spoken": "A red apple.",
           "translation": "",
           "imageFile": "q4",
           "isPack": false,
@@ -1724,8 +1941,8 @@
       "seedIdx": 130,
       "appIndex": 130,
       "word": "Red",
-      "sentence": "The ball is ___.",
-      "spoken": "",
+      "sentence": "The ball is Red",
+      "spoken": "The ball is Red",
       "translation": "الكرة حمراء.",
       "options": [
         "Red",
@@ -1740,7 +1957,216 @@
       "order": 131,
       "category": "Colors",
       "isActive": true,
-      "imageUrl": ""
+      "imageUrl": "",
+      "stepOverrides": {
+        "intro": {
+          "items": [
+            {
+              "word": "Red",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة حمراء.",
+              "imageFile": "color_red",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Blue",
+              "sentence": "The ball is Blue",
+              "spoken": "The ball is Blue",
+              "translation": "الكرة زرقاء.",
+              "imageFile": "color_blue",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Green",
+              "sentence": "The ball is Green",
+              "spoken": "The ball is Green",
+              "translation": "الكرة خضراء.",
+              "imageFile": "color_green",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Yellow",
+              "sentence": "The ball is Yellow",
+              "spoken": "The ball is Yellow",
+              "translation": "الكرة صفراء.",
+              "imageFile": "color_yellow",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            }
+          ]
+        },
+        "speak": {
+          "word": "Red",
+          "sentence": "The ball is Red",
+          "spoken": "The ball is Red",
+          "translation": "الكرة حمراء.",
+          "imageFile": "color_red",
+          "isPack": false,
+          "indexInPack": 0,
+          "imageUrl": ""
+        },
+        "listen": {
+          "sentence": "The ball is Blue",
+          "spoken": "The ball is Blue",
+          "choices": [
+            {
+              "word": "Red",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة حمراء.",
+              "imageFile": "color_red",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "Red"
+            },
+            {
+              "word": "Blue",
+              "sentence": "The ball is Blue",
+              "spoken": "The ball is Blue",
+              "translation": "الكرة زرقاء.",
+              "imageFile": "color_blue",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "https://raw.githubusercontent.com/hmachikh16-boop/lingo-gold-content/main/images/step_listen_1_130_1795127080895_jshop.jpg",
+              "correct": true,
+              "label": "Blue"
+            },
+            {
+              "word": "Green",
+              "sentence": "The ball is Green",
+              "spoken": "The ball is Green",
+              "translation": "الكرة خضراء.",
+              "imageFile": "color_green",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "Green"
+            },
+            {
+              "word": "Yellow",
+              "sentence": "The ball is Yellow",
+              "spoken": "The ball is Yellow",
+              "translation": "الكرة صفراء.",
+              "imageFile": "color_yellow",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false,
+              "label": "Yellow"
+            }
+          ],
+          "word": "Red",
+          "translation": "الكرة حمراء.",
+          "imageFile": "color_red",
+          "imageUrl": "",
+          "isPack": false,
+          "indexInPack": 0
+        },
+        "match": {
+          "pairs": [
+            {
+              "word": "Red",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة حمراء.",
+              "imageFile": "color_red",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Blue",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة زرقاء.",
+              "imageFile": "color_blue",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            },
+            {
+              "word": "Green",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة خضراء.",
+              "imageFile": "color_green",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": ""
+            }
+          ]
+        },
+        "choice": {
+          "question": "Which picture is Red?",
+          "options": [
+            {
+              "word": "Red",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة حمراء.",
+              "imageFile": "color_red",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": true
+            },
+            {
+              "word": "Blue",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة زرقاء.",
+              "imageFile": "color_blue",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false
+            },
+            {
+              "word": "Green",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة خضراء.",
+              "imageFile": "color_green",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false
+            },
+            {
+              "word": "Yellow",
+              "sentence": "The ball is Red",
+              "spoken": "The ball is Red",
+              "translation": "الكرة صفراء.",
+              "imageFile": "color_yellow",
+              "isPack": false,
+              "indexInPack": 0,
+              "imageUrl": "",
+              "correct": false
+            }
+          ]
+        },
+        "write": {
+          "word": "Red",
+          "sentence": "The ball is Red",
+          "spoken": "The ball is Red",
+          "translation": "الكرة حمراء.",
+          "imageFile": "color_red",
+          "isPack": false,
+          "indexInPack": 0,
+          "imageUrl": ""
+        }
+      }
     },
     {
       "seedIdx": 131,
@@ -5004,16 +5430,16 @@
             {
               "word": "This boy is running",
               "sentence": "This boy is running",
-              "spoken": "",
+              "spoken": "This boy is running",
               "translation": "",
               "imageFile": "",
               "isPack": false,
               "indexInPack": 0,
-              "imageUrl": "https://raw.githubusercontent.com/hmachikh16-boop/lingo-gold-content/main/images/step_match_1_x_1795089601207_55kal.jpg"
+              "imageUrl": "https://raw.githubusercontent.com/hmachikh16-boop/lingo-gold-content/main/images/step_match_1_140_1795125972024_3teyf.jpg"
             },
             {
-              "word": "The girl jumps",
-              "sentence": "The girl jumps",
+              "word": "These boys are playing",
+              "sentence": "These boys are playing",
               "spoken": "Hello",
               "translation": "",
               "imageFile": "",
