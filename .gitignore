@@ -45,6 +45,7 @@ desktop/lin-go-control-online/assets/app.ico
 # Local generated artifacts (not source).
 lingo-lessons-bundle.json.bak
 lingo_gold/assets/audio/backup_old/
+lingo_gold/test/failures/
 lingo_gold_apk_qr_*.png
 lingo_gold_qr*.png
 *.apk

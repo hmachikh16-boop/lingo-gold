@@ -1828,6 +1828,45 @@ function getLocalNewLessons() {
 }
 function setLocalNewLessons(v) { _writeJsonStorage(LOCAL_NEW_LESSONS_KEY, Array.isArray(v) ? v : []); }
 
+// ---------- أدوات تنظيف الدروس الجديدة / الروابط ----------
+function normText(v) { return v == null ? '' : String(v).trim(); }
+function newLessonContentKey(x) {
+  return [normText(x && x.word), normText(x && x.title), normText(x && x.category)]
+    .join('|').toLowerCase();
+}
+function newLessonIdentityKey(x) {
+  // بعد أول نشر نحتفظ بـ appIndex حتى لا يتكرر الدرس عند تغيير اسمه لاحقًا.
+  if (x && typeof x.appIndex === 'number') return 'i' + x.appIndex;
+  return 'k:' + newLessonContentKey(x);
+}
+function normalizeRemoteImageUrl(u) {
+  const s = normText(u);
+  if (!s) return '';
+  // jsDelivr قد يعلق على نسخة قديمة؛ raw يتجنب الكاش باسم ملف فريد.
+  const m = s.match(/^https:\/\/cdn\.jsdelivr\.net\/gh\/hmachikh16-boop\/lingo-gold-content@[^/]+\/(.+)$/i);
+  if (m) return 'https://raw.githubusercontent.com/hmachikh16-boop/lingo-gold-content/main/' + m[1];
+  return s;
+}
+
+
+// ترحيل لمرة واحدة: دروس جديدة مكررة بسبب غياب appIndex في التخزين المحلي.
+(function migrateLocalNewLessonsOnce() {
+  try {
+    const key = 'lingo_new_lessons_migration_20261119_v1';
+    if (localStorage.getItem(key)) return;
+    const list = getLocalNewLessons();
+    const map = new Map();
+    list.forEach(x => {
+      if (!x) return;
+      const k = newLessonIdentityKey(x);
+      const prev = map.get(k);
+      map.set(k, prev ? Object.assign({}, prev, x) : Object.assign({}, x));
+    });
+    setLocalNewLessons(Array.from(map.values()));
+    localStorage.setItem(key, '1');
+  } catch (_) {}
+})();
+
 function getCurrentAppIndexForDraft() {
   if (currentLessonData && typeof currentLessonData.appIndex === 'number') return currentLessonData.appIndex;
   if (typeof window._pendingAppIndex === 'number') return window._pendingAppIndex;
@@ -1854,42 +1893,33 @@ function _syncTargetMap(item, oldTarget, newTarget) {
   });
   return out;
 }
+function _syncOverrideTree(node, oldTarget, newTarget) {
+  if (!node || typeof node !== 'object') return node;
+  if (Array.isArray(node)) return node.map(n => _syncOverrideTree(n, oldTarget, newTarget));
+  const out = Object.assign({}, node);
+  const looksLikeLessonItem = ['word','sentence','spoken','imageFile','imageUrl','label']
+    .some(k => k in out);
+  if (looksLikeLessonItem && _isSnapshotTarget(out, oldTarget)) {
+    SYNC_TARGET_FIELDS.forEach(f => {
+      if (newTarget && newTarget[f] !== undefined) out[f] = newTarget[f];
+    });
+    if (out.label !== undefined && normText(out.label) === normText(oldTarget.word) && newTarget.word !== undefined) {
+      out.label = newTarget.word;
+    }
+  }
+  Object.keys(out).forEach(k => {
+    if (out[k] && typeof out[k] === 'object') out[k] = _syncOverrideTree(out[k], oldTarget, newTarget);
+  });
+  return out;
+}
 function syncStepOverridesToBase(oldData, newData) {
   if (!currentStepOverrides || !oldData || !newData) return;
   const oldTarget = normItem(oldData);
   const newTarget = normItem(newData);
-  const ov = currentStepOverrides;
   try {
-    if (ov.intro && Array.isArray(ov.intro.items)) {
-      ov.intro.items = ov.intro.items.map(it => _syncTargetMap(it, oldTarget, newTarget));
-    }
-    if (ov.speak) ov.speak = _syncTargetMap(ov.speak, oldTarget, newTarget);
-    if (ov.listen) {
-      if ('sentence' in ov.listen && String(oldTarget.sentence || '') === String(ov.listen.sentence || '') && newTarget.sentence !== undefined) {
-        ov.listen.sentence = newTarget.sentence;
-      }
-      if ('spoken' in ov.listen && String(oldTarget.spoken || '') === String(ov.listen.spoken || '') && newTarget.spoken !== undefined) {
-        ov.listen.spoken = newTarget.spoken;
-      }
-      if (Array.isArray(ov.listen.choices)) {
-        ov.listen.choices = ov.listen.choices.map(it => _syncTargetMap(it, oldTarget, newTarget));
-      }
-    }
-    if (ov.match && Array.isArray(ov.match.pairs)) {
-      ov.match.pairs = ov.match.pairs.map(it => _syncTargetMap(it, oldTarget, newTarget));
-    }
-    if (ov.choice && Array.isArray(ov.choice.options)) {
-      ov.choice.options = ov.choice.options.map(it => _syncTargetMap(it, oldTarget, newTarget));
-    }
-    if (ov.write) {
-      if (String(oldTarget.word || '') === String(ov.write.word || '') && newTarget.word !== undefined) {
-        ov.write.word = newTarget.word;
-      }
-      ov.write = _syncTargetMap(ov.write, oldTarget, newTarget);
-    }
+    currentStepOverrides = _syncOverrideTree(currentStepOverrides, oldTarget, newTarget);
   } catch (_) {}
-  currentStepOverrides = ov;
-  if (currentLessonData) currentLessonData.stepOverrides = ov;
+  if (currentLessonData) currentLessonData.stepOverrides = currentStepOverrides;
 }
 
 function buildCurrentLessonDraftPayload() {
@@ -1949,6 +1979,50 @@ function saveLocalLessonDraft(silent) {
     if (!silent) showSaveStatus('تعذر الحفظ المحلي: ' + (e && e.message ? e.message : ''), true);
     return { ok: false, error: e };
   }
+}
+
+// تنظيف الحزمة المنشورة قديماً: توحيد صور العناصر التي تمثل الدرس مع الصورة
+// والجملة الموجودتين في أعلى الدرس، وتحويل روابط jsDelivr إلى raw.
+function _normalizeBundleLesson(lesson) {
+  if (!lesson || typeof lesson !== 'object') return lesson;
+  const topWord = normText(lesson.word);
+  const topSentence = normText(lesson.sentence);
+  const topSpoken = normText(lesson.spoken);
+  const topImage = normalizeRemoteImageUrl(lesson.imageUrl);
+  lesson.imageUrl = topImage;
+  const ov = lesson.stepOverrides;
+  if (!ov || typeof ov !== 'object' || Array.isArray(ov)) return lesson;
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return node;
+    if (Array.isArray(node)) return node.map(walk);
+    const out = Object.assign({}, node);
+    const isItem = ['word','sentence','spoken','imageFile','imageUrl','label']
+      .some(k => k in out);
+    if (isItem) {
+      out.imageUrl = normalizeRemoteImageUrl(out.imageUrl);
+      const w = normText(out.word);
+      const s = normText(out.sentence);
+      const isTarget = (topWord && (w === topWord || s === topWord)) ||
+        (topSentence && (s === topSentence || w === topSentence));
+      if (isTarget) {
+        if (topWord) out.word = topWord;
+        if (topSentence) out.sentence = topSentence;
+        if (topSpoken) out.spoken = topSpoken;
+        if (topImage) out.imageUrl = topImage;
+      }
+    }
+    Object.keys(out).forEach(k => {
+      if (out[k] && typeof out[k] === 'object') out[k] = walk(out[k]);
+    });
+    return out;
+  };
+  lesson.stepOverrides = walk(ov);
+  return lesson;
+}
+function normalizeBundleForPublish(bundle) {
+  (Array.isArray(bundle.lessons) ? bundle.lessons : []).forEach(_normalizeBundleLesson);
+  (Array.isArray(bundle.newLessons) ? bundle.newLessons : []).forEach(_normalizeBundleLesson);
+  return bundle;
 }
 
 async function buildLessonBundleObject() {
@@ -2024,36 +2098,67 @@ async function buildLessonBundleObject() {
       });
     });
 
-    // دروس جديدة: ندمج المنشور سابقاً مع المحلي حتى لا تختفي عند مسح المتصفح.
-    const newMap = new Map();
-    const keyForNew = x => (x && typeof x.appIndex === 'number')
-      ? ('i' + x.appIndex) : (x && x._localId ? ('l' + x._localId) : null);
-    ((published && Array.isArray(published.newLessons)) ? published.newLessons : []).forEach(x => {
-      if (!x || (!String(x.word || '').trim() && !String(x.title || '').trim())) return;
-      const k = keyForNew(x);
-      if (k) newMap.set(k, Object.assign({}, x));
+    // دروس جديدة: ادمج المنشور سابقاً مع المحلي حتى لا تختفي عند مسح المتصفح،
+    // وامنع التكرار حتى لو لم يُحفظ appIndex في التخزين المحلي سابقاً.
+    const validPublishedNew = ((published && Array.isArray(published.newLessons)) ? published.newLessons : [])
+      .filter(x => x && (normText(x.word) || normText(x.title)));
+    const validLocalNew = localNew.filter(x => x && (normText(x.word) || normText(x.title)));
+    // إن وُجد أكثر من درس منشور بنفس المحتوى (مثل 140/141) احتفظ بالأحدث فقط.
+    const publishedByContent = new Map();
+    validPublishedNew.forEach(x => publishedByContent.set(newLessonContentKey(x), Object.assign({}, x)));
+    const pubList = Array.from(publishedByContent.values());
+    const localByContent = new Map();
+    validLocalNew.forEach(x => localByContent.set(newLessonContentKey(x), Object.assign({}, x)));
+    const localList = Array.from(localByContent.values());
+
+    const mergedNew = new Map();
+    const contentToKey = new Map();
+    pubList.forEach(x => {
+      const k = newLessonIdentityKey(x);
+      mergedNew.set(k, Object.assign({}, x));
+      contentToKey.set(newLessonContentKey(x), k);
     });
-    localNew.forEach(x => {
-      const k = keyForNew(x);
-      if (!k) return;
-      newMap.set(k, Object.assign({}, newMap.get(k) || {}, x || {}));
+    localList.forEach(x => {
+      const contentKey = newLessonContentKey(x);
+      let k = contentToKey.get(contentKey);
+      if (!k && typeof x.appIndex === 'number') k = 'i' + x.appIndex;
+      if (!k) k = 'k:' + contentKey;
+      const prev = mergedNew.get(k) || null;
+      mergedNew.set(k, Object.assign({}, prev || {}, x, {
+        appIndex: (prev && typeof prev.appIndex === 'number') ? prev.appIndex : x.appIndex
+      }));
+      contentToKey.set(contentKey, k);
     });
-    const newLessons = Array.from(newMap.values()).map((x, i) => {
+
+    const newLessons = Array.from(mergedNew.values()).map((x, i) => {
       const n = Object.assign({}, x || {});
-      if (typeof n.appIndex !== 'number') n.appIndex = lessons.length + i; // append after base
+      // ترقيم حتمي بعد الدروس الأساسية: لا يمكن أن يظهر درس برقم 141 وآخر 142.
+      n.appIndex = lessons.length + i;
+      n.lessonNumber = n.appIndex + 1;
+      n.order = n.appIndex + 1;
       delete n._localId; delete n.isLocalNew; delete n.updatedAtLocal;
       if (!n.stepOverrides || typeof n.stepOverrides !== 'object' || Array.isArray(n.stepOverrides) || !Object.keys(n.stepOverrides).length) delete n.stepOverrides;
       if (n.isActive == null) n.isActive = true;
       return n;
     });
 
-    return {
+    // احفظ appIndex النهائي في التخزين المحلي حتى لا يتكرر الدرس في النشر القادم.
+    try {
+      const idsByContent = new Map();
+      localList.forEach(x => idsByContent.set(newLessonContentKey(x), x._localId));
+      setLocalNewLessons(newLessons.map(n => Object.assign({}, n, {
+        _localId: idsByContent.get(newLessonContentKey(n)) || ('local_' + newLessonContentKey(n)),
+        isLocalNew: true
+      })));
+    } catch (_) {}
+
+    return normalizeBundleForPublish({
       version: 1,
       generatedAt: new Date().toISOString(),
       source: 'lingo-gold-admin-export',
       lessons,
       newLessons
-    };
+    });
   } catch (e) {
     console.error(e);
     showSaveStatus('تعذر تجهيز حزمة الدروس: ' + (e && e.message ? e.message : ''), true);
@@ -3229,21 +3334,16 @@ function pvPickAndUploadLessonImage() {
     try {
       showSaveStatus('جاري رفع صورة الدرس إلى GitHub...', false);
       const label = 'lesson_' + (getCurrentAppIndexForDraft() ?? currentLesson ?? 'image');
+      const before = deepClone(currentLessonData || lessonBaseSnapshot || {});
       const url = await uploadImageToGitHub(file, label);
       currentLessonData = Object.assign({}, currentLessonData || {}, { imageUrl: url });
+      // حدّث كل نسخ الدرس داخل الخطوات، لا المقدمة فقط، وإلا تعود الصورة القديمة.
+      syncStepOverridesToBase(before, currentLessonData);
+      if (currentLessonData) currentLessonData.stepOverrides = deepClone(currentStepOverrides || {});
       renderLessonImagePreview(currentLessonData);
-      try {
-        const ov = ensureStepOverrides();
-        if (ov.intro && Array.isArray(ov.intro.items) && ov.intro.items.length) {
-          const first = normItem(ov.intro.items[0]);
-          ov.intro.items[0] = normItem(Object.assign({}, first, { imageUrl: url, imageFile: '' }));
-        }
-        currentStepOverrides = ov;
-        if (currentLessonData) currentLessonData.stepOverrides = ov;
-      } catch (_) {}
       updateLivePreview();
       showSaveStatus('تم رفع صورة الدرس — جارٍ النشر التلقائي على GitHub...', false);
-      scheduleAutoPublish(150);
+      saveLocalLessonDraft(false);
     } catch (e) {
       console.error(e);
       const m = 'فشل رفع/حفظ الصورة: ' + (e && e.message ? e.message : '');

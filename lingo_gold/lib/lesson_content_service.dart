@@ -269,8 +269,21 @@ class LessonContentService {
     for (final it in rawLessons) {
       if (it is Map) all.add(Map<String, dynamic>.from(it));
     }
+    // حماية إضافية من الدروس الجديدة المكررة التي قد تأتي من حزمة قديمة:
+    // نحتفظ بنسخة واحدة لكل (كلمة + فئة)، وهي آخر نسخة وصلت.
+    final dynamicSeen = <String, int>{};
     for (final it in rawNew) {
-      if (it is Map) all.add(Map<String, dynamic>.from(it));
+      if (it is! Map) continue;
+      final m = Map<String, dynamic>.from(it);
+      final key = '${_asString(m['word']).toLowerCase()}|'
+          '${_asString(m['category']).toLowerCase()}';
+      final existing = dynamicSeen[key];
+      if (existing != null) {
+        all[existing] = m;
+      } else {
+        dynamicSeen[key] = all.length;
+        all.add(m);
+      }
     }
     if (all.isEmpty) return false;
 

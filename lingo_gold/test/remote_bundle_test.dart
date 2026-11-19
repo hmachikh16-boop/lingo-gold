@@ -84,6 +84,42 @@ void main() {
     expect(app.lessons.length, baseLen);
   });
 
+  test('duplicate published new lessons collapse to one entry', () {
+    final service = LessonContentService.instance;
+    final baseLen = app.lessons.length;
+    while (app.lessons.length > baseLen) {
+      app.lessons.removeLast();
+    }
+    service.applyBundleForTest(<String, dynamic>{
+      'lessons': <dynamic>[
+        <String, dynamic>{'appIndex': 0, 'word': app.lessons[0].word},
+      ],
+      'newLessons': <dynamic>[
+        <String, dynamic>{
+          'appIndex': baseLen,
+          'word': 'DUP_LESSON',
+          'sentence': 'old sentence',
+          'category': 'Verb To Be',
+          'options': <String>['a', 'b', 'c'],
+          'imageFile': 'q0',
+        },
+        <String, dynamic>{
+          'appIndex': baseLen + 1,
+          'word': 'DUP_LESSON',
+          'sentence': 'new sentence',
+          'category': 'Verb To Be',
+          'options': <String>['a', 'b', 'c'],
+          'imageFile': 'q0',
+        },
+      ],
+    });
+    expect(app.lessons.length, baseLen + 1);
+    expect(app.lessons.last.sentence, 'new sentence');
+    while (app.lessons.length > baseLen) {
+      app.lessons.removeLast();
+    }
+  });
+
   test('git refs advert is parsed to the latest main commit', () {
     const refs = '001e# service=git-upload-pack\n'
         '00000159abcdefabcdefabcdefabcdefabcdefabcd HEAD multi_ack\n'
