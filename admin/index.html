@@ -1955,11 +1955,27 @@ function buildCurrentLessonDraftPayload() {
   return payload;
 }
 
+function getBaseLessonCount() {
+  let n = 0;
+  if (appContent && appContent.lessonsByCat && typeof appContent.lessonsByCat === 'object') {
+    Object.keys(appContent.lessonsByCat).forEach(k => {
+      const arr = appContent.lessonsByCat[k];
+      if (Array.isArray(arr)) n += arr.length;
+    });
+  }
+  return n || 140;
+}
 function saveLocalLessonDraft(silent) {
   try {
     const payload = buildCurrentLessonDraftPayload();
     const appIndex = getCurrentAppIndexForDraft();
-    if (typeof appIndex === 'number') {
+    // الدروس الأساسية تُحفظ في المسودات حسب appIndex.
+    // أما الدروس المضافة من اللوحة (appIndex >= عدد الدروس الأساسية) فيجب أن
+    // تُحفظ في قائمة الدروس الجديدة؛ وإلا يقرأ النشر النسخة القديمة منها ويعيد
+    // كتابة تعديلات المستخدم (مثل كلمة المطابقة) إلى الحالة المنشورة سابقًا.
+    const isDynamicLesson = !!payload.isLocalNew ||
+      (typeof appIndex === 'number' && appIndex >= getBaseLessonCount());
+    if (typeof appIndex === 'number' && !isDynamicLesson) {
       const drafts = getLocalLessonDrafts();
       drafts[String(appIndex)] = payload;
       setLocalLessonDrafts(drafts);
@@ -1971,7 +1987,12 @@ function saveLocalLessonDraft(silent) {
     }
     // درس جديد/غير مربوط بـ appIndex: خزّنه في قائمة الدروس الجديدة المحلية
     const list = getLocalNewLessons();
-    const localId = payload._localId || ('local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+    const existing = list.find(x => x && (
+      (typeof appIndex === 'number' && x.appIndex === appIndex) ||
+      newLessonContentKey(x) === newLessonContentKey(payload)
+    ));
+    const localId = payload._localId || (existing && existing._localId) ||
+      ('local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
     payload._localId = localId;
     payload.isLocalNew = true;
     if (currentCategoryName && !payload.category) payload.category = currentCategoryName;
