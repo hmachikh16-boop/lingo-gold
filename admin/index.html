@@ -1900,8 +1900,17 @@ function _syncOverrideTree(node, oldTarget, newTarget) {
   const looksLikeLessonItem = ['word','sentence','spoken','imageFile','imageUrl','label']
     .some(k => k in out);
   if (looksLikeLessonItem && _isSnapshotTarget(out, oldTarget)) {
+    const oldImage = normText(oldTarget && oldTarget.imageUrl);
     SYNC_TARGET_FIELDS.forEach(f => {
-      if (newTarget && newTarget[f] !== undefined) out[f] = newTarget[f];
+      if (!newTarget || newTarget[f] === undefined) return;
+      if (f === 'imageUrl') {
+        const curImage = normText(out.imageUrl);
+        // صورة مخصصة رفعها المستخدم لهذه الخطوة لا تُلمس.
+        // نستبدل فقط الصورة الفارغة أو نسخة صورة الدرس القديمة.
+        if (!curImage || (oldImage && curImage === oldImage)) out.imageUrl = newTarget[f];
+        return;
+      }
+      out[f] = newTarget[f];
     });
     if (out.label !== undefined && normText(out.label) === normText(oldTarget.word) && newTarget.word !== undefined) {
       out.label = newTarget.word;
@@ -1981,14 +1990,25 @@ function saveLocalLessonDraft(silent) {
   }
 }
 
-// تنظيف الحزمة المنشورة قديماً: توحيد صور العناصر التي تمثل الدرس مع الصورة
-// والجملة الموجودتين في أعلى الدرس، وتحويل روابط jsDelivr إلى raw.
-function _normalizeBundleLesson(lesson) {
+// تنظيف الحزمة المنشورة: نحدّث فقط نسخ صورة الدرس القديمة، ونحتفظ بأي صورة
+// مخصصة رفعها المستخدم لعناصر المطابقة/الاختيار، ونحوّل روابط jsDelivr إلى raw.
+function _previousLessonFor(lesson, prevMap) {
+  if (!prevMap) return null;
+  if (lesson && typeof lesson.appIndex === 'number' && prevMap.has('i' + lesson.appIndex)) {
+    return prevMap.get('i' + lesson.appIndex);
+  }
+  return prevMap.get('k:' + newLessonContentKey(lesson)) || null;
+}
+function _normalizeBundleLesson(lesson, oldLesson) {
   if (!lesson || typeof lesson !== 'object') return lesson;
   const topWord = normText(lesson.word);
   const topSentence = normText(lesson.sentence);
   const topSpoken = normText(lesson.spoken);
   const topImage = normalizeRemoteImageUrl(lesson.imageUrl);
+  const oldWord = normText(oldLesson && oldLesson.word) || topWord;
+  const oldSentence = normText(oldLesson && oldLesson.sentence) || topSentence;
+  const oldImage = normalizeRemoteImageUrl(oldLesson && oldLesson.imageUrl);
+  const oldSpoken = normText(oldLesson && oldLesson.spoken);
   lesson.imageUrl = topImage;
   const ov = lesson.stepOverrides;
   if (!ov || typeof ov !== 'object' || Array.isArray(ov)) return lesson;
@@ -2000,15 +2020,17 @@ function _normalizeBundleLesson(lesson) {
       .some(k => k in out);
     if (isItem) {
       out.imageUrl = normalizeRemoteImageUrl(out.imageUrl);
+      const curImage = normText(out.imageUrl);
       const w = normText(out.word);
       const s = normText(out.sentence);
-      const isTarget = (topWord && (w === topWord || s === topWord)) ||
-        (topSentence && (s === topSentence || w === topSentence));
+      const isTarget = (oldWord && (w === oldWord || s === oldWord)) ||
+        (oldSentence && (s === oldSentence || w === oldSentence));
       if (isTarget) {
-        if (topWord) out.word = topWord;
-        if (topSentence) out.sentence = topSentence;
-        if (topSpoken) out.spoken = topSpoken;
-        if (topImage) out.imageUrl = topImage;
+        if (topWord && (!w || w === oldWord || w === topWord)) out.word = topWord;
+        if (topSentence && (!s || s === oldSentence || s === topSentence)) out.sentence = topSentence;
+        if (topSpoken && normText(out.spoken) === oldSpoken) out.spoken = topSpoken;
+        // لا نلمس صورة مخصصة للخطوة؛ نستبدل فقط الفارغة أو نسخة الصورة القديمة.
+        if (topImage && (!curImage || (oldImage && curImage === oldImage))) out.imageUrl = topImage;
       }
     }
     Object.keys(out).forEach(k => {
@@ -2019,9 +2041,20 @@ function _normalizeBundleLesson(lesson) {
   lesson.stepOverrides = walk(ov);
   return lesson;
 }
-function normalizeBundleForPublish(bundle) {
-  (Array.isArray(bundle.lessons) ? bundle.lessons : []).forEach(_normalizeBundleLesson);
-  (Array.isArray(bundle.newLessons) ? bundle.newLessons : []).forEach(_normalizeBundleLesson);
+function normalizeBundleForPublish(bundle, previousBundle) {
+  const prevMap = new Map();
+  const prevAll = []
+    .concat(Array.isArray(previousBundle && previousBundle.lessons) ? previousBundle.lessons : [])
+    .concat(Array.isArray(previousBundle && previousBundle.newLessons) ? previousBundle.newLessons : []);
+  prevAll.forEach(l => {
+    if (!l) return;
+    if (typeof l.appIndex === 'number') prevMap.set('i' + l.appIndex, l);
+    prevMap.set('k:' + newLessonContentKey(l), l);
+  });
+  (Array.isArray(bundle.lessons) ? bundle.lessons : []).forEach(l =>
+    _normalizeBundleLesson(l, _previousLessonFor(l, prevMap)));
+  (Array.isArray(bundle.newLessons) ? bundle.newLessons : []).forEach(l =>
+    _normalizeBundleLesson(l, _previousLessonFor(l, prevMap)));
   return bundle;
 }
 
@@ -2118,15 +2151,24 @@ async function buildLessonBundleObject() {
       mergedNew.set(k, Object.assign({}, x));
       contentToKey.set(newLessonContentKey(x), k);
     });
+    // الحزمة المنشورة هي المرجع ما لم تكن هناك مسودة محلية أحدث منها.
+    // هذا يمنع نسخة محلية قديمة من إعادة صورة/جملة قديمة بعد النشر.
+    const publishedGeneratedAt = Date.parse((published && published.generatedAt) || '') || 0;
     localList.forEach(x => {
       const contentKey = newLessonContentKey(x);
       let k = contentToKey.get(contentKey);
       if (!k && typeof x.appIndex === 'number') k = 'i' + x.appIndex;
       if (!k) k = 'k:' + contentKey;
       const prev = mergedNew.get(k) || null;
-      mergedNew.set(k, Object.assign({}, prev || {}, x, {
-        appIndex: (prev && typeof prev.appIndex === 'number') ? prev.appIndex : x.appIndex
-      }));
+      if (!prev) {
+        mergedNew.set(k, Object.assign({}, x));
+      } else {
+        const own = Date.parse((x && x.updatedAtLocal) || '') || 0;
+        const localIsNewer = own > publishedGeneratedAt;
+        mergedNew.set(k, localIsNewer
+          ? Object.assign({}, prev, x, { appIndex: prev.appIndex })
+          : Object.assign({}, x, prev, { appIndex: prev.appIndex }));
+      }
       contentToKey.set(contentKey, k);
     });
 
@@ -2158,7 +2200,7 @@ async function buildLessonBundleObject() {
       source: 'lingo-gold-admin-export',
       lessons,
       newLessons
-    });
+    }, published);
   } catch (e) {
     console.error(e);
     showSaveStatus('تعذر تجهيز حزمة الدروس: ' + (e && e.message ? e.message : ''), true);
