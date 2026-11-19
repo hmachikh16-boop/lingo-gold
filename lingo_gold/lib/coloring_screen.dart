@@ -5,6 +5,9 @@ import 'widgets.dart';
 
 class ColoringCanvas extends StatefulWidget {
   final String imageAsset;
+
+  /// صورة مرفوعة من لوحة التحكم. عند وجودها تُستخدم بدل الأصل المحلي.
+  final String? imageUrl;
   final String prompt;
   final String? promptAr;
   final String? pageLabel;
@@ -12,6 +15,7 @@ class ColoringCanvas extends StatefulWidget {
   const ColoringCanvas({
     super.key,
     required this.imageAsset,
+    this.imageUrl,
     required this.prompt,
     this.promptAr,
     this.pageLabel,
@@ -139,14 +143,24 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.asset(
-                        widget.imageAsset,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.image_outlined,
-                              size: 64, color: Color(0xFFCBD5E1)),
-                        ),
-                      ),
+                      (widget.imageUrl != null &&
+                              widget.imageUrl!.trim().isNotEmpty)
+                          ? Image.network(
+                              widget.imageUrl!.trim(),
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(Icons.image_outlined,
+                                    size: 64, color: Color(0xFFCBD5E1)),
+                              ),
+                            )
+                          : Image.asset(
+                              widget.imageAsset,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(Icons.image_outlined,
+                                    size: 64, color: Color(0xFFCBD5E1)),
+                              ),
+                            ),
                       CustomPaint(
                         painter: _PaintPainter(_strokes),
                         size: Size(constraints.maxWidth, constraints.maxHeight),

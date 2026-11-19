@@ -942,6 +942,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
     final writeOv = ov['write'];
     final matchOv = ov['match'];
     final choiceOv = ov['choice'];
+    final coloringOv = ov['coloring'];
 
     // For speak step, use speak override as the target lesson content if provided.
     if (_step == 1 && speakOv is Map) {
@@ -1127,6 +1128,9 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
           lesson: lesson,
           lessonIndex: _lessonIndex,
           page: _coloringPage,
+          coloringOverride: coloringOv is Map
+              ? Map<String, dynamic>.from(coloringOv)
+              : null,
           onPageDone: _onColoringPageDone,
         );
       }

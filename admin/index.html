@@ -308,6 +308,7 @@
                       <button type="button" class="pv-tab" data-step="match" onclick="setPreviewStep('match')">مطابقة</button>
                       <button type="button" class="pv-tab" data-step="write" onclick="setPreviewStep('write')">كتابة</button>
                       <button type="button" class="pv-tab" data-step="choice" onclick="setPreviewStep('choice')">اختيار</button>
+                      <button type="button" class="pv-tab" data-step="coloring" onclick="setPreviewStep('coloring')">رسم</button>
                     </div>
 
                     <div class="pv-card" id="pvDynamicCard">
@@ -391,7 +392,7 @@
                 <div class="section-divider"></div>
                 <div class="form-section">
                   <div class="form-section-title">تحرير واجهات الدرس (من البداية للنهاية)</div>
-                  <div class="hint" style="margin-bottom:8px">اختر الواجهة من تبويبات المعاينة (مقدمة/تحدث/استماع/اختيار/مطابقة/كتابة) ثم عدّل محتواها وصورها هنا.</div>
+                  <div class="hint" style="margin-bottom:8px">اختر الواجهة من تبويبات المعاينة (مقدمة/تحدث/استماع/اختيار/مطابقة/كتابة/رسم) ثم عدّل محتواها وصورها هنا.</div>
                   <div id="stepEditorArea"></div>
                   <div class="actions-bar" style="margin-top:10px">
                     <button class="btn btn-green btn-sm" onclick="saveStepOverrides()">حفظ تعديلات الواجهات</button>
@@ -1629,6 +1630,7 @@ let currentPreviewStep = 'intro';
 let currentStepOverrides = null; // overrides محفوظة/قابلة للتعديل لكل واجهة
 let lessonBaseSnapshot = null;   // نسخة الدرس عند الفتح، لمزامنة overrides مع التعديل الأساسي
 let pvIntroIndex = 0;
+let pvColoringIndex = 0;
 
 const LOCAL_DRAFTS_KEY = 'lingo_admin_local_lesson_drafts_v1';
 const LOCAL_NEW_LESSONS_KEY = 'lingo_admin_local_new_lessons_v1';
@@ -1900,17 +1902,15 @@ function _syncOverrideTree(node, oldTarget, newTarget) {
   const looksLikeLessonItem = ['word','sentence','spoken','imageFile','imageUrl','label']
     .some(k => k in out);
   if (looksLikeLessonItem && _isSnapshotTarget(out, oldTarget)) {
-    const oldImage = normText(oldTarget && oldTarget.imageUrl);
+    const oldValue = (f) => normText(oldTarget && oldTarget[f]);
+    const curValue = (f) => normText(out[f]);
     SYNC_TARGET_FIELDS.forEach(f => {
       if (!newTarget || newTarget[f] === undefined) return;
-      if (f === 'imageUrl') {
-        const curImage = normText(out.imageUrl);
-        // صورة مخصصة رفعها المستخدم لهذه الخطوة لا تُلمس.
-        // نستبدل فقط الصورة الفارغة أو نسخة صورة الدرس القديمة.
-        if (!curImage || (oldImage && curImage === oldImage)) out.imageUrl = newTarget[f];
-        return;
-      }
-      out[f] = newTarget[f];
+      const cur = curValue(f);
+      const old = oldValue(f);
+      // لا نعيد كتابة قيمة عدّلها المستخدم (كلمة/جملة/صورة مخصصة).
+      // نحدّث فقط القيمة القديمة أو الفارغة.
+      if (!cur || (old && cur === old)) out[f] = newTarget[f];
     });
     if (out.label !== undefined && normText(out.label) === normText(oldTarget.word) && newTarget.word !== undefined) {
       out.label = newTarget.word;
@@ -2593,6 +2593,175 @@ function getCurrentLessonAppIndex() {
   return -1;
 }
 
+
+// نسخة من خريطة صفحات الرسم في التطبيق حتى تعرض المعاينة نفس الصور الافتراضية.
+const COLORING_PAGES_BY_WORD = {
+  // Grammar
+  'am': [39, 60, 69, 7, 62],
+  'are': [39, 60, 69, 7, 62],
+  'is': [39, 60, 69, 7, 62],
+  // Family
+  'boy': [2, 9, 35, 40, 55],
+  'girl': [7, 11, 12, 15, 51],
+  'father': [96, 97, 54, 46, 53],
+  'mother': [54, 34, 25, 85, 53],
+  'baby': [25, 29, 53, 85, 88],
+  'grandfather': [96, 46, 22, 51, 97],
+  'grandmother': [22, 51, 52, 66, 46],
+  'family': [46, 54, 96, 97, 51],
+  'man': [96, 54, 46, 97, 2],
+  'woman': [54, 22, 51, 97, 46],
+  // People & actions
+  'daughter': [51, 7, 11, 15, 97],
+  'happy': [30, 55, 86, 30, 60],
+  'sad': [67, 33, 95, 25, 85],
+  'hello': [2, 55, 86, 40, 41],
+  'run': [12, 35, 9, 89, 86],
+  'jump': [9, 26, 89, 12, 35],
+  'play': [9, 26, 81, 88, 89],
+  'eat': [11, 56, 82, 83, 5],
+  'drink': [82, 14, 8, 5, 37],
+  'sleep': [33, 67, 95, 29, 85],
+  // Food
+  'apple': [37, 76, 80, 98, 5],
+  'banana': [23, 27, 75, 94, 5],
+  'bread': [37, 56, 83, 5, 80],
+  'milk': [8, 38, 44, 82, 5],
+  'egg': [37, 56, 83, 5, 80],
+  'cheese': [37, 56, 83, 5, 80],
+  'orange': [4, 10, 68, 78, 79],
+  'strawberry': [37, 76, 80, 98, 5],
+  'grapes': [31, 32, 43, 31, 49],
+  'cookie': [37, 56, 83, 5, 80],
+  // Food & more
+  'ice cream': [14, 82, 56, 83, 5],
+  'juice': [14, 8, 82, 4, 68],
+  'cake': [37, 56, 83, 5, 80],
+  'lemon': [4, 10, 68, 78, 79],
+  'cup': [14, 8, 82, 5, 37],
+  'kitchen': [34, 83, 65, 21, 54],
+  'oranges': [4, 10, 68, 78, 79],
+  'strawberries': [37, 76, 80, 98, 5],
+  'apples': [37, 76, 80, 98, 5],
+  'red': [4, 37, 98, 80, 5],
+  // Animals
+  'dog': [16, 48, 71, 77, 99],
+  'cat': [1, 65, 81, 84, 90],
+  'bird': [28, 92, 58, 93, 6],
+  'fish': [47, 58, 92, 93, 28],
+  'elephant': [13, 20, 26, 59, 87],
+  'turtle': [13, 20, 26, 59, 87],
+  'rabbit': [16, 48, 71, 77, 99],
+  'leopard': [13, 20, 26, 59, 87],
+  'kitten': [1, 65, 81, 84, 90],
+  'black cat': [1, 65, 81, 84, 90],
+  // Home & nature
+  'house': [21, 46, 44, 30, 54],
+  'door': [21, 46, 54, 30, 97],
+  'window': [21, 6, 28, 58, 46],
+  'chair': [60, 69, 63, 64, 7],
+  'tree': [30, 44, 46, 21, 28],
+  'sky': [58, 28, 92, 93, 6],
+  'moon': [19, 45, 50, 6, 29],
+  'star': [50, 19, 45, 6, 28],
+  'rose': [30, 98, 80, 37, 5],
+  'sunflower': [30, 28, 93, 92, 6],
+  // Fun & school
+  'snowman': [58, 28, 92, 93, 47],
+  'rainbow': [92, 28, 93, 58, 47],
+  'balloons': [9, 88, 86, 60, 89],
+  'balloon': [9, 88, 86, 60, 89],
+  'water': [47, 58, 92, 93, 28],
+  'ball': [9, 26, 81, 88, 89],
+  'pencils': [63, 64, 60, 69, 7],
+  'pen': [63, 64, 60, 69, 7],
+  'book': [7, 60, 62, 63, 69],
+  'car': [17, 100, 16, 48, 99],
+  // Greetings
+  'wave': [2, 55, 86, 40, 41],
+  'goodbye': [2, 55, 86, 40, 41],
+  'raise hand': [2, 55, 86, 60, 69],
+  'dinner': [11, 56, 82, 83, 5],
+  'goodnight': [33, 67, 95, 29, 85],
+  'talk': [86, 60, 69, 55, 2],
+  'gift': [41, 97, 86, 2, 55],
+  'welcome': [2, 55, 86, 40, 41],
+  'wake up': [40, 28, 6, 2, 55],
+  'shake hands': [2, 55, 86, 41, 97],
+  // Jobs
+  'doctor': [24, 42, 61, 70, 72],
+  'nurse': [42, 57, 72, 24, 61],
+  'pilot': [28, 92, 93, 58, 100],
+  'firefighter': [17, 36, 18, 3, 73],
+  'chef': [34, 83, 56, 65, 37],
+  'teacher': [39, 63, 64, 60, 69],
+  'police officer': [3, 18, 36, 17, 73],
+  'farmer': [44, 38, 46, 48, 99],
+  'baker': [37, 56, 83, 5, 80],
+  'student': [7, 60, 62, 63, 69],
+};
+const COLORING_FALLBACK_PAGES = [
+  [39, 60, 69, 7, 62],
+  [46, 54, 96, 97, 51],
+  [30, 55, 86, 60, 89],
+  [37, 76, 80, 98, 5],
+  [37, 56, 83, 5, 80],
+  [13, 20, 26, 59, 87],
+  [21, 46, 44, 30, 54],
+  [9, 26, 81, 88, 89],
+  [2, 55, 86, 40, 41],
+  [24, 42, 61, 70, 72],
+];
+const COLORING_SPECIAL_PROMPTS = [["Color I am","Color He is","Color They are","Tom says: I am a boy. Color what Tom said","Color as you like!"],["Color She is","Color We are","Color You are","Tom says: She is a girl. Color what Tom said","Color as you like!"],["Color It is","Color This is","Color That is","Tom says: It is a cat. Color what Tom said","Color as you like!"],["Color My book","Color Your book","Color His book","Tom says: This is my book. Color what Tom said","Color as you like!"],["Color Big","Color Small","Color Tall","Tom says: The elephant is big. Color what Tom said","Color as you like!"],["Color Red","Color Blue","Color Yellow","Tom says: The apple is red. Color what Tom said","Color as you like!"],["Color fast","Color sleeping","Color eating","Tom says: The cat is fast. Color what Tom said","Color as you like!"],["Color happy","Color sad","Color running","Tom says: The dog is happy. Color what Tom said","Color as you like!"],["Color Apples","Color Milk","Color Bread","Tom says: I like apples. Color what Tom said","Color as you like!"],["Color the sun","Color the bright sun","Color the moon","Tom says: The sun is bright. Color what Tom said","Color as you like!"]];
+
+function defaultColoringPagesFor(appIndex, word) {
+  const key = String(word || '').trim().toLowerCase();
+  const pages = COLORING_PAGES_BY_WORD[key];
+  if (Array.isArray(pages) && pages.length >= 5) return pages.slice(0, 5);
+  const idx = Math.max(0, Math.min(COLORING_FALLBACK_PAGES.length - 1, Math.floor((Number(appIndex) || 0) / 10)));
+  return (COLORING_FALLBACK_PAGES[idx] || COLORING_FALLBACK_PAGES[0]).slice(0, 5);
+}
+
+function defaultColoringPromptEn(appIndex, word, sentence, page) {
+  const p = Math.max(0, Math.min(4, Number(page) || 0));
+  if (appIndex >= 0 && appIndex < 10) {
+    return (COLORING_SPECIAL_PROMPTS[appIndex] || COLORING_SPECIAL_PROMPTS[0])[p];
+  }
+  const target = String(word || '').trim() || 'picture';
+  const plural = /s$/i.test(target);
+  const cleanSentence = String(sentence || '').replaceAll('___', target).trim();
+  if (p === 0) return 'Color the ' + target;
+  if (p === 1) return plural ? 'Color the ' + target + ' that are purple' : 'Color the ' + target + ' purple';
+  if (p === 2) return plural ? 'Color the ' + target + ' that are green' : 'Color the ' + target + ' green';
+  if (p === 3) {
+    const clean = cleanSentence.endsWith('.') ? cleanSentence : cleanSentence + '.';
+    return 'Tom says: ' + clean + ' Color what Tom said';
+  }
+  return 'Color as you like!';
+}
+
+function defaultColoringPromptAr(page) {
+  const p = Math.max(0, Math.min(4, Number(page) || 0));
+  return ['لوّن الصورة', 'لوّنها باللون البنفسجي', 'لوّنها باللون الأخضر', 'لوّن ما قاله توم', 'لوّن كما تحب!'][p];
+}
+
+function defaultColoringData(appIndex, word, sentence) {
+  const pages = defaultColoringPagesFor(appIndex, word);
+  return {
+    pages: pages.map((pageNumber, i) => ({
+      page: pageNumber,
+      imageUrl: '',
+      promptEn: defaultColoringPromptEn(appIndex, word, sentence, i),
+      promptAr: defaultColoringPromptAr(i)
+    }))
+  };
+}
+
+function coloringAssetUrl(pageNumber) {
+  const n = Math.max(1, Math.min(100, Number(pageNumber) || 1));
+  return '/app-assets/coloring/coloring_' + String(n).padStart(3, '0') + '.jpg';
+}
+
 function getEffectiveStepData() {
   const appIndex = getCurrentLessonAppIndex();
   const base = getPreviewLessonData();
@@ -2606,18 +2775,20 @@ function getEffectiveStepData() {
   const listenChoices = [target, ...distractors].map((it,i)=>Object.assign({}, normItem(it), { correct: i===0 }));
   const introItems = appIndex >= 0 ? introItemsForLesson(appIndex) : [target];
   const writeWord = appIndex >= 0 ? writingWordForLesson(appIndex) : (target.word || '');
+  const coloringDefaults = defaultColoringData(appIndex, target.word, target.sentence);
   const defaults = {
     intro: { items: introItems },
     speak: { ...target },
     listen: { sentence: target.sentence || target.word, spoken: target.spoken || '', choices: listenChoices },
     match: { pairs: matchPairs },
     choice: { question: choiceQuestion, options: choiceOpts.map((o,i)=>Object.assign({},o,{correct:i===0})) },
-    write: { word: writeWord, ...target }
+    write: { word: writeWord, ...target },
+    coloring: coloringDefaults
   };
   const ov = currentStepOverrides || {};
   // shallow merge per step (override replaces step content when provided with items)
   const merged = deepClone(defaults);
-  ['intro','speak','listen','match','choice','write'].forEach(k => {
+  ['intro','speak','listen','match','choice','write','coloring'].forEach(k => {
     if (!ov[k]) return;
     if (k === 'intro' && Array.isArray(ov[k].items) && ov[k].items.length) merged.intro.items = ov[k].items.map(normItem);
     if (k === 'speak') merged.speak = Object.assign({}, merged.speak, normItem(ov[k]));
@@ -2632,6 +2803,14 @@ function getEffectiveStepData() {
       if (Array.isArray(ov[k].options) && ov[k].options.length) merged.choice.options = ov[k].options.map((c,i)=>Object.assign({}, normItem(c), {correct: !!c.correct, label: c.label || c.word || ''}));
     }
     if (k === 'write') merged.write = Object.assign({}, merged.write, ov[k]);
+    if (k === 'coloring') {
+      const basePages = defaults.coloring && Array.isArray(defaults.coloring.pages) ? defaults.coloring.pages : [];
+      const ovPages = Array.isArray(ov[k].pages) ? ov[k].pages : [];
+      merged.coloring = {
+        pages: basePages.map((p, i) => Object.assign({}, p, (ovPages[i] && typeof ovPages[i] === 'object') ? ovPages[i] : {}))
+      };
+      if (!merged.coloring.pages.length && ovPages.length) merged.coloring.pages = ovPages;
+    }
   });
   return { appIndex, target, defaults, merged, isSpecial };
 }
@@ -2686,6 +2865,11 @@ function getPreviewSpeakText() {
       const pairs = (eff.merged.match && eff.merged.match.pairs && eff.merged.match.pairs.length)
         ? eff.merged.match.pairs : [eff.target];
       return _ttsTextForItem(pairs[0] || eff.target);
+    }
+    if (step === 'coloring') {
+      const pages = (eff.merged.coloring && eff.merged.coloring.pages) ? eff.merged.coloring.pages : [];
+      const page = pages[pvColoringIndex] || pages[0] || {};
+      return String(page.promptEn || '').trim();
     }
   } catch (_) {}
   const spoken = (document.getElementById('lc_spoken')?.value || '').trim();
@@ -2803,6 +2987,7 @@ function getPreviewImageSrc(data) {
 function setPreviewStep(step) {
   currentPreviewStep = step || 'intro';
   if (currentPreviewStep === 'intro') pvIntroIndex = 0;
+  if (currentPreviewStep === 'coloring') pvColoringIndex = 0;
   document.querySelectorAll('.pv-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.step === currentPreviewStep);
   });
@@ -2903,7 +3088,7 @@ function navigatePreviewLesson(delta) {
 }
 
 function getPreviewStepOrder() {
-  return ['intro','listen','speak','match','write','choice'];
+  return ['intro','listen','speak','match','write','choice','coloring'];
 }
 
 function pvGoToNextStep() {
@@ -2928,6 +3113,19 @@ function pvPrimaryAction() {
       }
     } catch (_) {}
     setPreviewStep('listen');
+    return;
+  }
+  if (step === 'coloring') {
+    try {
+      const eff = getEffectiveStepData();
+      const pages = (eff.merged.coloring && eff.merged.coloring.pages) ? eff.merged.coloring.pages : [];
+      if (pages.length > 1 && pvColoringIndex < pages.length - 1) {
+        pvColoringIndex++;
+        updateLivePreview();
+        return;
+      }
+    } catch (_) {}
+    navigatePreviewLesson(1);
     return;
   }
   const order = getPreviewStepOrder();
@@ -3457,6 +3655,83 @@ function pvPickAndUploadStepImage(step) {
   tmp.click();
 }
 
+function updateColoringField(idx, field, value) {
+  const eff = getEffectiveStepData();
+  const pages = deepClone((eff.merged.coloring && Array.isArray(eff.merged.coloring.pages)) ? eff.merged.coloring.pages : []);
+  if (!pages[idx]) pages[idx] = { page: 1, imageUrl: '', promptEn: '', promptAr: '' };
+  pages[idx][field] = value;
+  const ov = ensureStepOverrides();
+  ov.coloring = Object.assign({}, ov.coloring || {}, { pages });
+  currentStepOverrides = ov;
+  if (currentLessonData) currentLessonData.stepOverrides = ov;
+  updateLivePreview();
+  // لا نعيد بناء المحرر أثناء الكتابة حتى لا يفقد المؤشر مكانه.
+  if (field === 'imageUrl' || field === 'page') renderStepEditor();
+  scheduleAutoPublish(250);
+}
+
+function pvPickAndUploadColoringImage(idx) {
+  const tmp = document.createElement('input');
+  tmp.type = 'file';
+  tmp.accept = 'image/*';
+  tmp.onchange = async () => {
+    const file = tmp.files && tmp.files[0];
+    if (!file) return;
+    try {
+      showSaveStatus('جاري رفع صورة صفحة الرسم إلى GitHub...', false);
+      const label = 'step_coloring_' + idx + '_' + (getCurrentAppIndexForDraft() ?? 'x');
+      const url = await uploadImageToGitHub(file, label);
+      updateColoringField(idx, 'imageUrl', url);
+      showSaveStatus('تم رفع صورة الرسم — جارٍ النشر التلقائي على GitHub...', false);
+    } catch (e) {
+      console.error(e);
+      const m = 'فشل رفع صورة الرسم: ' + (e && e.message ? e.message : '');
+      showSaveStatus(m, true);
+      showToast(m, 'error');
+    }
+  };
+  tmp.click();
+}
+
+async function uploadColoringImage(idx) {
+  const input = document.getElementById('coloring_img_' + idx);
+  const file = input && input.files && input.files[0];
+  if (!file) {
+    showToast('اختر صورة أولًا', 'error');
+    return;
+  }
+  try {
+    showSaveStatus('جاري رفع صورة صفحة الرسم إلى GitHub...', false);
+    const label = 'step_coloring_' + idx + '_' + (getCurrentAppIndexForDraft() ?? 'x');
+    const url = await uploadImageToGitHub(file, label);
+    updateColoringField(idx, 'imageUrl', url);
+    showSaveStatus('تم رفع صورة الرسم — جارٍ النشر التلقائي على GitHub...', false);
+  } catch (e) {
+    console.error(e);
+    const m = 'فشل رفع صورة الرسم: ' + (e && e.message ? e.message : '');
+    showSaveStatus(m, true);
+    showToast(m, 'error');
+  }
+}
+
+function clearColoringImage(idx) {
+  updateColoringField(idx, 'imageUrl', '');
+}
+
+async function pvEditColoringPrompt(idx, field) {
+  const eff = getEffectiveStepData();
+  const pages = (eff.merged.coloring && Array.isArray(eff.merged.coloring.pages)) ? eff.merged.coloring.pages : [];
+  const page = pages[idx] || {};
+  const isAr = field === 'promptAr';
+  const res = await showInputModal({
+    title: isAr ? 'تعديل النص العربي لصفحة الرسم' : 'تعديل تعليمات صفحة الرسم',
+    fields: [{ id: 'value', label: isAr ? 'النص العربي' : 'النص الإنجليزي', value: page[field] || '', multiline: true }],
+    submitLabel: 'حفظ'
+  });
+  if (!res) return;
+  updateColoringField(idx, field, res.value);
+}
+
 function getAppAssetImageUrl(imageFile, isPack, indexInPack, ext = 'jpg') {
   if (!imageFile) return '';
   const safeExt = (ext || 'jpg').replace(/^\./, '');
@@ -3512,7 +3787,8 @@ function updateLivePreview() {
     speak:  { label: 'تحدث',   progress: '40%',  q: 'سؤال 2 من 5', primary: 'تحقق',   secondary: 'تخطٍ' },
     match:  { label: 'مطابقة', progress: '60%',  q: 'سؤال 3 من 5', primary: 'متابعة', secondary: '' },
     write:  { label: 'كتابة',  progress: '80%',  q: 'سؤال 4 من 5', primary: 'تحقق',   secondary: 'تخطٍ' },
-    choice: { label: 'اختيار', progress: '100%', q: 'سؤال 5 من 5', primary: 'تحقق',   secondary: 'تخطٍ' }
+    choice: { label: 'اختيار', progress: '100%', q: 'سؤال 5 من 5', primary: 'تحقق',   secondary: 'تخطٍ' },
+    coloring: { label: 'رسم', progress: '100%', q: 'نشاط الرسم', primary: 'متابعة', secondary: 'تخطٍ' }
   }[step] || { label: 'درس', progress: '20%', q: 'سؤال 1 من 5', primary: 'التالي', secondary: '' };
 
   const pvProgressBar = document.getElementById('pvProgressBar');
@@ -3668,6 +3944,26 @@ function updateLivePreview() {
           </div>`).join('')}
       </div>
       <div class="pv-note">انقر أي صورة لتغييرها • الإطار الأخضر = الإجابة الصحيحة</div>
+    `;
+  } else if (step === 'coloring') {
+    const pages = (s.coloring && Array.isArray(s.coloring.pages)) ? s.coloring.pages : [];
+    if (pvColoringIndex < 0) pvColoringIndex = 0;
+    if (pvColoringIndex >= pages.length) pvColoringIndex = Math.max(0, pages.length - 1);
+    const page = pages[pvColoringIndex] || {};
+    const pageNumber = Number(page.page) || 1;
+    const src = String(page.imageUrl || '').trim() || coloringAssetUrl(pageNumber);
+    content.innerHTML = `
+      <div class="pv-header"><div class="pv-header-icon">🎨</div><div><div class="pv-header-title">رسم وتلوين</div><div class="pv-header-sub">5 صفحات • انقر الصورة أو النص للتعديل</div></div></div>
+      <div class="pv-image-wrap" style="margin-bottom:8px">
+        ${renderPreviewImageTag(src, 'coloring', `pvPickAndUploadColoringImage(${pvColoringIndex})`)}
+        <div class="pv-pill">صفحة ${pvColoringIndex + 1}</div>
+        <button type="button" class="pv-speaker" title="استماع" onclick="speakPreviewText()">🔊</button>
+      </div>
+      <div class="pv-sentence pv-editable" style="font-size:16px;direction:ltr" title="انقر لتعديل التعليمات بالإنجليزية" onclick="pvEditColoringPrompt(${pvColoringIndex}, 'promptEn')">${escapeHtml(page.promptEn || '')}</div>
+      <div class="pv-translation pv-editable" title="انقر لتعديل الترجمة العربية" onclick="pvEditColoringPrompt(${pvColoringIndex}, 'promptAr')">${escapeHtml(page.promptAr || '')}</div>
+      <div class="pv-dots">${pages.map((_,i)=>`<span class="pv-dot ${i===pvColoringIndex?'active':''}" style="cursor:pointer" onclick="pvColoringIndex=${i};updateLivePreview()"></span>`).join('')}</div>
+      <div class="pv-counter">${pvColoringIndex + 1} / ${pages.length || 5}</div>
+      <div class="pv-note">هذه هي واجهة الرسم في التطبيق. التلوين يتم بالإصبع داخل التطبيق، وهنا تعدّل صورة كل صفحة ونصّها.</div>
     `;
   }
 }
@@ -4042,7 +4338,7 @@ function renderStepEditor() {
   let eff;
   try { eff = getEffectiveStepData(); } catch (e) { console.error(e); area.innerHTML = '<div class="muted">تعذر تجهيز محرر الواجهة.</div>'; return; }
   const s = eff.merged;
-  const hdr = `<div style="margin-bottom:8px"><span class="pill">${escapeHtml(({intro:'مقدمة',speak:'تحدث',listen:'استماع',choice:'اختيار',match:'مطابقة',write:'كتابة'})[step] || step)}</span> <span class="muted">تعديل محتوى وصور هذه الواجهة</span></div>`;
+  const hdr = `<div style="margin-bottom:8px"><span class="pill">${escapeHtml(({intro:'مقدمة',speak:'تحدث',listen:'استماع',choice:'اختيار',match:'مطابقة',write:'كتابة',coloring:'رسم'})[step] || step)}</span> <span class="muted">تعديل محتوى وصور هذه الواجهة</span></div>`;
   let html = hdr;
   if (step === 'intro') {
     const items = s.intro.items || [];
@@ -4083,6 +4379,37 @@ function renderStepEditor() {
       <div style="grid-column:1/-1"><label>الجملة</label><input value="${escapeHtml(it.sentence||'')}" oninput="updateStepScalar('write','sentence',this.value)"></div>
     </div>`;
     html += `<div style="margin-top:10px">${renderStepItemEditor('write', 0, it, { label: 'صورة الكتابة' })}</div>`;
+  } else if (step === 'coloring') {
+    const pages = (s.coloring && Array.isArray(s.coloring.pages)) ? s.coloring.pages : [];
+    html += `<div class="hint" style="margin-bottom:8px">صفحات الرسم الخمس. يمكنك تغيير صورة كل صفحة أو تعديل نص التعليمات.${eff.isSpecial ? ' (الدروس 1-10 تستخدم الرسم الموجّه داخل التطبيق، لذا تُطبّق هذه التعديلات على الدروس العادية.)' : ''}</div>`;
+    html += pages.map((p, i) => {
+      const pageNumber = Number(p.page) || 1;
+      const src = String(p.imageUrl || '').trim() || coloringAssetUrl(pageNumber);
+      return `<div style="border:1px solid #E5E7EB;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <strong>صفحة ${i + 1}</strong>
+          <label style="margin:0;font-size:12px">رقم الصفحة الأصلية
+            <input type="number" min="1" max="100" value="${pageNumber}" style="width:80px;display:inline-block;margin-inline-start:6px" onchange="updateColoringField(${i}, 'page', this.value)">
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:start">
+          <div style="border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;background:#F9FAFB;height:100px;display:flex;align-items:center;justify-content:center">
+            <img src="${escapeHtml(src)}" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">
+          </div>
+          <div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+              <input type="file" id="coloring_img_${i}" accept="image/*" style="font-size:11px;max-width:100%">
+              <button type="button" class="btn btn-gray btn-sm" onclick="uploadColoringImage(${i})">رفع الصورة</button>
+              <button type="button" class="btn btn-gray btn-sm" onclick="clearColoringImage(${i})">إزالة</button>
+            </div>
+            <label>تعليمات إنجليزية</label>
+            <input value="${escapeHtml(p.promptEn || '')}" oninput="updateColoringField(${i}, 'promptEn', this.value)" style="direction:ltr">
+            <label style="margin-top:6px">تعليمات عربية</label>
+            <input value="${escapeHtml(p.promptAr || '')}" oninput="updateColoringField(${i}, 'promptAr', this.value)">
+          </div>
+        </div>
+      </div>`;
+    }).join('');
   }
   html += `<div id="stepSaveMsg" class="save-msg" style="margin-top:8px"></div>`;
   area.innerHTML = html;

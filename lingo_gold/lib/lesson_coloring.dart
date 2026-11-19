@@ -206,25 +206,51 @@ class ColoringStep extends StatelessWidget {
   final int page;
   final VoidCallback onPageDone;
 
+  /// تعديلات لوحة التحكم على صفحات الرسم (صور/نصوص).
+  final Map<String, dynamic>? coloringOverride;
+
   const ColoringStep({
     super.key,
     required this.lesson,
     required this.lessonIndex,
     required this.page,
     required this.onPageDone,
+    this.coloringOverride,
   });
 
   @override
   Widget build(BuildContext context) {
     final pages = coloringPagesFor(lesson, lessonIndex);
-    final pageNumber = pages[page.clamp(0, pages.length - 1)];
+    final pageIndex = page.clamp(0, pages.length - 1);
+    Map<String, dynamic>? pageOverride;
+    final rawPages = coloringOverride?['pages'];
+    if (rawPages is List && pageIndex < rawPages.length) {
+      final raw = rawPages[pageIndex];
+      if (raw is Map) pageOverride = Map<String, dynamic>.from(raw);
+      if (raw is int) pageOverride = <String, dynamic>{'page': raw};
+    }
+
+    final rawPageNumber = pageOverride?['page'];
+    final overridePageNumber = rawPageNumber is int
+        ? rawPageNumber
+        : int.tryParse('${rawPageNumber ?? ''}');
+    final pageNumber = (overridePageNumber ?? pages[pageIndex]).clamp(1, 100);
     final asset =
         'assets/coloring/coloring_${pageNumber.toString().padLeft(3, '0')}.jpg';
+    final imageUrl = (pageOverride?['imageUrl'] ?? '').toString().trim();
+    final promptEn = (pageOverride?['promptEn'] ?? '').toString().trim();
+    final promptAr = (pageOverride?['promptAr'] ?? '').toString().trim();
+
     return ColoringCanvas(
       imageAsset: asset,
-      prompt: coloringPromptEn(lesson, lessonIndex, page),
-      promptAr: coloringPromptAr(lesson, page),
-      pageLabel: 'الصورة ${page + 1} من 5',
+      imageUrl: imageUrl.isEmpty ? null : imageUrl,
+      prompt: promptEn.isEmpty
+          ? coloringPromptEn(lesson, lessonIndex, pageIndex)
+          : promptEn,
+      promptAr: promptAr.isEmpty
+          ? coloringPromptAr(lesson, pageIndex)
+          : promptAr,
+      pageLabel: 'الصورة ${pageIndex + 1} من 5',
       onDone: onPageDone,
     );
   }
