@@ -4214,6 +4214,15 @@ function updateStepScalar(step, field, value) {
 function updateStepItemField(step, idx, field, value) {
   const eff = getEffectiveStepData();
   const ov = ensureStepOverrides();
+  // التطبيق يعرض حقل word كنص ظاهر في المطابقة/الاختيار/الاستماع. إذا عدّل
+  // المستخدم الجملة التي كانت مطابقة للكلمة، حدّث الكلمة أيضًا حتى يصل التعديل
+  // للواجهة بدل أن يبقى النص القديم ظاهرًا. والعكس صحيح.
+  const syncVisibleText = (item, oldWord, oldSentence) => {
+    const nOldWord = normText(oldWord);
+    const nOldSentence = normText(oldSentence);
+    if (field === 'sentence' && (!nOldWord || nOldWord === nOldSentence)) item.word = value;
+    if ((field === 'word' || field === 'label') && (!nOldSentence || nOldSentence === nOldWord)) item.sentence = value;
+  };
   if (step === 'intro') {
     const items = (ov.intro && ov.intro.items) ? ov.intro.items.map(normItem) : eff.merged.intro.items.map(normItem);
     if (!items[idx]) return;
@@ -4221,6 +4230,7 @@ function updateStepItemField(step, idx, field, value) {
     const oldWord = items[idx].word;
     const oldSentence = items[idx].sentence;
     items[idx][field] = value;
+    syncVisibleText(items[idx], oldWord, oldSentence);
     if ((field === 'word' || field === 'label') && (!oldSpoken || oldSpoken === oldWord || oldSpoken === oldSentence)) items[idx].spoken = items[idx].sentence || value;
     if (field === 'sentence' && (!oldSpoken || oldSpoken === oldSentence || oldSpoken === oldWord)) items[idx].spoken = value;
     ov.intro = { items };
@@ -4232,6 +4242,7 @@ function updateStepItemField(step, idx, field, value) {
     const oldWord = arr[idx].word;
     const oldSentence = arr[idx].sentence;
     arr[idx][field] = value;
+    syncVisibleText(arr[idx], oldWord, oldSentence);
     if (field === 'correct' && value) arr.forEach((c,i)=>{ if(i!==idx) c.correct = false; });
     if ((field === 'word' || field === 'label') && (!oldSpoken || oldSpoken === oldWord || oldSpoken === oldSentence)) arr[idx].spoken = arr[idx].sentence || value;
     if (field === 'sentence' && (!oldSpoken || oldSpoken === oldSentence || oldSpoken === oldWord)) arr[idx].spoken = value;
@@ -4245,6 +4256,7 @@ function updateStepItemField(step, idx, field, value) {
     const oldWord = pairs[idx].word;
     const oldSentence = pairs[idx].sentence;
     pairs[idx][field] = value;
+    syncVisibleText(pairs[idx], oldWord, oldSentence);
     if ((field === 'word' || field === 'label') && (!oldSpoken || oldSpoken === oldWord || oldSpoken === oldSentence)) pairs[idx].spoken = pairs[idx].sentence || value;
     if (field === 'sentence' && (!oldSpoken || oldSpoken === oldSentence || oldSpoken === oldWord)) pairs[idx].spoken = value;
     ov.match = { pairs };
@@ -4257,6 +4269,7 @@ function updateStepItemField(step, idx, field, value) {
     const oldWord = arr[idx].word;
     const oldSentence = arr[idx].sentence;
     arr[idx][field] = value;
+    syncVisibleText(arr[idx], oldWord, oldSentence);
     if (field === 'correct' && value) arr.forEach((c,i)=>{ if(i!==idx) c.correct = false; });
     if ((field === 'word' || field === 'label') && (!oldSpoken || oldSpoken === oldWord || oldSpoken === oldSentence)) arr[idx].spoken = arr[idx].sentence || value;
     if (field === 'sentence' && (!oldSpoken || oldSpoken === oldSentence || oldSpoken === oldWord)) arr[idx].spoken = value;
