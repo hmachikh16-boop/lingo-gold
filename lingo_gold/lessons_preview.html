@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>معاينة تصحيحات الدروس 1–10</title>
+<style>
+  :root { --ink:#000; --muted:#6b7280; --line:#e5e7eb; --bg:#fff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f3f4f6; color:var(--ink); font-family:"Segoe UI",Tahoma,Arial,sans-serif; }
+  header { background:#000; color:#fff; padding:18px 22px; }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:6px 0 0; font-size:13px; opacity:.85; }
+  .wrap { max-width:1200px; margin:0 auto; padding:18px; }
+  .legend { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin-bottom:18px; font-size:13px; line-height:1.8; }
+  .legend b { color:#000; }
+  .legend .fix { color:#b91c1c; font-weight:700; }
+  .lesson { background:#fff; border:1px solid var(--line); border-radius:18px; margin-bottom:20px; overflow:hidden; }
+  .lesson-head { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .num { width:40px; height:40px; border-radius:12px; background:#000; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; }
+  .lesson-head h2 { margin:0; font-size:17px; }
+  .lesson-head .sub { font-size:12px; color:var(--muted); margin-top:3px; }
+  .windows { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; padding:14px; }
+  @media (max-width:1000px){ .windows{ grid-template-columns:repeat(2,1fr);} }
+  .win { border:1px solid var(--line); border-radius:14px; padding:10px; }
+  .win h3 { margin:0 0 8px; font-size:12.5px; color:#000; }
+  .win .hint { font-size:10.5px; color:var(--muted); margin-bottom:6px; min-height:14px; }
+  .imgs { display:flex; flex-wrap:wrap; gap:6px; }
+  .thumb { width:calc(50% - 3px); border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff; }
+  .thumb img { width:100%; height:74px; object-fit:cover; display:block; }
+  .thumb .cap { font-size:10px; padding:3px 4px; color:#111; line-height:1.25; }
+  .thumb.target { border:2px solid #000; }
+  .thumb.target .cap { font-weight:800; }
+  .single img { width:100%; height:120px; object-fit:cover; border-radius:10px; border:1px solid var(--line); }
+  .word { margin-top:6px; font-size:13px; font-weight:800; letter-spacing:.5px; text-align:center; }
+  .q { font-size:11px; font-weight:700; background:#f3f4f6; border-radius:8px; padding:5px 7px; margin-bottom:7px; direction:ltr; text-align:left; }
+  .tag { display:inline-block; font-size:9.5px; padding:1px 6px; border-radius:999px; background:#000; color:#fff; margin-inline-start:4px; }
+  footer { text-align:center; color:var(--muted); font-size:12px; padding:10px 0 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>معاينة تصحيحات الدروس 1–10 (بدون بناء التطبيق)</h1>
+  <p>كل صورة أدناه هي الصورة الحقيقية من مجلد assets/images، والإطار الأسود حول الصورة يعني أنها الإجابة الصحيحة.</p>
+</header>
+
+<div class="wrap">
+  <div class="legend">
+    <b>ملخص التصحيحات:</b><br>
+    1) الدرس 5: كانت الصورة <span class="fix">n19</span> تظهر <b>ولداً يشرب</b> بينما الجملة «The girl is drinking» — صُحّحت الجملة إلى <b>«The boy is drinking»</b>.<br>
+    2) الدرس 10: كان خياران يستخدمان نفس صورة الشمس <span class="fix">n56</span> (تعارض) — استُبدل التكرار بصورة شجرة <b>n55</b>.<br>
+    3) الدرس 7: كان خيار «A green apple» يستخدم صورة التفاحة الحمراء نفسها <span class="fix">q4</span> — استُبدل ببرتقالة <b>n27</b> وعنب <b>n29</b>.<br>
+    4) الدروس 4/5/9: كان «The cat is sleeping» يستخدم صورة قطة <span class="fix">q6</span> وهي تمشي — استُبدلت بصورة ولد نائم <b>n20</b>.<br>
+    5) الدروس 4/5/9: «The girl is drinking» و«The man is running» كانا على صور ولد — صُحّحت النصوص إلى <b>«The boy is drinking/running»</b>.<br>
+    6) الدرس 6 (المطابقة): كانت كلمة «Tall» على صورة فيل — صُحّحت إلى <b>«Elephant»</b> مع «Big dog / Small dog».<br>
+    7) أصبحت الدروس 1–10 كلها تستخدم النافذة الخامسة <b>الاختيار الذكي</b> (بدل التلوين) مع 4 صور مختلفة لكل سؤال.
+  </div>
+
+  <div id="app"></div>
+  <footer>معاينة فقط — لم يتم بناء APK.</footer>
+</div>
+
+<script>
+const IMG = (name, pack) => `assets/images/${name}${pack ? '_0' : ''}.jpg`;
+
+const lessons = [
+  {
+    n: 1, sentence: 'A boy.',
+    listening: [['q0',false,'A boy'],['n02',true,'A girl'],['n42',true,'A cat'],['n41',true,'A dog']],
+    matching: [['q0',false,'Boy'],['n02',true,'Girl'],['n42',true,'Cat']],
+    writing: ['q0',false,'BOY'],
+    smart: { q:'Which picture is A boy?', opts:[['q0',false,'A boy'],['n02',true,'A girl'],['n42',true,'A cat'],['n41',true,'A dog']] }
+  },
+  {
+    n: 2, sentence: 'A girl.',
+    listening: [['n02',true,'A girl'],['q0',false,'A boy'],['n42',true,'A cat'],['n41',true,'A dog']],
+    matching: [['n02',true,'Girl'],['q0',false,'Boy'],['n41',true,'Dog']],
+    writing: ['n02',true,'GIRL'],
+    smart: { q:'Which picture is A girl?', opts:[['n02',true,'A girl'],['q0',false,'A boy'],['n42',true,'A cat'],['n41',true,'A dog']] }
+  },
+  {
+    n: 3, sentence: 'A cat.',
+    listening: [['n42',true,'A cat'],['n41',true,'A dog'],['n02',true,'A girl'],['q0',false,'A boy']],
+    matching: [['n42',true,'Cat'],['n41',true,'Dog'],['q0',false,'Boy']],
+    writing: ['n42',true,'CAT'],
+    smart: { q:'Which picture is A cat?', opts:[['n42',true,'A cat'],['n41',true,'A dog'],['n02',true,'A girl'],['q0',false,'A boy']] }
+  },
+  {
+    n: 4, sentence: 'The boy is eating.',
+    listening: [['n18',true,'Eating'],['n19',true,'Drinking'],['n15',true,'Running'],['n20',true,'Sleeping']],
+    matching: [['n18',true,'Eating'],['n19',true,'Drinking'],['n15',true,'Running']],
+    writing: ['n18',true,'EATING'],
+    smart: { q:'Which picture is The boy is eating?', opts:[['n18',true,'The boy is eating'],['n19',true,'The boy is drinking'],['n15',true,'The boy is running'],['n20',true,'The boy is sleeping']] }
+  },
+  {
+    n: 5, sentence: 'The boy is drinking.',
+    listening: [['n19',true,'Drinking'],['n18',true,'Eating'],['n15',true,'Running'],['n20',true,'Sleeping']],
+    matching: [['n19',true,'Drinking'],['n18',true,'Eating'],['n15',true,'Running']],
+    writing: ['n19',true,'DRINKING'],
+    smart: { q:'Which picture is The boy is drinking?', opts:[['n19',true,'The boy is drinking'],['n18',true,'The boy is eating'],['n15',true,'The boy is running'],['n20',true,'The boy is sleeping']] }
+  },
+  {
+    n: 6, sentence: 'A big dog.',
+    listening: [['q2',false,'A big dog'],['n47',true,'A rabbit'],['q6',false,'A cat'],['n41',true,'A dog']],
+    matching: [['q2',false,'Big dog'],['n41',true,'Small dog'],['n45',true,'Elephant']],
+    writing: ['q2',false,'BIG'],
+    smart: { q:'Which picture is A big dog?', opts:[['q2',false,'A big dog'],['n47',true,'A small rabbit'],['n41',true,'A dog'],['q6',false,'A cat']] }
+  },
+  {
+    n: 7, sentence: 'A red apple.',
+    listening: [['q4',false,'A red apple'],['n22',true,'A banana'],['n37',true,'Oranges'],['n29',true,'Grapes']],
+    matching: [['q4',false,'Red'],['color_green',false,'Green'],['color_yellow',false,'Yellow']],
+    writing: ['q4',false,'RED'],
+    smart: { q:'Which picture is A red apple?', opts:[['q4',false,'A red apple'],['n22',true,'A yellow banana'],['n27',true,'An orange'],['n29',true,'Grapes']] }
+  },
+  {
+    n: 8, sentence: 'The boy and the girl.',
+    listening: [['n76',true,'Boy and girl'],['q0',false,'A boy'],['n02',true,'A girl'],['q6',false,'A cat']],
+    matching: [['q0',false,'Boy'],['n02',true,'Girl'],['n76',true,'Boy and girl']],
+    writing: ['n76',true,'BOY AND GIRL'],
+    smart: { q:'Which picture is The boy and the girl?', opts:[['n76',true,'The boy and the girl'],['q0',false,'A boy'],['n02',true,'A girl'],['q6',false,'A cat']] }
+  },
+  {
+    n: 9, sentence: 'I am eating.',
+    listening: [['n18',true,'Eating'],['n19',true,'Drinking'],['n15',true,'Running'],['n20',true,'Sleeping']],
+    matching: [['n18',true,'Eating'],['n19',true,'Drinking'],['n15',true,'Running']],
+    writing: ['n18',true,'EATING'],
+    smart: { q:'Which picture is I am eating?', opts:[['n18',true,'I am eating'],['n19',true,'I am drinking'],['n15',true,'I am running'],['n20',true,'I am sleeping']] }
+  },
+  {
+    n: 10, sentence: 'The sun.',
+    listening: [['n56',true,'The sun'],['n57',true,'The moon'],['n58',true,'A star'],['n55',true,'A tree']],
+    matching: [['n56',true,'SUN'],['n57',true,'MOON'],['n58',true,'STAR']],
+    writing: ['n56',true,'SUN'],
+    smart: { q:'Which picture is The sun?', opts:[['n56',true,'The sun'],['n57',true,'The moon'],['n58',true,'A star'],['n55',true,'A tree']] }
+  }
+];
+
+const thumb = (item, isTarget) => {
+  const [name, pack, cap] = item;
+  return `<div class="thumb ${isTarget ? 'target' : ''}">
+    <img src="${IMG(name, pack)}" alt="${cap}">
+    <div class="cap">${cap}${isTarget ? ' <span class="tag">الإجابة</span>' : ''}</div>
+  </div>`;
+};
+
+document.getElementById('app').innerHTML = lessons.map(L => `
+  <section class="lesson">
+    <div class="lesson-head">
+      <div class="num">${L.n}</div>
+      <div>
+        <h2>${L.sentence}</h2>
+        <div class="sub">5 نوافذ أسئلة + النتيجة</div>
+      </div>
+    </div>
+    <div class="windows">
+      <div class="win">
+        <h3>1) الاستماع</h3>
+        <div class="hint">يسمع الجملة ويختار الصورة</div>
+        <div class="imgs">${L.listening.map((x,i)=>thumb(x, i===0)).join('')}</div>
+      </div>
+      <div class="win">
+        <h3>2) التحدث</h3>
+        <div class="hint">ينطق الجملة أمام الصورة</div>
+        <div class="single"><img src="${IMG(L.writing[0], L.writing[1])}" alt=""></div>
+        <div class="word">${L.sentence}</div>
+      </div>
+      <div class="win">
+        <h3>3) المطابقة</h3>
+        <div class="hint">3 صور ↔ 3 كلمات</div>
+        <div class="imgs">${L.matching.map(x=>thumb(x, false)).join('')}</div>
+      </div>
+      <div class="win">
+        <h3>4) الكتابة</h3>
+        <div class="hint">يكتب كلمة الصورة</div>
+        <div class="single"><img src="${IMG(L.writing[0], L.writing[1])}" alt=""></div>
+        <div class="word">${L.writing[2]}</div>
+      </div>
+      <div class="win">
+        <h3>5) الاختيار الذكي</h3>
+        <div class="q">${L.smart.q}</div>
+        <div class="imgs">${L.smart.opts.map((x,i)=>thumb(x, i===0)).join('')}</div>
+      </div>
+    </div>
+  </section>
+`).join('');
+</script>
+</body>
+</html>

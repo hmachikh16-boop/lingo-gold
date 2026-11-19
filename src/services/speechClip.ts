@@ -1,0 +1,155 @@
+/**
+ * Shared rules for the pre-generated speech library.
+ *
+ * The generator script and the running app must agree byte-for-byte on the
+ * voice, the text normalisation and the file name, otherwise a clip that was
+ * generated will never be found at runtime.
+ */
+
+export type SpeechVoice = 'af_heart' | 'am_michael' | 'ff_siwis';
+
+/** Languages the app can speak. English is the course language; French is the second option. */
+export const SPEECH_LANGUAGES = ['en', 'fr'] as const;
+
+export type SpeechLanguage = (typeof SPEECH_LANGUAGES)[number];
+
+/** Accepts the current values and the legacy accent codes stored in old profiles. */
+export const normalizeSpeechLanguage = (value: unknown): SpeechLanguage =>
+  value === 'fr' || value === 'fr-FR' ? 'fr' : 'en';
+
+export const voiceFor = (
+  language: string,
+  gender: 'male' | 'female' = 'female'
+): SpeechVoice => {
+  // Kokoro-82M's bundled English voices are the only generated clips. French
+  // text keeps the fallback voice name so it can be handed to device TTS.
+  if (language === 'fr') return 'ff_siwis';
+  return gender === 'male' ? 'am_michael' : 'af_heart';
+};
+
+// Keep IPA symbols such as /æ/ out of this class: English phonics text uses
+// them, and treating them as French accents sent those lines to device TTS.
+const FRENCH_ACCENTS = /[àâäçéèêëîïôöùûüÿœÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸŒ]/;
+
+const FRENCH_WORDS =
+  /\b(le|la|les|un|une|des|du|est|sont|vous|nous|je|tu|il|elle|et|avec|pour|dans|sur|bonjour|merci|salut|comment|pourquoi|oui|non|très|bien|au revoir|s'il vous plaît)\b/gi;
+
+/** True when the text is clearly French rather than English. */
+export const looksFrench = (text: string): boolean => {
+  if (FRENCH_ACCENTS.test(text)) return true;
+  return (text.match(FRENCH_WORDS)?.length ?? 0) >= 2;
+};
+
+/**
+ * The language a line should be spoken in. French text is detected
+ * automatically; English course text always uses an English voice so the
+ * bundled lesson library is never bypassed by the French preference.
+ */
+export const resolveSpeechLanguage = (
+  text: string,
+  preferred: unknown = 'en'
+): SpeechLanguage => {
+  // The active course language is authoritative. This matters for short French
+  // lines such as "Bonjour !" that have no accents or unambiguous word count.
+  if (normalizeSpeechLanguage(preferred) === 'fr') return 'fr';
+  return looksFrench(text) ? 'fr' : 'en';
+};
+
+/** Strip emoji and reject anything that is not plain Latin-script text. */
+export const normalizeSpeechText = (text: string): string | null => {
+  const clean = text.replace(/[\u{1F600}-\u{1F64F}]/gu, '').trim();
+  if (!clean || /\p{Script=Arabic}/u.test(clean)) return null;
+  return clean;
+};
+
+/**
+ * IPA labels are useful on screen but ruin a TTS clip: the phonemizer reads
+ * "/b/" literally as "slash b slash". Turn the labels into natural classroom
+ * phrases before synthesis. The clip file name still hashes the original text,
+ * so the running app can keep using the displayed sentence unchanged.
+ */
+const IPA_SOUND_LABELS: Record<string, string> = {
+  æ: 'a', b: 'b', d: 'd', k: 'k', f: 'f', g: 'g', h: 'h', j: 'y', l: 'l',
+  m: 'm', n: 'n', p: 'p', r: 'r', s: 's', t: 't', v: 'v', w: 'w', z: 'z',
+  θ: 'th', ð: 'th', ʃ: 'sh', ʒ: 'zh', ŋ: 'ng', tʃ: 'ch', dʒ: 'j',
+  ə: 'uh', ɪ: 'i', ʊ: 'u', ʌ: 'uh', ɛ: 'e', ɒ: 'o', ɔ: 'aw',
+  ɑ: 'ah', ɜ: 'ur', i: 'ee', u: 'oo', eɪ: 'ay', aɪ: 'eye',
+  ɔɪ: 'oy', aʊ: 'ow', əʊ: 'oh', eə: 'air', ɪə: 'ear', ʊə: 'oor',
+};
+
+export const speechTextForTts = (
+  text: string,
+  language: 'en' | 'fr' = 'en',
+): string => {
+  if (language === 'fr') {
+    // French phonics examples read naturally without English classroom
+    // phrases: "A, /a/, pomme" becomes "A, pomme", and a standalone /k/ becomes
+    // "le son k". This prevents an English phrase from leaking into French TTS.
+    const withExamples = text.replace(/,\s*\/([^/]{1,24})\/,\s*/g, ', ');
+    return withExamples
+      .replace(/_{2,}/g, ' blanc ')
+      .replace(/\s*\/([^/]{1,24})\/\s*/g, (_match, rawIpa: string) => {
+        const label = rawIpa.replace(/[ˈˌː]/g, '').trim();
+        return ` le son ${IPA_SOUND_LABELS[label] ?? label} `;
+      })
+      .replace(/\s+/g, ' ')
+      .replace(/\s+([,.!?;:])/g, '$1')
+      .trim();
+  }
+
+  const withExamples = text.replace(/,\s*\/([^/]{1,24})\/,\s*/g, ' as in ');
+  // Fill-in-the-blank prompts show underscores on screen. The phonemizer drops
+  // them, which would make "My ___ is tall" sound like "My is tall"; say the
+  // word "blank" instead. The clip file name still hashes the displayed text.
+  return withExamples
+    .replace(/_{2,}/g, ' blank ')
+    .replace(/\s*\/([^/]{1,24})\/\s*/g, (_match, rawIpa: string) => {
+      const label = rawIpa.replace(/[ˈˌː]/g, '').trim();
+      return ` the ${IPA_SOUND_LABELS[label] ?? label} sound `;
+    })
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,.!?;:])/g, '$1')
+    .trim();
+};
+
+/**
+ * FNV-1a 64-bit over the UTF-16 code units. Synchronous on purpose: the client
+ * needs the URL while rendering, and both sides must derive the same name.
+ */
+export const speechClipHash = (text: string): string => {
+  let hash = 0xcbf29ce484222325n;
+  const prime = 0x100000001b3n;
+  const mask = 0xffffffffffffffffn;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= BigInt(text.charCodeAt(index));
+    hash = (hash * prime) & mask;
+  }
+  return hash.toString(16).padStart(16, '0');
+};
+
+/**
+ * Bump this whenever the audio library is regenerated so phones and browsers
+ * cannot keep serving an older clip from their HTTP cache for the same text.
+ */
+export const SPEECH_LIBRARY_VERSION = '4';
+
+/** Public URL of the bundled clip for a line, or null when it is not speakable. */
+export const speechClipUrl = (
+  text: string,
+  gender: 'male' | 'female',
+  language: string
+): string | null => {
+  const clean = normalizeSpeechText(text);
+  if (!clean) return null;
+  // French has no bundled Kokoro library in this release. Returning null sends
+  // playback straight to the device's French voice instead of requesting a
+  // missing .ogg file and falling back after a visible delay.
+  if (normalizeSpeechLanguage(language) === 'fr') return null;
+  return `/audio/tts/${voiceFor(language, gender)}/${speechClipHash(clean)}.ogg?v=${SPEECH_LIBRARY_VERSION}`;
+};
+
+/** Path of the same clip inside the repository. */
+export const speechClipPath = (
+  text: string,
+  voice: SpeechVoice
+): string => `public/audio/tts/${voice}/${speechClipHash(text)}.ogg`;

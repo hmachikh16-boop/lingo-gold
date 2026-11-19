@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>معاينة تطبيق Lingo Gold</title>
+<style>
+  :root {
+    --ink: #0f172a;
+    --muted: #94a3b8;
+    --card: #111827;
+    --line: #1f2937;
+    --accent: #2e9e5b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 20% 0%, #1e293b 0%, #0b1120 55%, #060a13 100%);
+    color: #e5e7eb;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 28px 18px 48px;
+  }
+  header {
+    max-width: 1280px;
+    margin: 0 auto 26px;
+    text-align: center;
+  }
+  header .badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(46, 158, 91, 0.16);
+    color: #6ee7a8;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(46, 158, 91, 0.35);
+  }
+  header h1 {
+    margin: 12px 0 6px;
+    font-size: clamp(24px, 4vw, 38px);
+    font-weight: 800;
+    color: #fff;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px 22px;
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .phone {
+    width: 100%;
+    max-width: 320px;
+    background: #000;
+    border: 9px solid #1f2937;
+    border-radius: 40px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.04);
+    position: relative;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 86px;
+    height: 20px;
+    background: #000;
+    border-radius: 0 0 14px 14px;
+    z-index: 2;
+  }
+  .phone img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .caption {
+    margin-top: 12px;
+    text-align: center;
+  }
+  .caption b {
+    display: block;
+    font-size: 15px;
+    color: #fff;
+  }
+  .caption span {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .note {
+    max-width: 900px;
+    margin: 34px auto 0;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.8;
+    text-align: center;
+  }
+  .note b { color: #6ee7a8; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="badge">LINGO GOLD · معاينة</div>
+    <h1>معاينة تطبيق Lingo Gold</h1>
+    <p>لقطات حقيقية من واجهات Flutter — المقدمة التعليمية + درس التلوين الموجّه + الدروس 1–10</p>
+  </header>
+
+  <div class="grid">
+    <div class="item">
+      <div class="phone"><img src="test/preview/00_lesson5_intro.png" alt="مقدمة الدرس 5"></div>
+      <div class="caption"><b>المقدمة التعليمية — الدرس 5</b><span>يسمع: The boy is drinking ثم بقية صور الدرس</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/00b_lesson7_intro.png" alt="مقدمة الدرس 7"></div>
+      <div class="caption"><b>المقدمة التعليمية — الدرس 7</b><span>7 صور: تفاحة، موز، برتقال، عنب، أخضر، أصفر</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/00c_lesson1_coloring.png" alt="تلوين الدرس 1"></div>
+      <div class="caption"><b>درس التلوين الموجّه — الدرس 1</b><span>صورة من المشروع: صبي. Color the boy's shirt blue. / Color the shorts red. / Color the shoes green.</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/00d_lesson5_coloring.png" alt="تلوين الدرس 5"></div>
+      <div class="caption"><b>درس التلوين الموجّه — الدرس 5</b><span>صورة من المشروع: صبي يشرب. Color the cup red. / Color the shirt blue. / Color the shorts green.</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/00e_lesson1_coloring_done.png" alt="تلوين الدرس 1 مكتمل"></div>
+      <div class="caption"><b>التلوين المكتمل — الدرس 1</b><span>القميص أزرق، السروال أحمر، الأحذية خضراء — ثم يفعّل زر «متابعة»</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/00f_lesson7_coloring.png" alt="تلوين الدرس 7"></div>
+      <div class="caption"><b>درس التلوين الموجّه — الدرس 7</b><span>صورة من المشروع: تفاحة. Color the apple red. / Color the leaf green. / Color the stem yellow.</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/00g_lesson10_coloring.png" alt="تلوين الدرس 10"></div>
+      <div class="caption"><b>درس التلوين الموجّه — الدرس 10</b><span>صورة من المشروع: شمس. Color the sun yellow. / Color the ray orange. / Color the sky blue.</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/01_home.png" alt="الشاشة الرئيسية"></div>
+      <div class="caption"><b>الشاشة الرئيسية</b><span>الدرس الحالي + زر لعبة التلوين</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/02_lesson5_listening.png" alt="الاستماع"></div>
+      <div class="caption"><b>الاستماع — الدرس 5</b><span>4 صور، والهدف: The boy is drinking</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/02b_lesson5_speaking.png" alt="التحدث"></div>
+      <div class="caption"><b>التحدث — الدرس 5</b><span>استمع للجملة ثم كررها بالميكروفون</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/03_lesson5_matching.png" alt="المطابقة"></div>
+      <div class="caption"><b>المطابقة — الدرس 5</b><span>3 صور ↔ 3 كلمات ملموسة</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/04_lesson5_writing.png" alt="الكتابة"></div>
+      <div class="caption"><b>الكتابة — الدرس 5</b><span>اكتب كلمة الصورة: DRINKING</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/05_lesson5_smart_choose.png" alt="الاختيار الذكي 5"></div>
+      <div class="caption"><b>الاختيار الذكي — الدرس 5</b><span>سؤال مثبت: Which picture is ...?</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/06_lesson10_smart_choose.png" alt="الاختيار الذكي 10"></div>
+      <div class="caption"><b>الاختيار الذكي — الدرس 10</b><span>الشمس / القمر / النجمة / الشجرة</span></div>
+    </div>
+
+    <div class="item">
+      <div class="phone"><img src="test/preview/07_profile.png" alt="الملف الشخصي"></div>
+      <div class="caption"><b>الملف الشخصي</b><span>خلفية سوداء نقية #000000</span></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>ملاحظة:</b> هذه لقطات مولّدة من نفس كود Flutter (Golden Screenshots) وليست رسوماً يدوية.
+    المقدمة التعليمية تظهر قبل التمارين في الدروس 1–10 فقط، مع زر «تخطي المقدمة»، ثم تبدأ الأسئلة الخمسة كالمعتاد.
+    بعد الاختيار الذكي يظهر درس التلوين الموجّه: يستمع الطالب للتعليمة الإنجليزية، يختار اللون فيسمع اسمه بالإنجليزية، ثم يضغط على الجزء المطلوب.
+    بعد إكمال الأجزاء الثلاثة يفعّل زر «متابعة» للوصول إلى النتيجة.
+  </div>
+</body>
+</html>

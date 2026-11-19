@@ -1,0 +1,53 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.vercel/
+android/.gradle/
+android/local.properties
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/.idea/
+android/*.iml
+*.jks
+*.keystore
+android/keystore.properties
+android/KEYSTORE-CREDENTIALS.txt
+releases/
+update-manifest.json
+# Staged at deploy time only, never committed (the latest APKs from GitHub Releases).
+public/english-tok.apk
+public/lin-go-gold-1.0.1.apk
+public/lin-go-gold-1.1.8.apk
+public/lin-go-gold.apk
+
+# Local snapshots, upload staging and browser profiles are not source files.
+backups/
+.git-upload-staging/
+tmp/
+tmp-placement-browser/
+store/raw/
+
+# Local preview tooling (cloudflared binary for phone previews).
+tools/
+
+# Desktop control build output and generated icon.
+desktop/lin-go-control/bin/
+desktop/lin-go-control/assets/app.ico
+desktop/lin-go-control-online/bin/
+desktop/lin-go-control-online/assets/app.ico
+
+# Local generated artifacts (not source).
+lingo-lessons-bundle.json.bak
+lingo_gold/assets/audio/backup_old/
+lingo_gold_apk_qr_*.png
+lingo_gold_qr*.png
+*.apk
+public/download/*.apk
+public/lin-go-gold-*.apk
+android-nova/local.properties

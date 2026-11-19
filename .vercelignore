@@ -1,0 +1,29 @@
+# Vercel builds only the website. Keep large local Android/release artifacts
+# out of the source upload; stage-latest-apk.mjs fetches the published APK
+# during the Vercel build instead.
+android
+releases
+dist
+.git-upload-staging
+store
+resources
+backups
+tmp
+tmp-placement-browser
+tools
+tests
+.github
+public/english-tok.apk
+*.log
+android-nova
+design-previews
+dbg*.cjs
+fix*.cjs
+tmp-*.mjs
+tmp-*.cjs
+genwp.cjs
+uptodown
+lin-go-gold-*.apk
+lin-go-gold-*.apk.idsig
+src/reels.css
+validate-lessons.ts

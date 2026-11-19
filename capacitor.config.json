@@ -1,0 +1,13 @@
+{
+  "appId": "com.englishtok.app",
+  "appName": "Lin Go",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#132230",
+    "allowMixedContent": false
+  }
+}

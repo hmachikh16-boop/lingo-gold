@@ -1,0 +1,11 @@
+{
+    "version":  "1.1.84",
+    "packageId":  "com.englishtok.gold",
+    "apkUrl":  "/lin-go-gold-1.1.84.apk",
+    "sha256":  "9462B40A698C59099FE8C2870731B750BD9931556EBABB67F4B8AD09993D6A60",
+    "size":  93333616,
+    "minimumAndroidSdk":  24,
+    "notes":  "تحديث Gold 1.1.84: الشخصيات (صورتكما) في جميع حوارات المراحل 1-4، مسار Grade 1 (120 درسًا)، إشعارات+تثبيت من داخل التطبيق، إصلاح Рيلز، صور تعليمية، إصلاح رفع الصور.",
+    "releaseUrl":  "https://github.com/hmachikh16-boop/englishtok/releases/tag/gold-v1.1.84",
+    "publishedAt":  "2026-11-14T18:00:00.000Z"
+}

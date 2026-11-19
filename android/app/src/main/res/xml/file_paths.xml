@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Public Downloads folder used by DownloadManager. -->
+    <external-path name="downloads" path="Download/" />
+    <!-- App-private downloads folder used on Android 7-9. -->
+    <external-files-path name="app_downloads" path="Download/" />
+    <!-- Cache dir for any staged APK. -->
+    <cache-path name="cache" path="." />
+</paths>
