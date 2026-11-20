@@ -80,6 +80,8 @@
   .pv-translation { font-size:14px; font-weight:700; color:#166534; background:#ECFDF3; border:1px solid #BBF7D0; border-radius:10px; padding:7px 10px; text-align:center; margin:4px 0 8px; }
   /* المعاينة هي الواجهة الأساسية: لا نعرض نماذج الإدخال المنفصلة، بل نعدّل مباشرة داخل المعاينة. */
   #basicFieldsSection, #imageFieldsSection, #basicActionsBar { display:none; }
+  /* عناصر Firestore/إنشاء فئات أو دروس: معطّلة تمامًا لأنها قد تخرب الدروس */
+  #newCatForm, #newLessonForm { display:none !important; }
   .pv-options { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:4px 0 6px; }
   .pv-opt { padding:6px 10px; border:1px solid #D1D5DB; border-radius:999px; font-size:12.5px; color:#111827; background:#fff; font-weight:600; }
   .pv-counter { text-align:center; font-size:12px; font-weight:700; color:#6B7280; direction:ltr; margin:4px 0 6px; }
@@ -221,11 +223,7 @@
       <div class="row" style="justify-content:space-between">
         <h2>الفئات</h2>
         <div class="row">
-          <button class="btn btn-gray btn-sm" onclick="showAppContent()">عرض/قراءة محتوى التطبيق</button>
-          <button class="btn btn-green btn-sm" onclick="syncWithAppContent()">مزامنة مع Firestore (للتعديل)</button>
-          <button class="btn btn-gray btn-sm" onclick="repairCounts()">إصلاح العدادات</button>
-          <button class="btn btn-gray btn-sm" onclick="cleanupDuplicates()">تنظيف التكرارات</button>
-          <button class="btn btn-sm" onclick="openNewCategory()">+ فئة جديدة</button>
+          <button class="btn btn-gray btn-sm" onclick="showAppContent()">عرض محتوى التطبيق</button>
         </div>
       </div>
       <div class="toolbar">
@@ -1802,6 +1800,44 @@ function setLocalLessonDrafts(v) { _writeJsonStorage(LOCAL_DRAFTS_KEY, v || {});
       setLocalLessonDrafts({});
       localStorage.setItem(key, '1');
     }
+  } catch (_) {}
+})();
+
+// ترحيل 2026-11-20: المسودات القديمة ما زالت تحمل جملًا بفراغ `___` وصورًا
+// مرفوعة قديمة. نحدّثها إلى الجمل والصور الحقيقية للتطبيق مع الحفاظ على
+// بقية تعديلات المستخدم.
+(function migrateLocalDraftsToRealLessons() {
+  try {
+    const key = 'lingo_drafts_migration_20261120_v3';
+    if (localStorage.getItem(key)) return;
+    const fill = (s, word) => String(s || '').replace(/___/g, word || '');
+    const fixNode = (node, word) => {
+      if (!node || typeof node !== 'object') return node;
+      if (Array.isArray(node)) return node.map(x => fixNode(x, word));
+      const out = {};
+      Object.keys(node).forEach(k => {
+        const v = node[k];
+        if ((k === 'sentence' || k === 'spoken') && typeof v === 'string') out[k] = fill(v, word);
+        else if (k === 'imageUrl') out[k] = '';
+        else out[k] = fixNode(v, word);
+      });
+      return out;
+    };
+    const fixLesson = (d) => {
+      if (!d || typeof d !== 'object') return d;
+      const word = String(d.word || '');
+      d.sentence = fill(d.sentence, word);
+      if (d.spoken) d.spoken = fill(d.spoken, word);
+      d.imageUrl = '';
+      if (d.stepOverrides) d.stepOverrides = fixNode(d.stepOverrides, word);
+      return d;
+    };
+    const drafts = getLocalLessonDrafts();
+    Object.keys(drafts).forEach(k => fixLesson(drafts[k]));
+    setLocalLessonDrafts(drafts);
+    const locals = getLocalNewLessons().map(fixLesson);
+    setLocalNewLessons(locals);
+    localStorage.setItem(key, '1');
   } catch (_) {}
 })();
 function getLocalNewLessons() {
