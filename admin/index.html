@@ -185,6 +185,44 @@
   .adv-fields summary::-webkit-details-marker { display:none; }
   .adv-fields summary::before { content:'⚙️ '; }
   .adv-fields[open] summary { color:#111827; margin-bottom:6px; }
+  .coloring-page-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 12px; }
+  .coloring-page-tab {
+    border:1px solid #E5E7EB; background:#fff; color:#374151; border-radius:999px;
+    padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer;
+  }
+  .coloring-page-tab.active { background:#111827; color:#fff; border-color:#111827; }
+  .coloring-stage-outer {
+    text-align:center; padding:10px; margin-bottom:12px;
+    border:1px solid #E5E7EB; border-radius:14px; background:#F9FAFB;
+  }
+  .coloring-stage {
+    position:relative; display:inline-block; line-height:0; max-width:100%;
+    border-radius:12px; overflow:hidden; background:#fff;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+  }
+  .coloring-stage img {
+    display:block; max-width:100%; max-height:420px; width:auto; height:auto;
+    cursor:crosshair;
+  }
+  .coloring-marker {
+    position:absolute; transform:translate(-50%,-50%); pointer-events:none;
+    width:22px; height:22px; border-radius:50%; border:2px solid #fff;
+    box-shadow:0 0 0 2px #111827; color:#fff; font-size:11px; font-weight:900;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .coloring-stage-hint {
+    position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+    line-height:normal; white-space:nowrap; pointer-events:none;
+    background:rgba(17,24,39,.82); color:#fff; padding:5px 10px;
+    border-radius:999px; font-size:11px; font-weight:700;
+  }
+  .coloring-controls { border:1px solid #E5E7EB; border-radius:12px; padding:10px; margin-bottom:12px; background:#fff; }
+  .coloring-tasks-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:10px 0 6px; flex-wrap:wrap; }
+  .coloring-task-card { border:1px solid #E5E7EB; border-radius:12px; padding:10px; margin-bottom:8px; background:#FAFAFA; }
+  .coloring-task-card.active { border-color:#16A34A; background:#F0FDF4; box-shadow:0 0 0 2px rgba(22,163,74,.12); }
+  .coloring-task-title { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; cursor:pointer; }
+  .coloring-task-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:900; color:#111827; }
+  .coloring-task-dot { width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #111827; }
   .pv-tab .tab-icon { margin-inline-end:3px; }
   @media (min-width:901px) {
     .editor-form-pane .pane-body, .editor-preview-pane .pane-body { max-height:calc(100vh - 230px); overflow:auto; }
@@ -3208,8 +3246,7 @@ function pvPrimaryAction() {
       const eff = getEffectiveStepData();
       const pages = (eff.merged.coloring && eff.merged.coloring.pages) ? eff.merged.coloring.pages : [];
       if (pages.length > 1 && pvColoringIndex < pages.length - 1) {
-        pvColoringIndex++;
-        updateLivePreview();
+        selectColoringPage(pvColoringIndex + 1);
         return;
       }
     } catch (_) {}
@@ -3902,6 +3939,14 @@ function selectColoringTask(taskIdx) {
   renderStepEditor();
 }
 
+function selectColoringPage(pageIdx) {
+  pvColoringIndex = Math.max(0, Number(pageIdx) || 0);
+  const tasks = getColoringTasks(pvColoringIndex);
+  if (pvColoringTaskIndex >= tasks.length) pvColoringTaskIndex = Math.max(0, tasks.length - 1);
+  updateLivePreview();
+  renderStepEditor();
+}
+
 function updateColoringTask(pageIdx, taskIdx, field, value) {
   const tasks = getColoringTasks(pageIdx);
   if (!tasks[taskIdx]) return;
@@ -3915,23 +3960,10 @@ function setColoringTaskPointFromClick(ev, pageIdx, taskIdx) {
   const img = ev.currentTarget;
   const rect = img.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
-  const naturalW = img.naturalWidth || rect.width;
-  const naturalH = img.naturalHeight || rect.height;
-  const imageRatio = naturalW / naturalH;
-  const boxRatio = rect.width / rect.height;
-  let drawW = rect.width;
-  let drawH = rect.height;
-  let offsetX = 0;
-  let offsetY = 0;
-  if (imageRatio > boxRatio) {
-    drawH = rect.width / imageRatio;
-    offsetY = (rect.height - drawH) / 2;
-  } else {
-    drawW = rect.height * imageRatio;
-    offsetX = (rect.width - drawW) / 2;
-  }
-  const x = Math.max(0, Math.min(1, (ev.clientX - rect.left - offsetX) / drawW));
-  const y = Math.max(0, Math.min(1, (ev.clientY - rect.top - offsetY) / drawH));
+  // الصورة داخل .coloring-stage تأخذ أبعادها الطبيعية fully،
+  // لذا نسب النقر داخل عنصر img نفسه هي نفس نسب التلوين في التطبيق.
+  const x = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+  const y = Math.max(0, Math.min(1, (ev.clientY - rect.top) / rect.height));
   const tasks = getColoringTasks(pageIdx);
   if (!tasks[taskIdx]) return;
   tasks[taskIdx].x = Math.round(x * 1000) / 1000;
@@ -4363,7 +4395,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
       <div class="pv-sentence pv-editable" style="font-size:16px;direction:ltr" title="انقر لتعديل التعليمات بالإنجليزية" onclick="pvEditColoringPrompt(${pvColoringIndex}, 'promptEn')">${escapeHtml(page.promptEn || '')}</div>
       <div class="pv-translation pv-editable" title="انقر لتعديل الترجمة العربية" onclick="pvEditColoringPrompt(${pvColoringIndex}, 'promptAr')">${escapeHtml(page.promptAr || '')}</div>
       ${colorTasks.length ? `<div class="pv-options" title="الألوان المضبوطة لهذه الصفحة">${colorTasks.map(t=>`<span class="pv-opt" style="display:inline-flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:50%;background:${escapeHtml(t.color||'#43A047')};border:1px solid #111"></span>${escapeHtml(t.colorName||'')}</span>`).join('')}</div>` : `<div class="pv-note">لا توجد ألوان مضبوطة بعد — أضف «مهمة تلوين» من المحرر على اليمين.</div>`}
-      <div class="pv-dots">${pages.map((_,i)=>`<span class="pv-dot ${i===pvColoringIndex?'active':''}" style="cursor:pointer" onclick="pvColoringIndex=${i};updateLivePreview()"></span>`).join('')}</div>
+      <div class="pv-dots">${pages.map((_,i)=>`<span class="pv-dot ${i===pvColoringIndex?'active':''}" style="cursor:pointer" onclick="selectColoringPage(${i})"></span>`).join('')}</div>
       <div class="pv-counter">${pvColoringIndex + 1} / ${pages.length || 5}</div>
       <div class="pv-note">هذه هي واجهة الرسم في التطبيق. التلوين يتم بالإصبع داخل التطبيق، وهنا تعدّل صورة كل صفحة ونصّها.</div>
     `;
@@ -4802,60 +4834,68 @@ function renderStepEditor() {
     html += `<div style="margin-top:10px">${renderStepItemEditor('write', 0, it, { label: 'صورة الكتابة', showSentence: true, showTranslation: true })}</div>`;
   } else if (step === 'coloring') {
     const pages = (s.coloring && Array.isArray(s.coloring.pages)) ? s.coloring.pages : [];
-    html += `<div class="hint" style="margin-bottom:8px">صفحات الرسم الخمس. يمكنك تغيير صورة كل صفحة أو تعديل نص التعليمات.${eff.isSpecial ? ' (الدروس 1-10 تستخدم الرسم الموجّه داخل التطبيق، لذا تُطبّق هذه التعديلات على الدروس العادية.)' : ''}</div>`;
-    html += pages.map((p, i) => {
-      const pageNumber = Number(p.page) || 1;
-      const src = String(p.imageUrl || '').trim() || coloringAssetUrl(pageNumber);
-      return `<div style="border:1px solid #E5E7EB;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
-          <strong>صفحة ${i + 1}</strong>
-          <label style="margin:0;font-size:12px">رقم الصفحة الأصلية
-            <input type="number" min="1" max="100" value="${pageNumber}" style="width:80px;display:inline-block;margin-inline-start:6px" onchange="updateColoringField(${i}, 'page', this.value)">
-          </label>
-        </div>
-        <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:start">
-          <div style="position:relative;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;background:#F9FAFB;height:120px;display:flex;align-items:center;justify-content:center">
-            <img src="${escapeHtml(src)}" title="انقر لتحديد مكان المهمة المختارة" style="max-width:100%;max-height:100%;object-fit:contain;cursor:crosshair" onclick="setColoringTaskPointFromClick(event, ${i}, pvColoringTaskIndex)" onerror="this.style.display='none'">
-            ${(() => { const tasks = getColoringTasks(i); return tasks.map((t,ti)=>`<span style="position:absolute;left:${(Number(t.x)||0)*100}%;top:${(Number(t.y)||0)*100}%;width:${ti===pvColoringTaskIndex?16:12}px;height:${ti===pvColoringTaskIndex?16:12}px;border-radius:50%;background:${escapeHtml(t.color||'#43A047')};border:2px solid #fff;box-shadow:0 0 0 2px #111;transform:translate(-50%,-50%);pointer-events:none"></span>`).join(''); })()}
+    if (pvColoringIndex < 0 || pvColoringIndex >= pages.length) pvColoringIndex = Math.max(0, pages.length - 1);
+    const i = pvColoringIndex;
+    const p = pages[i] || {};
+    const pageNumber = Number(p.page) || 1;
+    const src = String(p.imageUrl || '').trim() || coloringAssetUrl(pageNumber);
+    const tasks = getColoringTasks(i);
+    if (pvColoringTaskIndex >= tasks.length) pvColoringTaskIndex = Math.max(0, tasks.length - 1);
+
+    html += `<div class="hint" style="margin-bottom:8px">صفحات الرسم الخمس. اختر الصفحة، ثم انقر على الصورة الكبيرة لتحديد مكان التلوين.${eff.isSpecial ? ' (الدروس 1-10 تستخدم الرسم الموجّه داخل التطبيق، لذا تُطبّق هذه التعديلات على الدروس العادية.)' : ''}</div>`;
+    html += `<div class="coloring-page-tabs">${pages.map((_, idx) => `<button type="button" class="coloring-page-tab ${idx === i ? 'active' : ''}" onclick="selectColoringPage(${idx})">صفحة ${idx + 1}</button>`).join('')}</div>`;
+
+    html += `<div class="coloring-controls">
+      <div class="row" style="margin-bottom:8px">
+        <strong style="font-size:13px">صفحة ${i + 1}</strong>
+        <label style="margin:0;font-size:12px">رقم الصفحة الأصلية
+          <input type="number" min="1" max="100" value="${pageNumber}" style="width:80px;display:inline-block;margin-inline-start:6px" onchange="updateColoringField(${i}, 'page', this.value)">
+        </label>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <input type="file" id="coloring_img_${i}" accept="image/*" style="font-size:11px;max-width:100%">
+        <button type="button" class="btn btn-sm" onclick="uploadColoringImage(${i})">⬆ رفع صورة</button>
+        <button type="button" class="btn btn-gray btn-sm" onclick="clearColoringImage(${i})">إزالة</button>
+      </div>
+      <div class="fields-grid">
+        <div><label>تعليمات إنجليزية</label><input value="${escapeHtml(p.promptEn || '')}" oninput="updateColoringField(${i}, 'promptEn', this.value)" style="direction:ltr"></div>
+        <div><label>تعليمات عربية</label><input value="${escapeHtml(p.promptAr || '')}" oninput="updateColoringField(${i}, 'promptAr', this.value)"></div>
+      </div>
+    </div>`;
+
+    html += `<div class="coloring-stage-outer">
+      <div class="coloring-stage">
+        <img src="${escapeHtml(src)}" title="انقر لتحديد مكان المهمة ${pvColoringTaskIndex + 1}" onclick="setColoringTaskPointFromClick(event, ${i}, pvColoringTaskIndex)" onerror="this.style.display='none'">
+        ${tasks.map((t, ti) => `<span class="coloring-marker" style="left:${(Number(t.x)||0)*100}%;top:${(Number(t.y)||0)*100}%;background:${escapeHtml(t.color || '#43A047')}" title="المهمة ${ti + 1}">${ti + 1}</span>`).join('')}
+        <div class="coloring-stage-hint">${tasks.length ? (`المهمة ${pvColoringTaskIndex + 1} — انقر على الصورة لتحديد مكانها`) : 'أضف مهمة تلوين لتحديد الأماكن على الصورة'}</div>
+      </div>
+    </div>`;
+
+    html += `<div class="coloring-tasks-head"><b style="font-size:13px">مهام التلوين الموجّه</b><span class="hint">اختر المهمة ثم انقر الصورة</span></div>`;
+    if (!tasks.length) {
+      html += `<div class="hint" style="margin-bottom:8px">لا توجد مهام بعد. أضف مهمة ثم انقر على الصورة لتحديد مكانها.</div>`;
+    } else {
+      html += tasks.map((t, ti) => {
+        const found = COLORING_PALETTE.find(c => c.name === t.colorName);
+        const hex = (found && found.hex) || t.color || '#43A047';
+        return `<div class="coloring-task-card ${ti === pvColoringTaskIndex ? 'active' : ''}">
+          <div class="coloring-task-title">
+            <span class="coloring-task-badge" style="cursor:pointer" onclick="selectColoringTask(${ti})"><span class="coloring-task-dot" style="background:${escapeHtml(hex)}"></span>المهمة ${ti + 1}${ti === pvColoringTaskIndex ? ' ✓' : ''}</span>
+            <button type="button" class="btn btn-red btn-sm" onclick="deleteColoringTask(${i},${ti})">حذف</button>
           </div>
-          <div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-              <input type="file" id="coloring_img_${i}" accept="image/*" style="font-size:11px;max-width:100%">
-              <button type="button" class="btn btn-gray btn-sm" onclick="uploadColoringImage(${i})">رفع الصورة</button>
-              <button type="button" class="btn btn-gray btn-sm" onclick="clearColoringImage(${i})">إزالة</button>
-            </div>
-            <label>تعليمات إنجليزية</label>
-            <input value="${escapeHtml(p.promptEn || '')}" oninput="updateColoringField(${i}, 'promptEn', this.value)" style="direction:ltr">
-            <label style="margin-top:6px">تعليمات عربية</label>
-            <input value="${escapeHtml(p.promptAr || '')}" oninput="updateColoringField(${i}, 'promptAr', this.value)">
-            <div style="margin-top:8px;padding:8px;border:1px dashed #CBD5E1;border-radius:8px;background:#fff">
-              <div style="font-size:12px;font-weight:700;margin-bottom:6px">مهام التلوين الموجّه (مثل الدروس الأولى)</div>
-              ${(() => {
-                const tasks = getColoringTasks(i);
-                if (!tasks.length) return `<div class="hint" style="margin-bottom:6px">لا توجد مهام بعد. أضف مهمة ثم انقر على الصورة لتحديد مكانها.</div>`;
-                return tasks.map((t,ti) => `
-                  <div style="border:1px solid ${ti===pvColoringTaskIndex?'#16A34A':'#E5E7EB'};border-radius:8px;padding:6px;margin-bottom:6px;background:${ti===pvColoringTaskIndex?'#F0FDF4':'#FAFAFA'}">
-                    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:5px">
-                      <b style="font-size:12px;cursor:pointer" onclick="selectColoringTask(${ti})">المهمة ${ti+1}${ti===pvColoringTaskIndex?' ✓':''}</b>
-                      <button type="button" class="btn btn-red btn-sm" onclick="deleteColoringTask(${i},${ti})">حذف</button>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                      <div><label style="font-size:11px">اسم الجزء</label><input value="${escapeHtml(t.label||'')}" oninput="updateColoringTask(${i},${ti},'label',this.value)"></div>
-                      <div><label style="font-size:11px">اللون المطلوب</label><select onchange="updateColoringTask(${i},${ti},'colorName',this.value)">${COLORING_PALETTE.map(c=>`<option value="${c.name}" ${t.colorName===c.name?'selected':''}>${c.name}</option>`).join('')}</select></div>
-                      <div style="grid-column:1/-1"><label style="font-size:11px">التعليمات (إنجليزي)</label><input value="${escapeHtml(t.instructionEn||'')}" oninput="updateColoringTask(${i},${ti},'instructionEn',this.value)" style="direction:ltr" placeholder="Color the ball red."></div>
-                      <div style="grid-column:1/-1"><label style="font-size:11px">التعليمات (عربي)</label><input value="${escapeHtml(t.instructionAr||'')}" oninput="updateColoringTask(${i},${ti},'instructionAr',this.value)" placeholder="لوّن الكرة بالأحمر."></div>
-                      <div><label style="font-size:11px">X %</label><input type="number" min="0" max="100" value="${Math.round((Number(t.x)||0)*100)}" oninput="updateColoringTask(${i},${ti},'x',(Number(this.value)||0)/100)" style="width:70px"></div>
-                      <div><label style="font-size:11px">Y %</label><input type="number" min="0" max="100" value="${Math.round((Number(t.y)||0)*100)}" oninput="updateColoringTask(${i},${ti},'y',(Number(this.value)||0)/100)" style="width:70px"></div>
-                    </div>
-                  </div>`).join('');
-              })()}
-              <button type="button" class="btn btn-gray btn-sm" onclick="addColoringTask(${i})">+ مهمة تلوين</button>
-              <div class="hint" style="margin-top:4px">انقر على الصورة لتحديد مكان المهمة المختارة. في التطبيق يختار المتعلم اللون ثم يضغط على المكان فيتلون تلقائيًا. يمكنك إضافة أكثر من مهمة لكل صفحة.</div>
-            </div>
+          <div class="fields-grid">
+            <div><label>اسم الجزء</label><input value="${escapeHtml(t.label||'')}" oninput="updateColoringTask(${i},${ti},'label',this.value)"></div>
+            <div><label>اللون المطلوب</label><select onchange="updateColoringTask(${i},${ti},'colorName',this.value)">${COLORING_PALETTE.map(c=>`<option value="${c.name}" ${t.colorName===c.name?'selected':''}>${c.name}</option>`).join('')}</select></div>
+            <div style="grid-column:1/-1"><label>التعليمات (إنجليزي)</label><input value="${escapeHtml(t.instructionEn||'')}" oninput="updateColoringTask(${i},${ti},'instructionEn',this.value)" style="direction:ltr" placeholder="Color the ball red."></div>
+            <div style="grid-column:1/-1"><label>التعليمات (عربي)</label><input value="${escapeHtml(t.instructionAr||'')}" oninput="updateColoringTask(${i},${ti},'instructionAr',this.value)" placeholder="لوّن الكرة بالأحمر."></div>
+            <div><label>X %</label><input type="number" min="0" max="100" value="${Math.round((Number(t.x)||0)*100)}" oninput="updateColoringTask(${i},${ti},'x',(Number(this.value)||0)/100)"></div>
+            <div><label>Y %</label><input type="number" min="0" max="100" value="${Math.round((Number(t.y)||0)*100)}" oninput="updateColoringTask(${i},${ti},'y',(Number(this.value)||0)/100)"></div>
           </div>
-        </div>
-      </div>`;
-    }).join('');
+        </div>`;
+      }).join('');
+    }
+    html += `<button type="button" class="btn btn-green btn-sm" onclick="addColoringTask(${i})">+ مهمة تلوين</button>
+      <div class="hint" style="margin-top:6px">في التطبيق يختار المتعلم اللون ثم يضغط على المكان فيتلون تلقائيًا. يمكنك إضافة أكثر من مهمة لكل صفحة.</div>`;
   }
   html += `<div id="stepSaveMsg" class="save-msg" style="margin-top:8px"></div>`;
   area.innerHTML = html;
