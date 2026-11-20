@@ -2762,6 +2762,8 @@ function getCurrentLessonAppIndex() {
 
 
 // نسخة من خريطة صفحات الرسم في التطبيق حتى تعرض المعاينة نفس الصور الافتراضية.
+const APP_COLORING_DATA = {"1":{"asset":"assets/coloring/coloring_002.jpg","titleEn":"A boy","tasks":[{"label":"boy's shirt","color":"#1E88E5","colorName":"Blue","x":0.5,"y":0.62,"extraPoints":[]},{"label":"shorts","color":"#E53935","colorName":"Red","x":0.5,"y":0.78,"extraPoints":[{"x":0.42,"y":0.78}]},{"label":"shoes","color":"#43A047","colorName":"Green","x":0.42,"y":0.93,"extraPoints":[{"x":0.58,"y":0.93}]}]},"2":{"asset":"assets/coloring/coloring_007.jpg","titleEn":"A girl","tasks":[{"label":"girl's hair","color":"#FDD835","colorName":"Yellow","x":0.45,"y":0.25,"extraPoints":[]},{"label":"book","color":"#E53935","colorName":"Red","x":0.5,"y":0.65,"extraPoints":[]},{"label":"dress","color":"#1E88E5","colorName":"Blue","x":0.55,"y":0.85,"extraPoints":[]}]},"3":{"asset":"assets/coloring/coloring_001.jpg","titleEn":"A cat","tasks":[{"label":"cat","color":"#1E88E5","colorName":"Blue","x":0.5,"y":0.5,"extraPoints":[]},{"label":"paw","color":"#E53935","colorName":"Red","x":0.35,"y":0.63,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"4":{"asset":"assets/coloring/coloring_056.jpg","titleEn":"The boy is eating","tasks":[{"label":"apple","color":"#E53935","colorName":"Red","x":0.4,"y":0.45,"extraPoints":[]},{"label":"shirt","color":"#1E88E5","colorName":"Blue","x":0.55,"y":0.62,"extraPoints":[]},{"label":"shorts","color":"#43A047","colorName":"Green","x":0.55,"y":0.8,"extraPoints":[{"x":0.45,"y":0.8}]}]},"5":{"asset":"assets/coloring/coloring_082.jpg","titleEn":"The boy is drinking","tasks":[{"label":"cup","color":"#E53935","colorName":"Red","x":0.32,"y":0.62,"extraPoints":[]},{"label":"shirt","color":"#1E88E5","colorName":"Blue","x":0.6,"y":0.62,"extraPoints":[]},{"label":"shorts","color":"#43A047","colorName":"Green","x":0.58,"y":0.82,"extraPoints":[{"x":0.42,"y":0.82}]}]},"6":{"asset":"assets/coloring/coloring_048.jpg","titleEn":"A big dog","tasks":[{"label":"dog","color":"#1E88E5","colorName":"Blue","x":0.55,"y":0.55,"extraPoints":[]},{"label":"dog's head","color":"#E53935","colorName":"Red","x":0.42,"y":0.3,"extraPoints":[]},{"label":"collar","color":"#43A047","colorName":"Green","x":0.4,"y":0.61,"extraPoints":[]}]},"7":{"asset":"assets/coloring/coloring_037.jpg","titleEn":"A red apple","tasks":[{"label":"apple","color":"#E53935","colorName":"Red","x":0.5,"y":0.55,"extraPoints":[]},{"label":"leaf","color":"#43A047","colorName":"Green","x":0.64,"y":0.16,"extraPoints":[]},{"label":"stem","color":"#FDD835","colorName":"Yellow","x":0.48,"y":0.13,"extraPoints":[]}]},"8":{"asset":"assets/coloring/coloring_086.jpg","titleEn":"The boy and the girl","tasks":[{"label":"girl's clothes","color":"#E53935","colorName":"Red","x":0.33,"y":0.7,"extraPoints":[{"x":0.33,"y":0.82}]},{"label":"boy's shirt","color":"#1E88E5","colorName":"Blue","x":0.65,"y":0.68,"extraPoints":[]},{"label":"speech bubble","color":"#43A047","colorName":"Green","x":0.15,"y":0.1,"extraPoints":[]}]},"9":{"asset":"assets/coloring/coloring_030.jpg","titleEn":"I am eating","tasks":[{"label":"boy's shirt","color":"#1E88E5","colorName":"Blue","x":0.5,"y":0.6,"extraPoints":[]},{"label":"grapes","color":"#E53935","colorName":"Red","x":0.38,"y":0.42,"extraPoints":[]},{"label":"shorts","color":"#43A047","colorName":"Green","x":0.58,"y":0.7,"extraPoints":[{"x":0.42,"y":0.72}]}]},"10":{"asset":"assets/coloring/coloring_093.jpg","titleEn":"The sun","tasks":[{"label":"sun","color":"#FDD835","colorName":"Yellow","x":0.5,"y":0.5,"extraPoints":[]},{"label":"ray","color":"#FB8C00","colorName":"Orange","x":0.5,"y":0.18,"extraPoints":[]},{"label":"sky","color":"#1E88E5","colorName":"Blue","x":0.05,"y":0.05,"extraPoints":[]}]},"11":{"asset":"assets/coloring/coloring_009.jpg","titleEn":"Boy","tasks":[{"label":"boy","color":"#1E88E5","colorName":"Blue","x":0.521,"y":0.303,"extraPoints":[]},{"label":"legs","color":"#E53935","colorName":"Red","x":0.556,"y":0.584,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"12":{"asset":"assets/coloring/coloring_011.jpg","titleEn":"Girl","tasks":[{"label":"girl","color":"#1E88E5","colorName":"Blue","x":0.502,"y":0.291,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.486,"y":0.134,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"13":{"asset":"assets/coloring/coloring_096.jpg","titleEn":"Father","tasks":[{"label":"father","color":"#1E88E5","colorName":"Blue","x":0.286,"y":0.633,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.691,"y":0.382,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"14":{"asset":"assets/coloring/coloring_054.jpg","titleEn":"Mother","tasks":[{"label":"mother","color":"#1E88E5","colorName":"Blue","x":0.42,"y":0.754,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.446,"y":0.347,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"15":{"asset":"assets/coloring/coloring_025.jpg","titleEn":"Baby","tasks":[{"label":"baby","color":"#1E88E5","colorName":"Blue","x":0.526,"y":0.284,"extraPoints":[]},{"label":"body","color":"#E53935","colorName":"Red","x":0.583,"y":0.645,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"16":{"asset":"assets/coloring/coloring_097.jpg","titleEn":"Grandfather","tasks":[{"label":"grandfather","color":"#1E88E5","colorName":"Blue","x":0.331,"y":0.532,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.353,"y":0.271,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"17":{"asset":"assets/coloring/coloring_051.jpg","titleEn":"Grandmother","tasks":[{"label":"grandmother","color":"#1E88E5","colorName":"Blue","x":0.338,"y":0.665,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.287,"y":0.163,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"18":{"asset":"assets/coloring/coloring_046.jpg","titleEn":"Family","tasks":[{"label":"family","color":"#1E88E5","colorName":"Blue","x":0.25,"y":0.693,"extraPoints":[]},{"label":"person","color":"#E53935","colorName":"Red","x":0.75,"y":0.591,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"19":{"asset":"assets/coloring/coloring_003.jpg","titleEn":"Man","tasks":[{"label":"man","color":"#1E88E5","colorName":"Blue","x":0.345,"y":0.693,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.394,"y":0.297,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]},"20":{"asset":"assets/coloring/coloring_022.jpg","titleEn":"Woman","tasks":[{"label":"woman","color":"#1E88E5","colorName":"Blue","x":0.501,"y":0.77,"extraPoints":[]},{"label":"head","color":"#E53935","colorName":"Red","x":0.746,"y":0.398,"extraPoints":[]},{"label":"background","color":"#43A047","colorName":"Green","x":0.05,"y":0.05,"extraPoints":[]}]}};
+
 const COLORING_PAGES_BY_WORD = {
   // Grammar
   'am': [39, 60, 69, 7, 62],
@@ -2913,6 +2915,27 @@ function defaultColoringPromptAr(page) {
 }
 
 function defaultColoringData(appIndex, word, sentence) {
+  // الدروس الخاصة (1-20) في التطبيق تستخدم بيانات تلوين موجّهة ثابتة
+  // (صورة + مهام تلوين) وليس صفحات الرسم العامة. نعرض نفس البيانات هنا.
+  if (appIndex >= 0 && appIndex < 20 && APP_COLORING_DATA[appIndex + 1]) {
+    const d = APP_COLORING_DATA[appIndex + 1];
+    const m = String(d.asset || '').match(/coloring_(\d+)\.jpg/i);
+    const pageNumber = m ? parseInt(m[1], 10) : 1;
+    const tasks = (d.tasks || []).map(t => Object.assign({}, t, {
+      instructionEn: 'Color the ' + String(t.label || 'part') + ' ' + String(t.colorName || '').toLowerCase() + '.',
+      instructionAr: '',
+      extraPoints: Array.isArray(t.extraPoints) ? t.extraPoints : []
+    }));
+    return {
+      pages: [{
+        page: pageNumber,
+        imageUrl: '',
+        promptEn: tasks.length ? tasks[0].instructionEn : ('Color the ' + (d.titleEn || word || '')),
+        promptAr: '',
+        tasks
+      }]
+    };
+  }
   const pages = defaultColoringPagesFor(appIndex, word);
   return {
     pages: pages.map((pageNumber, i) => ({
@@ -2971,12 +2994,18 @@ function getEffectiveStepData() {
     }
     if (k === 'write') merged.write = Object.assign({}, merged.write, ov[k]);
     if (k === 'coloring') {
-      const basePages = defaults.coloring && Array.isArray(defaults.coloring.pages) ? defaults.coloring.pages : [];
-      const ovPages = Array.isArray(ov[k].pages) ? ov[k].pages : [];
-      merged.coloring = {
-        pages: basePages.map((p, i) => Object.assign({}, p, (ovPages[i] && typeof ovPages[i] === 'object') ? ovPages[i] : {}))
-      };
-      if (!merged.coloring.pages.length && ovPages.length) merged.coloring.pages = ovPages;
+      // في الدروس الخاصة يتجاهل التطبيق أي تعديل على الرسم ويستخدم بياناته
+      // الموجّهة، لذا نعرض نفس البيانات في المعاينة والمحرر.
+      if (appIndex >= 0 && appIndex < 20) {
+        merged.coloring = deepClone(defaults.coloring);
+      } else {
+        const basePages = defaults.coloring && Array.isArray(defaults.coloring.pages) ? defaults.coloring.pages : [];
+        const ovPages = Array.isArray(ov[k].pages) ? ov[k].pages : [];
+        merged.coloring = {
+          pages: basePages.map((p, i) => Object.assign({}, p, (ovPages[i] && typeof ovPages[i] === 'object') ? ovPages[i] : {}))
+        };
+        if (!merged.coloring.pages.length && ovPages.length) merged.coloring.pages = ovPages;
+      }
     }
   });
   return { appIndex, target, defaults, merged, isSpecial };
