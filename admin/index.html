@@ -81,7 +81,7 @@
   /* المعاينة هي الواجهة الأساسية: لا نعرض نماذج الإدخال المنفصلة، بل نعدّل مباشرة داخل المعاينة. */
   #basicFieldsSection, #imageFieldsSection, #basicActionsBar { display:none; }
   /* عناصر Firestore/إنشاء فئات أو دروس: معطّلة تمامًا لأنها قد تخرب الدروس */
-  #newCatForm, #newLessonForm { display:none !important; }
+  #newCatForm, #newLessonForm, #legacyQuestionsCard { display:none !important; }
   /* تكبير/تصغير الصور داخل أطر المعاينة */
   .pv-image, .pv-choice-img, .pv-match-img { position:relative; }
   [data-zoom-key] { transform-origin:center center; transition:transform .12s ease-out; }
@@ -167,6 +167,28 @@
   .status-chip.error .dot { background:#DC2626; }
   @keyframes pulse { 50% { opacity:.35; } }
   .lesson-picker { width:auto; min-width:210px; max-width:280px; margin:0; padding:8px 10px; font-size:12px; }
+  .editor-actionbar {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:8px 12px; margin-bottom:12px; border:1px solid #E5E7EB;
+    border-radius:12px; background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.03);
+  }
+  .action-label { font-size:11px; font-weight:900; color:#6B7280; text-transform:uppercase; letter-spacing:.04em; }
+  .smart-note { font-size:11.5px; color:#166534; background:#ECFDF3; border:1px solid #BBF7D0; border-radius:999px; padding:5px 10px; font-weight:700; }
+  .smart-panel {
+    border:1px solid #BBF7D0; background:linear-gradient(180deg,#F0FDF4,#ECFDF3);
+    border-radius:12px; padding:10px 12px; margin-bottom:12px;
+  }
+  .smart-title { font-size:12px; font-weight:900; color:#166534; margin-bottom:3px; }
+  .smart-hint { font-size:12px; color:#374151; line-height:1.5; }
+  .adv-fields { grid-column:1/-1; border-top:1px dashed #E5E7EB; padding-top:6px; margin-top:2px; }
+  .adv-fields summary { cursor:pointer; font-size:11.5px; font-weight:800; color:#6B7280; list-style:none; }
+  .adv-fields summary::-webkit-details-marker { display:none; }
+  .adv-fields summary::before { content:'⚙️ '; }
+  .adv-fields[open] summary { color:#111827; margin-bottom:6px; }
+  .pv-tab .tab-icon { margin-inline-end:3px; }
+  @media (min-width:901px) {
+    .editor-form-pane .pane-body, .editor-preview-pane .pane-body { max-height:calc(100vh - 230px); overflow:auto; }
+  }
   .pv-word.pv-editable:hover::after, .pv-sentence.pv-editable:hover::after {
     content:'✎'; font-size:11px; color:#2563EB; margin-inline-start:6px; vertical-align:super;
   }
@@ -265,7 +287,7 @@
     <div id="editorView" class="hidden">
       <div class="editor-shell">
         <div class="editor-topbar">
-          <button class="btn btn-gray btn-sm" onclick="backToLessons()">← رجوع</button>
+          <button class="btn btn-gray btn-sm" onclick="backToLessons()" title="العودة إلى الدروس">← رجوع</button>
           <div class="editor-title-wrap">
             <h2 id="editorTitle">تحرير الدرس</h2>
             <div class="editor-subtitle" id="editorSubtitle">تعديل مباشر من المعاينة — يُنشر تلقائيًا</div>
@@ -274,12 +296,13 @@
             <option value="">انتقال سريع...</option>
           </select>
           <div class="status-chip" id="publishStatusChip"><span class="dot"></span><span id="publishStatusText">جاهز</span></div>
-          <div class="toolbar-group">
-            <button class="btn btn-sm" onclick="exportLessonBundleJson()" title="حفظ ونشر الآن إلى GitHub">نشر الآن</button>
-            <button class="btn btn-gray btn-sm" onclick="location.reload()">إعادة تحميل</button>
-            <span class="muted" style="font-size:12px">اللوحة أداة تعديل دروس التطبيق فقط</span>
-            <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()">إرجاع الواجهة</button>
-          </div>
+        </div>
+        <div class="editor-actionbar">
+          <span class="action-label">إجراءات سريعة</span>
+          <button class="btn btn-green btn-sm" onclick="exportLessonBundleJson()" title="نشر الحزمة الآن">⚡ نشر الآن</button>
+          <button class="btn btn-gray btn-sm" onclick="location.reload()" title="إعادة تحميل اللوحة من الحزمة المنشورة">↻ إعادة تحميل</button>
+          <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()" title="إرجاع الواجهة الحالية إلى إعدادات التطبيق">⟲ إرجاع الواجهة</button>
+          <span class="smart-note">كل تعديل يُحفظ ويُنشر تلقائيًا خلال ثانية</span>
         </div>
 
         <div class="editor-split">
@@ -308,13 +331,13 @@
                     </div>
 
                     <div class="pv-step-tabs" id="pvStepTabs">
-                      <button type="button" class="pv-tab active" data-step="intro" onclick="setPreviewStep('intro')">مقدمة</button>
-                      <button type="button" class="pv-tab" data-step="listen" onclick="setPreviewStep('listen')">استماع</button>
-                      <button type="button" class="pv-tab" data-step="speak" onclick="setPreviewStep('speak')">تحدث</button>
-                      <button type="button" class="pv-tab" data-step="match" onclick="setPreviewStep('match')">مطابقة</button>
-                      <button type="button" class="pv-tab" data-step="write" onclick="setPreviewStep('write')">كتابة</button>
-                      <button type="button" class="pv-tab" data-step="choice" onclick="setPreviewStep('choice')">اختيار</button>
-                      <button type="button" class="pv-tab" data-step="coloring" onclick="setPreviewStep('coloring')">رسم</button>
+                      <button type="button" class="pv-tab active" data-step="intro" onclick="setPreviewStep('intro')"><span class="tab-icon">🎧</span>مقدمة</button>
+                      <button type="button" class="pv-tab" data-step="listen" onclick="setPreviewStep('listen')"><span class="tab-icon">🔊</span>استماع</button>
+                      <button type="button" class="pv-tab" data-step="speak" onclick="setPreviewStep('speak')"><span class="tab-icon">🗣️</span>تحدث</button>
+                      <button type="button" class="pv-tab" data-step="match" onclick="setPreviewStep('match')"><span class="tab-icon">🔗</span>مطابقة</button>
+                      <button type="button" class="pv-tab" data-step="write" onclick="setPreviewStep('write')"><span class="tab-icon">✍️</span>كتابة</button>
+                      <button type="button" class="pv-tab" data-step="choice" onclick="setPreviewStep('choice')"><span class="tab-icon">✅</span>اختيار</button>
+                      <button type="button" class="pv-tab" data-step="coloring" onclick="setPreviewStep('coloring')"><span class="tab-icon">🎨</span>رسم</button>
                     </div>
 
                     <div class="pv-card" id="pvDynamicCard">
@@ -395,20 +418,22 @@
                   <button class="btn btn-gray" onclick="backToLessons()">رجوع</button>
                 </div>
 
-                <div class="section-divider"></div>
+                <div class="smart-panel" id="smartPanel">
+                  <div class="smart-title">⚡ مساعد التحرير الذكي</div>
+                  <div class="smart-hint" id="smartHint">اختر واجهة من المعاينة، ثم عدّل النصوص والصور هنا. كل تغيير يُنشر تلقائيًا.</div>
+                </div>
                 <div class="form-section">
-                  <div class="form-section-title">تحرير واجهات الدرس (من البداية للنهاية)</div>
-                  <div class="hint" style="margin-bottom:8px">اختر الواجهة من تبويبات المعاينة (مقدمة/تحدث/استماع/اختيار/مطابقة/كتابة/رسم) ثم عدّل محتواها وصورها هنا.</div>
+                  <div class="form-section-title" id="stepEditorTitle">محرر الواجهة</div>
                   <div id="stepEditorArea"></div>
                   <div class="actions-bar" style="margin-top:10px">
-                    <button class="btn btn-green btn-sm" onclick="saveStepOverrides()">حفظ تعديلات الواجهات</button>
-                    <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()">إرجاع الواجهة الافتراضية</button>
+                    <button class="btn btn-green btn-sm" onclick="saveStepOverrides()">✓ حفظ ونشر الواجهة</button>
+                    <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()">⟲ إرجاع الافتراضي</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="pane-card" style="margin-top:12px">
+            <div class="pane-card" id="legacyQuestionsCard" style="margin-top:12px">
               <div class="pane-header"><span>أسئلة الدرس (اختياري)</span></div>
               <div class="pane-body">
                 <div class="qbtns">
@@ -3825,17 +3850,39 @@ function setColoringTasks(pageIdx, tasks) {
   saveColoringPages(pages);
 }
 
-function addColoringTask(pageIdx) {
-  const tasks = getColoringTasks(pageIdx);
-  tasks.push({
+function suggestColoringTaskDefaults() {
+  const word = normText(currentLessonData && currentLessonData.word).toLowerCase();
+  const ar = {
+    red: 'بالأحمر', blue: 'بالأزرق', green: 'بالأخضر',
+    yellow: 'بالأصفر', orange: 'بالبرتقالي', pink: 'بالوردي'
+  };
+  const name = word.charAt(0).toUpperCase() + word.slice(1);
+  const found = COLORING_PALETTE.find(c => c.name.toLowerCase() === word);
+  if (found && ar[word]) {
+    return {
+      label: 'ball',
+      colorName: found.name,
+      color: found.hex,
+      instructionEn: 'Color the ball ' + word + '.',
+      instructionAr: 'لوّن الكرة ' + ar[word] + '.'
+    };
+  }
+  return {
     label: 'part',
     colorName: 'Red',
     color: '#E53935',
-    x: 0.5,
-    y: 0.5,
     instructionEn: '',
     instructionAr: ''
-  });
+  };
+}
+
+function addColoringTask(pageIdx) {
+  const tasks = getColoringTasks(pageIdx);
+  const smart = suggestColoringTaskDefaults();
+  tasks.push(Object.assign({
+    x: 0.5,
+    y: 0.5
+  }, smart));
   pvColoringTaskIndex = tasks.length - 1;
   setColoringTasks(pageIdx, tasks);
   showSaveStatus('تمت إضافة مهمة تلوين — انقر على الصورة لتحديد مكانها', false);
@@ -4053,6 +4100,7 @@ function zoomFromButton(btn) {
   if (target) target.zoom = rounded;
   imageZoomState[key] = rounded;
   applyImageZooms();
+  updateSmartPanel();
   try {
     saveLocalLessonDraft(true);
     scheduleAutoPublish(250);
@@ -4066,6 +4114,41 @@ function applyImageZooms() {
     const z = (target && Number(target.zoom)) || imageZoomState[key] || 1;
     img.style.transform = 'scale(' + z + ')';
   });
+}
+function updateSmartPanel() {
+  try {
+    const hintEl = document.getElementById('smartHint');
+    const titleEl = document.getElementById('stepEditorTitle');
+    if (!hintEl) return;
+    const step = currentPreviewStep || 'intro';
+    const names = {
+      intro: 'المقدمة', listen: 'الاستماع', speak: 'التحدث',
+      match: 'المطابقة', write: 'الكتابة', choice: 'الاختيار', coloring: 'الرسم'
+    };
+    const tips = {
+      intro: 'عدّل كلمة/جملة كل بطاقة مباشرة من المعاينة. أضف بطاقة جديدة إن احتجت.',
+      listen: 'تأكد أن الإجابة الصحيحة معلّمة بالإطار الأخضر، واكتب الجملة المسموعة بوضوح.',
+      speak: 'غيّر الصورة أو النطق هنا؛ التطبيق سيستخدمها في خطوة التحدث.',
+      match: 'كل زوج = صورة + كلمة. احرص على أن تكون الصور مختلفة.',
+      write: 'الكتابة تعتمد على الكلمة المطلوبة؛ تأكد أنها مطابقة لصورة الدرس.',
+      choice: 'السؤال وخيارات الصور قابلة للتعديل. الإجابة الصحيحة بالإطار الأخضر.',
+      coloring: 'ارفع صورة، ثم أضف «مهمة تلوين» واختر اللون ومكان التلوين بالنقر على الصورة.'
+    };
+    let extra = '';
+    try {
+      const eff = getEffectiveStepData();
+      const s = eff.merged || {};
+      const count = step === 'intro' ? ((s.intro && s.intro.items || []).length)
+        : step === 'listen' ? ((s.listen && s.listen.choices || []).length)
+        : step === 'match' ? ((s.match && s.match.pairs || []).length)
+        : step === 'choice' ? ((s.choice && s.choice.options || []).length)
+        : step === 'coloring' ? ((s.coloring && s.coloring.pages || []).length)
+        : 1;
+      extra = count ? ` — العناصر الحالية: ${count}` : '';
+    } catch (_) {}
+    if (titleEl) titleEl.textContent = `محرر ${names[step] || step}${extra}`;
+    hintEl.textContent = (tips[step] || tips.intro) + ' كل تعديل يُنشر تلقائيًا.';
+  } catch (_) {}
 }
 function zoomControls(key) {
   return `<div class="zoom-badge" data-zoom-controls="${escapeHtml(key)}" onclick="event.stopPropagation()">
@@ -4286,6 +4369,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
     `;
   }
   applyImageZooms();
+  updateSmartPanel();
 }
 
 function fillLessonContentForm(d) {
@@ -4656,8 +4740,12 @@ function renderStepItemEditor(step, idx, item, opts = {}) {
             <div><label style="font-size:12px;color:#374151">ملف الصورة (أصل)</label><input value="${escapeHtml(item.imageFile || '')}" oninput="updateStepItemField('${step}',${idx},'imageFile',this.value)"></div>
             ${showSentence ? `<div style="grid-column:1/-1"><label style="font-size:12px;color:#374151">الجملة</label><input value="${escapeHtml(item.sentence || '')}" oninput="updateStepItemField('${step}',${idx},'sentence',this.value)"></div>` : ''}
             ${showTranslation ? `<div style="grid-column:1/-1"><label style="font-size:12px;color:#374151">الترجمة</label><input value="${escapeHtml(item.translation || '')}" oninput="updateStepItemField('${step}',${idx},'translation',this.value)"></div>` : ''}
-            <div><label style="font-size:12px;color:#374151">صورة مجمعة؟ (isPack)</label><select onchange="updateStepItemField('${step}',${idx},'isPack',this.value==='1')"><option value="0" ${!item.isPack?'selected':''}>لا</option><option value="1" ${item.isPack?'selected':''}>نعم</option></select></div>
-            <div><label style="font-size:12px;color:#374151">indexInPack</label><input type="number" value="${Number(item.indexInPack||0)}" oninput="updateStepItemField('${step}',${idx},'indexInPack',parseInt(this.value||'0',10)||0)"></div>
+            <details class="adv-fields"><summary>خيارات متقدمة (ملف الصورة الأصلي)</summary>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label style="font-size:12px;color:#374151">صورة مجمعة؟ (isPack)</label><select onchange="updateStepItemField('${step}',${idx},'isPack',this.value==='1')"><option value="0" ${!item.isPack?'selected':''}>لا</option><option value="1" ${item.isPack?'selected':''}>نعم</option></select></div>
+                <div><label style="font-size:12px;color:#374151">indexInPack</label><input type="number" value="${Number(item.indexInPack||0)}" oninput="updateStepItemField('${step}',${idx},'indexInPack',parseInt(this.value||'0',10)||0)"></div>
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -4772,6 +4860,7 @@ function renderStepEditor() {
   html += `<div id="stepSaveMsg" class="save-msg" style="margin-top:8px"></div>`;
   area.innerHTML = html;
   applyImageZooms();
+  updateSmartPanel();
   // attach special handling for speak/write item 0 edits: renderStepItemEditor uses updateStepItemField but we didn't support speak/write; patch by re-binding? easier: after render, no - easier to handle in updateStepItemField.
 }
 
