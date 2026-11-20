@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-20T17:10:39.755Z",
+  "generatedAt": "2026-11-20T17:36:22.850Z",
   "source": "lingo-gold-admin-export",
   "lessons": [
     {
@@ -247,7 +247,7 @@
       "appIndex": 1,
       "word": "A girl",
       "sentence": "A girl.",
-      "spoken": "",
+      "spoken": "A girl.",
       "translation": "",
       "options": [
         "Girl",
@@ -371,7 +371,11 @@
             }
           ],
           "imageUrl": "",
-          "word": "A girl"
+          "word": "A girl",
+          "translation": "",
+          "imageFile": "n02",
+          "isPack": true,
+          "indexInPack": 0
         },
         "match": {
           "pairs": [
@@ -469,6 +473,51 @@
           "isPack": true,
           "indexInPack": 0,
           "imageUrl": ""
+        },
+        "coloring": {
+          "pages": [
+            {
+              "page": 7,
+              "imageUrl": "",
+              "promptEn": "Color the girl's hair yellow.",
+              "promptAr": "",
+              "tasks": [
+                {
+                  "label": "girl's hair",
+                  "color": "#FDD835",
+                  "colorName": "Yellow",
+                  "x": 0.506,
+                  "y": 0.321,
+                  "extraPoints": [],
+                  "instructionEn": "Color the girl's hair yellow.",
+                  "instructionAr": "",
+                  "imageUrl": ""
+                },
+                {
+                  "label": "book",
+                  "color": "#E53935",
+                  "colorName": "Red",
+                  "x": 0.5,
+                  "y": 0.65,
+                  "extraPoints": [],
+                  "instructionEn": "Color the book red.",
+                  "instructionAr": "",
+                  "imageUrl": ""
+                },
+                {
+                  "label": "dress",
+                  "color": "#1E88E5",
+                  "colorName": "Blue",
+                  "x": 0.55,
+                  "y": 0.85,
+                  "extraPoints": [],
+                  "instructionEn": "Color the dress blue.",
+                  "instructionAr": "",
+                  "imageUrl": ""
+                }
+              ]
+            }
+          ]
         }
       },
       "imageUrl": ""
@@ -17197,7 +17246,7 @@
               "word": "Tree",
               "sentence": "The Tree is green.",
               "spoken": "The Tree is green.",
-              "translation": "الشجرة خضراء.",
+              "translation": "الشج��ة خضراء.",
               "imageFile": "n55",
               "isPack": true,
               "indexInPack": 0,
@@ -21391,7 +21440,7 @@
               "word": "Dinner",
               "sentence": "We eat Raise hand.",
               "spoken": "We eat Raise hand.",
-              "translation": "نحن نأكل عشاء.",
+              "translation": "��حن نأكل عشاء.",
               "imageFile": "n74",
               "isPack": true,
               "indexInPack": 0,
@@ -24511,7 +24560,7 @@
       "word": "Police Officer",
       "sentence": "He is a Police Officer.",
       "spoken": "",
-      "translation": "هو شرطي.",
+      "translation": "هو شرط��.",
       "options": [
         "Police Officer",
         "Pilot",

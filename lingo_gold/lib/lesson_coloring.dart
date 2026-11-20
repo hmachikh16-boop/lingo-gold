@@ -226,7 +226,7 @@ List<Offset> _parseExtraPoints(dynamic raw) {
 }
 
 /// تعديلات لوحة التحكم: مهام تلوين موجّهة لصفحة عادية.
-LessonColoringData? _customColoringData(
+LessonColoringData? customColoringDataFromOverride(
   Map<String, dynamic>? pageOverride,
   String asset,
   String imageUrl,
@@ -349,7 +349,7 @@ class ColoringStep extends StatelessWidget {
       }
     }
 
-    final customData = _customColoringData(
+    final customData = customColoringDataFromOverride(
       pageOverride,
       asset,
       imageUrl,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'data.dart';
 import 'lesson_choice.dart';
 import 'lesson_coloring.dart';
+import 'lesson_coloring_pages.dart';
 import 'lesson_coloring_step.dart';
 import 'lesson_content_service.dart';
 import 'lesson_intro.dart';
@@ -1180,8 +1181,21 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
       }
       case 5:
         if (_isSpecialLesson(_lessonIndex)) {
+          Map<String, dynamic>? pageOverride;
+          final rawPages = coloringOv is Map ? coloringOv['pages'] : null;
+          if (rawPages is List && rawPages.isNotEmpty && rawPages.first is Map) {
+            pageOverride = Map<String, dynamic>.from(rawPages.first as Map);
+          }
+          final defaultAsset = lessonColoringDataFor(_lessonIndex).asset;
+          final customData = customColoringDataFromOverride(
+            pageOverride,
+            defaultAsset,
+            (pageOverride?['imageUrl'] ?? '').toString().trim(),
+            lesson.word,
+          );
           return LessonColoringStep(
             lessonIndex: _lessonIndex,
+            customData: customData,
             onComplete: () {
               SoundService.instance.playCorrect();
               SoundService.instance.playComplete();

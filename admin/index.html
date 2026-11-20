@@ -2994,18 +2994,12 @@ function getEffectiveStepData() {
     }
     if (k === 'write') merged.write = Object.assign({}, merged.write, ov[k]);
     if (k === 'coloring') {
-      // في الدروس الخاصة يتجاهل التطبيق أي تعديل على الرسم ويستخدم بياناته
-      // الموجّهة، لذا نعرض نفس البيانات في المعاينة والمحرر.
-      if (appIndex >= 0 && appIndex < 20) {
-        merged.coloring = deepClone(defaults.coloring);
-      } else {
-        const basePages = defaults.coloring && Array.isArray(defaults.coloring.pages) ? defaults.coloring.pages : [];
-        const ovPages = Array.isArray(ov[k].pages) ? ov[k].pages : [];
-        merged.coloring = {
-          pages: basePages.map((p, i) => Object.assign({}, p, (ovPages[i] && typeof ovPages[i] === 'object') ? ovPages[i] : {}))
-        };
-        if (!merged.coloring.pages.length && ovPages.length) merged.coloring.pages = ovPages;
-      }
+      const basePages = defaults.coloring && Array.isArray(defaults.coloring.pages) ? defaults.coloring.pages : [];
+      const ovPages = Array.isArray(ov[k].pages) ? ov[k].pages : [];
+      merged.coloring = {
+        pages: basePages.map((p, i) => Object.assign({}, p, (ovPages[i] && typeof ovPages[i] === 'object') ? ovPages[i] : {}))
+      };
+      if (!merged.coloring.pages.length && ovPages.length) merged.coloring.pages = ovPages;
     }
   });
   return { appIndex, target, defaults, merged, isSpecial };
@@ -4895,7 +4889,7 @@ function renderStepEditor() {
     const tasks = getColoringTasks(i);
     if (pvColoringTaskIndex >= tasks.length) pvColoringTaskIndex = Math.max(0, tasks.length - 1);
 
-    html += `<div class="hint" style="margin-bottom:8px">صفحات الرسم الخمس. اختر الصفحة، ثم انقر على الصورة الكبيرة لتحديد مكان التلوين.${eff.isSpecial ? ' (الدروس 1-10 تستخدم الرسم الموجّه داخل التطبيق، لذا تُطبّق هذه التعديلات على الدروس العادية.)' : ''}</div>`;
+    html += `<div class="hint" style="margin-bottom:8px">اختر الصفحة، ثم انقر على الصورة الكبيرة لتحديد مكان التلوين.${eff.isSpecial ? ' (الدروس الخاصة تستخدم التلوين الموجّه: الصورة والمهام والتعليمات التي تضبطها هنا تظهر في التطبيق.)' : ''}</div>`;
     html += `<div class="coloring-page-tabs">${pages.map((_, idx) => `<button type="button" class="coloring-page-tab ${idx === i ? 'active' : ''}" onclick="selectColoringPage(${idx})">صفحة ${idx + 1}</button>`).join('')}</div>`;
 
     html += `<div class="coloring-controls">
