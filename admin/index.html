@@ -16,13 +16,35 @@
   .container { max-width: none; width:100%; margin:0; padding:12px 18px 40px; }
   .container > h1 { margin:4px 0 12px; font-size:20px; }
   .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-  .btn { background: #000; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; }
-  .btn-sm { padding: 6px 10px; font-size: 13px; }
+  .btn { background: #000; color: #fff; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; box-shadow:0 1px 2px rgba(0,0,0,.08); transition:transform .12s, box-shadow .12s, background .12s; }
+  .btn:hover { transform: translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.12); }
+  .btn:active { transform: translateY(0); }
+  .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
   .btn-gray { background: #E5E7EB; color: #000; }
   .btn-green { background: #16A34A; color: #fff; }
   .btn-red { background: #DC2626; color: #fff; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
-  input, textarea, select { width: 100%; padding: 10px; border: 1px solid #E5E7EB; border-radius: 8px; margin: 6px 0; font-size: 14px; }
+  label { font-size:12px; font-weight:700; color:#374151; }
+  input, textarea, select {
+    width: 100%; padding: 9px 11px; border: 1px solid #D1D5DB; border-radius: 10px;
+    margin: 6px 0; font-size: 13px; background:#fff; color:#111827;
+    box-shadow: 0 1px 2px rgba(0,0,0,.03);
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  input:hover, textarea:hover, select:hover { border-color:#9CA3AF; }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:#111827; box-shadow:0 0 0 3px rgba(17,24,39,.08); }
+  input[type="file"] {
+    padding:6px; border:1px dashed #CBD5E1; background:#F9FAFB; border-radius:10px;
+    font-size:11px; color:#6B7280;
+  }
+  input[type="file"]::file-selector-button {
+    border:0; background:#111827; color:#fff; padding:6px 10px; border-radius:8px;
+    font-weight:800; font-size:11px; margin-inline-end:8px; cursor:pointer;
+  }
+  input[type="file"]::-webkit-file-upload-button {
+    border:0; background:#111827; color:#fff; padding:6px 10px; border-radius:8px;
+    font-weight:800; font-size:11px; margin-inline-end:8px; cursor:pointer;
+  }
   .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
   .cat { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 16px 10px; text-align: center; cursor: pointer; transition: background .1s; }
@@ -134,7 +156,7 @@
   .fields-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
   .actions-bar { display:flex; gap:8px; flex-wrap:wrap; padding-top:10px; border-top:1px solid #E5E7EB; margin-top:6px; }
   .hint { font-size:12px; color:#6B7280; }
-  .img-upload-box { border:1px dashed #D1D5DB; border-radius:12px; padding:10px; background:#FAFAFA; }
+  .img-upload-box { border:1px dashed #CBD5E1; border-radius:12px; padding:12px; background:linear-gradient(180deg,#fff,#F9FAFB); box-shadow:0 1px 3px rgba(0,0,0,.04); }
   .img-upload-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .section-divider { height:1px; background:#E5E7EB; margin:14px 0; }
   @media (max-width: 760px) {
@@ -219,9 +241,9 @@
     background:rgba(17,24,39,.82); color:#fff; padding:5px 10px;
     border-radius:999px; font-size:11px; font-weight:700;
   }
-  .coloring-controls { border:1px solid #E5E7EB; border-radius:10px; padding:7px 8px; margin-bottom:8px; background:#fff; }
-  .coloring-controls .row { margin-bottom:5px !important; gap:6px; }
-  .coloring-controls .fields-grid { gap:6px; }
+  .coloring-controls { border:1px solid #E5E7EB; border-radius:12px; padding:10px; margin-bottom:8px; background:linear-gradient(180deg,#fff,#F9FAFB); box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .coloring-controls > .row { margin-bottom:6px !important; gap:8px; padding:6px 8px; border:1px solid #F3F4F6; border-radius:10px; background:#fff; }
+  .coloring-controls .fields-grid { gap:8px; }
   .coloring-controls label { display:inline-flex; align-items:center; gap:5px; margin:0; font-size:11px; white-space:nowrap; }
   .coloring-controls input, .coloring-controls select { height:26px; padding:3px 7px; margin:0; font-size:12px; }
   .coloring-controls input[type="file"] { height:auto; padding:2px; font-size:10px; }
