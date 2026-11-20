@@ -141,7 +141,7 @@
   },
   {
     "word": "Boy",
-    "sentence": "I am a ___.",
+    "sentence": "I am a Boy.",
     "options": [
       "Boy",
       "Girl",
@@ -155,7 +155,7 @@
   },
   {
     "word": "Girl",
-    "sentence": "She is a ___.",
+    "sentence": "She is a Girl.",
     "options": [
       "Boy",
       "Girl",
@@ -169,7 +169,7 @@
   },
   {
     "word": "Father",
-    "sentence": "This is my ___.",
+    "sentence": "This is my Father.",
     "options": [
       "Father",
       "Mother",
@@ -183,7 +183,7 @@
   },
   {
     "word": "Mother",
-    "sentence": "This is my ___.",
+    "sentence": "This is my Mother.",
     "options": [
       "Father",
       "Mother",
@@ -197,7 +197,7 @@
   },
   {
     "word": "Baby",
-    "sentence": "The ___ is small.",
+    "sentence": "The Baby is small.",
     "options": [
       "Baby",
       "Boy",
@@ -211,7 +211,7 @@
   },
   {
     "word": "Grandfather",
-    "sentence": "He is my ___.",
+    "sentence": "He is my Grandfather.",
     "options": [
       "Grandfather",
       "Grandmother",
@@ -225,7 +225,7 @@
   },
   {
     "word": "Grandmother",
-    "sentence": "She is my ___.",
+    "sentence": "She is my Grandmother.",
     "options": [
       "Grandfather",
       "Grandmother",
@@ -239,7 +239,7 @@
   },
   {
     "word": "Family",
-    "sentence": "This is my ___.",
+    "sentence": "This is my Family.",
     "options": [
       "Family",
       "Father",
@@ -253,7 +253,7 @@
   },
   {
     "word": "Man",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Man.",
     "options": [
       "Man",
       "Woman",
@@ -267,7 +267,7 @@
   },
   {
     "word": "Woman",
-    "sentence": "She is a ___.",
+    "sentence": "She is a Woman.",
     "options": [
       "Woman",
       "Man",
@@ -281,7 +281,7 @@
   },
   {
     "word": "Daughter",
-    "sentence": "She is my ___.",
+    "sentence": "She is my Daughter.",
     "options": [
       "Daughter",
       "Mother",
@@ -295,7 +295,7 @@
   },
   {
     "word": "Happy",
-    "sentence": "The boy is ___.",
+    "sentence": "The boy is Happy.",
     "options": [
       "Happy",
       "Sad",
@@ -309,7 +309,7 @@
   },
   {
     "word": "Sad",
-    "sentence": "The boy is ___.",
+    "sentence": "The boy is Sad.",
     "options": [
       "Happy",
       "Sad",
@@ -323,7 +323,7 @@
   },
   {
     "word": "Hello",
-    "sentence": "He says ___.",
+    "sentence": "He says Hello.",
     "options": [
       "Hello",
       "Goodbye",
@@ -337,7 +337,7 @@
   },
   {
     "word": "Run",
-    "sentence": "The boy can ___.",
+    "sentence": "The boy can Run.",
     "options": [
       "Run",
       "Jump",
@@ -351,7 +351,7 @@
   },
   {
     "word": "Jump",
-    "sentence": "The girl can ___.",
+    "sentence": "The girl can Jump.",
     "options": [
       "Jump",
       "Run",
@@ -365,7 +365,7 @@
   },
   {
     "word": "Play",
-    "sentence": "The children ___.",
+    "sentence": "The children Play.",
     "options": [
       "Play",
       "Sleep",
@@ -379,7 +379,7 @@
   },
   {
     "word": "Eat",
-    "sentence": "The boy can ___.",
+    "sentence": "The boy can Eat.",
     "options": [
       "Eat",
       "Drink",
@@ -393,7 +393,7 @@
   },
   {
     "word": "Drink",
-    "sentence": "The boy can ___.",
+    "sentence": "The boy can Drink.",
     "options": [
       "Drink",
       "Eat",
@@ -407,7 +407,7 @@
   },
   {
     "word": "Sleep",
-    "sentence": "The boy can ___.",
+    "sentence": "The boy can Sleep.",
     "options": [
       "Sleep",
       "Run",
@@ -421,7 +421,7 @@
   },
   {
     "word": "Apple",
-    "sentence": "The ___ is red.",
+    "sentence": "The Apple is red.",
     "options": [
       "Apple",
       "Banana",
@@ -435,7 +435,7 @@
   },
   {
     "word": "Banana",
-    "sentence": "The ___ is yellow.",
+    "sentence": "The Banana is yellow.",
     "options": [
       "Banana",
       "Apple",
@@ -449,7 +449,7 @@
   },
   {
     "word": "Bread",
-    "sentence": "I eat ___.",
+    "sentence": "I eat Bread.",
     "options": [
       "Bread",
       "Milk",
@@ -463,7 +463,7 @@
   },
   {
     "word": "Milk",
-    "sentence": "I drink ___.",
+    "sentence": "I drink Milk.",
     "options": [
       "Milk",
       "Bread",
@@ -477,7 +477,7 @@
   },
   {
     "word": "Egg",
-    "sentence": "The ___ is white.",
+    "sentence": "The Egg is white.",
     "options": [
       "Egg",
       "Milk",
@@ -491,7 +491,7 @@
   },
   {
     "word": "Cheese",
-    "sentence": "I like ___.",
+    "sentence": "I like Cheese.",
     "options": [
       "Cheese",
       "Bread",
@@ -505,7 +505,7 @@
   },
   {
     "word": "Orange",
-    "sentence": "The ___ is orange.",
+    "sentence": "The Orange is orange.",
     "options": [
       "Orange",
       "Apple",
@@ -519,7 +519,7 @@
   },
   {
     "word": "Strawberry",
-    "sentence": "The ___ is red.",
+    "sentence": "The Strawberry is red.",
     "options": [
       "Strawberry",
       "Banana",
@@ -533,7 +533,7 @@
   },
   {
     "word": "Grapes",
-    "sentence": "I like ___.",
+    "sentence": "I like Grapes.",
     "options": [
       "Grapes",
       "Cheese",
@@ -547,7 +547,7 @@
   },
   {
     "word": "Cookie",
-    "sentence": "I eat a ___.",
+    "sentence": "I eat a Cookie.",
     "options": [
       "Cookie",
       "Apple",
@@ -561,7 +561,7 @@
   },
   {
     "word": "Ice Cream",
-    "sentence": "I like ___.",
+    "sentence": "I like Ice Cream.",
     "options": [
       "Ice Cream",
       "Bread",
@@ -575,7 +575,7 @@
   },
   {
     "word": "Juice",
-    "sentence": "I drink ___.",
+    "sentence": "I drink Juice.",
     "options": [
       "Juice",
       "Milk",
@@ -589,7 +589,7 @@
   },
   {
     "word": "Cake",
-    "sentence": "The ___ is sweet.",
+    "sentence": "The Cake is sweet.",
     "options": [
       "Cake",
       "Bread",
@@ -603,7 +603,7 @@
   },
   {
     "word": "Lemon",
-    "sentence": "The ___ is yellow.",
+    "sentence": "The Lemon is yellow.",
     "options": [
       "Lemon",
       "Banana",
@@ -617,7 +617,7 @@
   },
   {
     "word": "Cup",
-    "sentence": "This is a ___.",
+    "sentence": "This is a Cup.",
     "options": [
       "Cup",
       "Book",
@@ -631,7 +631,7 @@
   },
   {
     "word": "Kitchen",
-    "sentence": "This is a ___.",
+    "sentence": "This is a Kitchen.",
     "options": [
       "Kitchen",
       "House",
@@ -645,7 +645,7 @@
   },
   {
     "word": "Oranges",
-    "sentence": "I like ___.",
+    "sentence": "I like Oranges.",
     "options": [
       "Oranges",
       "Apples",
@@ -659,7 +659,7 @@
   },
   {
     "word": "Strawberries",
-    "sentence": "I like ___.",
+    "sentence": "I like Strawberries.",
     "options": [
       "Strawberries",
       "Oranges",
@@ -673,7 +673,7 @@
   },
   {
     "word": "Apples",
-    "sentence": "The ___ are red.",
+    "sentence": "The Apples are red.",
     "options": [
       "Apples",
       "Bananas",
@@ -687,7 +687,7 @@
   },
   {
     "word": "Red",
-    "sentence": "The apple is ___.",
+    "sentence": "The apple is Red.",
     "options": [
       "Red",
       "Blue",
@@ -701,7 +701,7 @@
   },
   {
     "word": "Dog",
-    "sentence": "The ___ is small.",
+    "sentence": "The Dog is small.",
     "options": [
       "Dog",
       "Cat",
@@ -715,7 +715,7 @@
   },
   {
     "word": "Cat",
-    "sentence": "The ___ is white.",
+    "sentence": "The Cat is white.",
     "options": [
       "Cat",
       "Dog",
@@ -729,7 +729,7 @@
   },
   {
     "word": "Bird",
-    "sentence": "The ___ can fly.",
+    "sentence": "The Bird can fly.",
     "options": [
       "Bird",
       "Fish",
@@ -743,7 +743,7 @@
   },
   {
     "word": "Fish",
-    "sentence": "The ___ can swim.",
+    "sentence": "The Fish can swim.",
     "options": [
       "Fish",
       "Bird",
@@ -757,7 +757,7 @@
   },
   {
     "word": "Elephant",
-    "sentence": "The ___ is big.",
+    "sentence": "The Elephant is big.",
     "options": [
       "Elephant",
       "Dog",
@@ -771,7 +771,7 @@
   },
   {
     "word": "Turtle",
-    "sentence": "The ___ is slow.",
+    "sentence": "The Turtle is slow.",
     "options": [
       "Turtle",
       "Rabbit",
@@ -785,7 +785,7 @@
   },
   {
     "word": "Rabbit",
-    "sentence": "The ___ is fast.",
+    "sentence": "The Rabbit is fast.",
     "options": [
       "Rabbit",
       "Turtle",
@@ -799,7 +799,7 @@
   },
   {
     "word": "Leopard",
-    "sentence": "The ___ is fast.",
+    "sentence": "The Leopard is fast.",
     "options": [
       "Leopard",
       "Turtle",
@@ -813,7 +813,7 @@
   },
   {
     "word": "Kitten",
-    "sentence": "The ___ is small.",
+    "sentence": "The Kitten is small.",
     "options": [
       "Kitten",
       "Dog",
@@ -827,7 +827,7 @@
   },
   {
     "word": "Black Cat",
-    "sentence": "The ___ is black.",
+    "sentence": "The Black Cat is black.",
     "options": [
       "Black Cat",
       "White Cat",
@@ -841,7 +841,7 @@
   },
   {
     "word": "House",
-    "sentence": "The ___ is big.",
+    "sentence": "The House is big.",
     "options": [
       "House",
       "Door",
@@ -855,7 +855,7 @@
   },
   {
     "word": "Door",
-    "sentence": "Open the ___.",
+    "sentence": "Open the Door.",
     "options": [
       "Door",
       "Window",
@@ -869,7 +869,7 @@
   },
   {
     "word": "Window",
-    "sentence": "Open the ___.",
+    "sentence": "Open the Window.",
     "options": [
       "Window",
       "Door",
@@ -883,7 +883,7 @@
   },
   {
     "word": "Chair",
-    "sentence": "Sit on the ___.",
+    "sentence": "Sit on the Chair.",
     "options": [
       "Chair",
       "Door",
@@ -897,7 +897,7 @@
   },
   {
     "word": "Tree",
-    "sentence": "The ___ is green.",
+    "sentence": "The Tree is green.",
     "options": [
       "Tree",
       "Rose",
@@ -911,7 +911,7 @@
   },
   {
     "word": "Sky",
-    "sentence": "The ___ is blue.",
+    "sentence": "The Sky is blue.",
     "options": [
       "Sky",
       "Moon",
@@ -925,7 +925,7 @@
   },
   {
     "word": "Moon",
-    "sentence": "The ___ is white.",
+    "sentence": "The Moon is white.",
     "options": [
       "Moon",
       "Sky",
@@ -939,7 +939,7 @@
   },
   {
     "word": "Star",
-    "sentence": "The ___ is bright.",
+    "sentence": "The Star is bright.",
     "options": [
       "Star",
       "Moon",
@@ -953,7 +953,7 @@
   },
   {
     "word": "Rose",
-    "sentence": "The ___ is red.",
+    "sentence": "The Rose is red.",
     "options": [
       "Rose",
       "Sunflower",
@@ -967,7 +967,7 @@
   },
   {
     "word": "Sunflower",
-    "sentence": "The ___ is yellow.",
+    "sentence": "The Sunflower is yellow.",
     "options": [
       "Sunflower",
       "Rose",
@@ -981,7 +981,7 @@
   },
   {
     "word": "Snowman",
-    "sentence": "The ___ is white.",
+    "sentence": "The Snowman is white.",
     "options": [
       "Snowman",
       "Rainbow",
@@ -995,7 +995,7 @@
   },
   {
     "word": "Rainbow",
-    "sentence": "The ___ is colorful.",
+    "sentence": "The Rainbow is colorful.",
     "options": [
       "Rainbow",
       "Snowman",
@@ -1009,7 +1009,7 @@
   },
   {
     "word": "Balloons",
-    "sentence": "The ___ are colorful.",
+    "sentence": "The Balloons are colorful.",
     "options": [
       "Balloons",
       "Balloon",
@@ -1023,7 +1023,7 @@
   },
   {
     "word": "Balloon",
-    "sentence": "The ___ is red.",
+    "sentence": "The Balloon is red.",
     "options": [
       "Balloon",
       "Balloons",
@@ -1037,7 +1037,7 @@
   },
   {
     "word": "Water",
-    "sentence": "I drink ___.",
+    "sentence": "I drink Water.",
     "options": [
       "Water",
       "Juice",
@@ -1051,7 +1051,7 @@
   },
   {
     "word": "Ball",
-    "sentence": "The ___ is orange.",
+    "sentence": "The Ball is orange.",
     "options": [
       "Ball",
       "Balloon",
@@ -1065,7 +1065,7 @@
   },
   {
     "word": "Pencils",
-    "sentence": "I write with ___.",
+    "sentence": "I write with Pencils.",
     "options": [
       "Pencils",
       "Pen",
@@ -1079,7 +1079,7 @@
   },
   {
     "word": "Pen",
-    "sentence": "I write with a ___.",
+    "sentence": "I write with a Pen.",
     "options": [
       "Pen",
       "Pencils",
@@ -1093,7 +1093,7 @@
   },
   {
     "word": "Book",
-    "sentence": "I read a ___.",
+    "sentence": "I read a Book.",
     "options": [
       "Book",
       "Pen",
@@ -1107,7 +1107,7 @@
   },
   {
     "word": "Car",
-    "sentence": "The ___ is red.",
+    "sentence": "The Car is red.",
     "options": [
       "Car",
       "Ball",
@@ -1121,7 +1121,7 @@
   },
   {
     "word": "Wave",
-    "sentence": "He can ___.",
+    "sentence": "He can Wave.",
     "options": [
       "Wave",
       "Run",
@@ -1135,7 +1135,7 @@
   },
   {
     "word": "Goodbye",
-    "sentence": "He says ___.",
+    "sentence": "He says Goodbye.",
     "options": [
       "Goodbye",
       "Hello",
@@ -1149,7 +1149,7 @@
   },
   {
     "word": "Raise hand",
-    "sentence": "He can ___.",
+    "sentence": "He can Raise hand.",
     "options": [
       "Raise hand",
       "Wave",
@@ -1163,7 +1163,7 @@
   },
   {
     "word": "Dinner",
-    "sentence": "We eat ___.",
+    "sentence": "We eat Dinner.",
     "options": [
       "Dinner",
       "Breakfast",
@@ -1177,7 +1177,7 @@
   },
   {
     "word": "Goodnight",
-    "sentence": "She says ___.",
+    "sentence": "She says Goodnight.",
     "options": [
       "Goodnight",
       "Hello",
@@ -1191,7 +1191,7 @@
   },
   {
     "word": "Talk",
-    "sentence": "They ___.",
+    "sentence": "They Talk.",
     "options": [
       "Talk",
       "Sleep",
@@ -1205,7 +1205,7 @@
   },
   {
     "word": "Gift",
-    "sentence": "This is a ___.",
+    "sentence": "This is a Gift.",
     "options": [
       "Gift",
       "Book",
@@ -1219,7 +1219,7 @@
   },
   {
     "word": "Welcome",
-    "sentence": "They say ___.",
+    "sentence": "They say Welcome.",
     "options": [
       "Welcome",
       "Goodbye",
@@ -1233,7 +1233,7 @@
   },
   {
     "word": "Wake up",
-    "sentence": "I ___ in the morning.",
+    "sentence": "I Wake up in the morning.",
     "options": [
       "Wake up",
       "Sleep",
@@ -1247,7 +1247,7 @@
   },
   {
     "word": "Shake hands",
-    "sentence": "They ___.",
+    "sentence": "They Shake hands.",
     "options": [
       "Shake hands",
       "Run",
@@ -1261,7 +1261,7 @@
   },
   {
     "word": "Doctor",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Doctor.",
     "options": [
       "Doctor",
       "Nurse",
@@ -1275,7 +1275,7 @@
   },
   {
     "word": "Nurse",
-    "sentence": "She is a ___.",
+    "sentence": "She is a Nurse.",
     "options": [
       "Nurse",
       "Doctor",
@@ -1289,7 +1289,7 @@
   },
   {
     "word": "Pilot",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Pilot.",
     "options": [
       "Pilot",
       "Doctor",
@@ -1303,7 +1303,7 @@
   },
   {
     "word": "Firefighter",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Firefighter.",
     "options": [
       "Firefighter",
       "Pilot",
@@ -1317,7 +1317,7 @@
   },
   {
     "word": "Chef",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Chef.",
     "options": [
       "Chef",
       "Baker",
@@ -1331,7 +1331,7 @@
   },
   {
     "word": "Teacher",
-    "sentence": "She is a ___.",
+    "sentence": "She is a Teacher.",
     "options": [
       "Teacher",
       "Nurse",
@@ -1345,7 +1345,7 @@
   },
   {
     "word": "Police Officer",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Police Officer.",
     "options": [
       "Police Officer",
       "Pilot",
@@ -1359,7 +1359,7 @@
   },
   {
     "word": "Farmer",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Farmer.",
     "options": [
       "Farmer",
       "Baker",
@@ -1373,7 +1373,7 @@
   },
   {
     "word": "Baker",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Baker.",
     "options": [
       "Baker",
       "Chef",
@@ -1387,7 +1387,7 @@
   },
   {
     "word": "Student",
-    "sentence": "He is a ___.",
+    "sentence": "He is a Student.",
     "options": [
       "Student",
       "Teacher",
@@ -1401,7 +1401,7 @@
   },
   {
     "word": "Brush",
-    "sentence": "I ___ my teeth.",
+    "sentence": "I Brush my teeth.",
     "options": [
       "Brush",
       "Read",
@@ -1415,7 +1415,7 @@
   },
   {
     "word": "Read",
-    "sentence": "I ___ a book.",
+    "sentence": "I Read a book.",
     "options": [
       "Read",
       "Drink",
@@ -1429,7 +1429,7 @@
   },
   {
     "word": "Drink",
-    "sentence": "I ___ juice.",
+    "sentence": "I Drink juice.",
     "options": [
       "Drink",
       "Read",
@@ -1443,7 +1443,7 @@
   },
   {
     "word": "Wave",
-    "sentence": "I ___ my hand.",
+    "sentence": "I Wave my hand.",
     "options": [
       "Wave",
       "Read",
@@ -1457,7 +1457,7 @@
   },
   {
     "word": "Play",
-    "sentence": "I ___ soccer.",
+    "sentence": "I Play soccer.",
     "options": [
       "Play",
       "Read",
@@ -1471,7 +1471,7 @@
   },
   {
     "word": "Shake",
-    "sentence": "I ___ hands.",
+    "sentence": "I Shake hands.",
     "options": [
       "Shake",
       "Wave",
@@ -1485,7 +1485,7 @@
   },
   {
     "word": "Raise",
-    "sentence": "I ___ my hand.",
+    "sentence": "I Raise my hand.",
     "options": [
       "Raise",
       "Wave",
@@ -1499,7 +1499,7 @@
   },
   {
     "word": "Cook",
-    "sentence": "I ___ food.",
+    "sentence": "I Cook food.",
     "options": [
       "Cook",
       "Read",
@@ -1513,7 +1513,7 @@
   },
   {
     "word": "Buy",
-    "sentence": "I ___ food.",
+    "sentence": "I Buy food.",
     "options": [
       "Buy",
       "Cook",
@@ -1527,7 +1527,7 @@
   },
   {
     "word": "Sit",
-    "sentence": "I ___ on the bench.",
+    "sentence": "I Sit on the bench.",
     "options": [
       "Sit",
       "Run",
@@ -1541,7 +1541,7 @@
   },
   {
     "word": "One",
-    "sentence": "___ apple.",
+    "sentence": "One apple.",
     "options": [
       "One",
       "Two",
@@ -1555,7 +1555,7 @@
   },
   {
     "word": "Two",
-    "sentence": "___ balloons.",
+    "sentence": "Two balloons.",
     "options": [
       "Two",
       "One",
@@ -1569,7 +1569,7 @@
   },
   {
     "word": "Three",
-    "sentence": "___ bananas.",
+    "sentence": "Three bananas.",
     "options": [
       "Three",
       "Two",
@@ -1583,7 +1583,7 @@
   },
   {
     "word": "Four",
-    "sentence": "___ pencils.",
+    "sentence": "Four pencils.",
     "options": [
       "Four",
       "Three",
@@ -1597,7 +1597,7 @@
   },
   {
     "word": "Five",
-    "sentence": "___ strawberries.",
+    "sentence": "Five strawberries.",
     "options": [
       "Five",
       "Four",
@@ -1611,7 +1611,7 @@
   },
   {
     "word": "Six",
-    "sentence": "___ eggs.",
+    "sentence": "Six eggs.",
     "options": [
       "Six",
       "Five",
@@ -1625,7 +1625,7 @@
   },
   {
     "word": "Seven",
-    "sentence": "___ strawberries.",
+    "sentence": "Seven strawberries.",
     "options": [
       "Seven",
       "Six",
@@ -1639,7 +1639,7 @@
   },
   {
     "word": "Eight",
-    "sentence": "___ crayons.",
+    "sentence": "Eight crayons.",
     "options": [
       "Eight",
       "Seven",
@@ -1653,7 +1653,7 @@
   },
   {
     "word": "Nine",
-    "sentence": "___ grapes.",
+    "sentence": "Nine grapes.",
     "options": [
       "Nine",
       "Eight",
@@ -1667,7 +1667,7 @@
   },
   {
     "word": "Ten",
-    "sentence": "___ fingers.",
+    "sentence": "Ten fingers.",
     "options": [
       "Ten",
       "Nine",
@@ -1681,7 +1681,7 @@
   },
   {
     "word": "Tomato",
-    "sentence": "The ___ is red.",
+    "sentence": "The Tomato is red.",
     "options": [
       "Tomato",
       "Apple",
@@ -1695,7 +1695,7 @@
   },
   {
     "word": "Chocolate",
-    "sentence": "I like ___.",
+    "sentence": "I like Chocolate.",
     "options": [
       "Chocolate",
       "Bread",
@@ -1709,7 +1709,7 @@
   },
   {
     "word": "Leaf",
-    "sentence": "This is a ___.",
+    "sentence": "This is a Leaf.",
     "options": [
       "Leaf",
       "Tree",
@@ -1723,7 +1723,7 @@
   },
   {
     "word": "Snow",
-    "sentence": "The ___ is white.",
+    "sentence": "The Snow is white.",
     "options": [
       "Snow",
       "Sun",
@@ -1737,7 +1737,7 @@
   },
   {
     "word": "Wave",
-    "sentence": "The ___ is big.",
+    "sentence": "The Wave is big.",
     "options": [
       "Wave",
       "Sun",
@@ -1751,7 +1751,7 @@
   },
   {
     "word": "Flower",
-    "sentence": "The ___ is pink.",
+    "sentence": "The Flower is pink.",
     "options": [
       "Flower",
       "Tree",
@@ -1765,7 +1765,7 @@
   },
   {
     "word": "Sunflower",
-    "sentence": "The ___ is yellow.",
+    "sentence": "The Sunflower is yellow.",
     "options": [
       "Sunflower",
       "Rose",
@@ -1779,7 +1779,7 @@
   },
   {
     "word": "Grapes",
-    "sentence": "I like ___.",
+    "sentence": "I like Grapes.",
     "options": [
       "Grapes",
       "Apples",
@@ -1793,7 +1793,7 @@
   },
   {
     "word": "Orange",
-    "sentence": "The ___ is orange.",
+    "sentence": "The Orange is orange.",
     "options": [
       "Orange",
       "Apple",
@@ -1807,7 +1807,7 @@
   },
   {
     "word": "Car",
-    "sentence": "The ___ is red.",
+    "sentence": "The Car is red.",
     "options": [
       "Car",
       "Ball",
@@ -1821,7 +1821,7 @@
   },
   {
     "word": "Red",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Red.",
     "options": [
       "Red",
       "Blue",
@@ -1835,7 +1835,7 @@
   },
   {
     "word": "Blue",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Blue.",
     "options": [
       "Blue",
       "Red",
@@ -1849,7 +1849,7 @@
   },
   {
     "word": "Green",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Green.",
     "options": [
       "Green",
       "Red",
@@ -1863,7 +1863,7 @@
   },
   {
     "word": "Yellow",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Yellow.",
     "options": [
       "Yellow",
       "Green",
@@ -1877,7 +1877,7 @@
   },
   {
     "word": "Orange",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Orange.",
     "options": [
       "Orange",
       "Red",
@@ -1891,7 +1891,7 @@
   },
   {
     "word": "Purple",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Purple.",
     "options": [
       "Purple",
       "Pink",
@@ -1905,7 +1905,7 @@
   },
   {
     "word": "Pink",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Pink.",
     "options": [
       "Pink",
       "Purple",
@@ -1919,7 +1919,7 @@
   },
   {
     "word": "Brown",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Brown.",
     "options": [
       "Brown",
       "Orange",
@@ -1933,7 +1933,7 @@
   },
   {
     "word": "Black",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is Black.",
     "options": [
       "Black",
       "Brown",
@@ -1947,7 +1947,7 @@
   },
   {
     "word": "White",
-    "sentence": "The ball is ___.",
+    "sentence": "The ball is White.",
     "options": [
       "White",
       "Black",
