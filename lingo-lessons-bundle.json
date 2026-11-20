@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-20T17:58:46.450Z",
+  "generatedAt": "2026-11-20T18:09:12.743Z",
   "source": "lingo-gold-admin-export",
   "lessons": [
     {
@@ -244,7 +244,7 @@
           "pages": [
             {
               "page": "2",
-              "imageUrl": "",
+              "imageUrl": "https://raw.githubusercontent.com/hmachikh16-boop/lingo-gold-content/main/images/step_coloring_0_0_1795197745263_qqak9.jpg",
               "promptEn": "Color the boy's shirt blue.",
               "promptAr": "",
               "tasks": [
@@ -263,8 +263,8 @@
                   "label": "shorts",
                   "color": "#E53935",
                   "colorName": "Red",
-                  "x": 0.5,
-                  "y": 0.78,
+                  "x": 0.706,
+                  "y": 0.386,
                   "extraPoints": [
                     {
                       "x": 0.42,
@@ -279,8 +279,8 @@
                   "label": "shoes",
                   "color": "#43A047",
                   "colorName": "Green",
-                  "x": 0.42,
-                  "y": 0.93,
+                  "x": 0.836,
+                  "y": 0.69,
                   "extraPoints": [
                     {
                       "x": 0.58,
@@ -288,6 +288,16 @@
                     }
                   ],
                   "instructionEn": "Color the shoes green.",
+                  "instructionAr": "",
+                  "imageUrl": ""
+                },
+                {
+                  "x": 0.433,
+                  "y": 0.295,
+                  "label": "part",
+                  "colorName": "Yellow",
+                  "color": "#FDD835",
+                  "instructionEn": "Color the shoes  .",
                   "instructionAr": "",
                   "imageUrl": ""
                 }

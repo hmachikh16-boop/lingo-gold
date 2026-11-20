@@ -3937,11 +3937,11 @@ function getColoringTasks(pageIdx) {
   return [];
 }
 
-function setColoringTasks(pageIdx, tasks) {
+function setColoringTasks(pageIdx, tasks, rerender) {
   const pages = coloringPagesForEditor();
   if (!pages[pageIdx]) pages[pageIdx] = { page: 1, imageUrl: '', promptEn: '', promptAr: '' };
   pages[pageIdx].tasks = tasks;
-  saveColoringPages(pages);
+  saveColoringPages(pages, rerender);
 }
 
 function suggestColoringTaskDefaults() {
@@ -4010,7 +4010,9 @@ function updateColoringTask(pageIdx, taskIdx, field, value) {
   tasks[taskIdx][field] = value;
   const c = COLORING_PALETTE.find(x => x.name === tasks[taskIdx].colorName);
   if (c) tasks[taskIdx].color = c.hex;
-  setColoringTasks(pageIdx, tasks);
+  // أثناء الكتابة لا نعيد بناء المحرر؛ إعادة البناء تُفقد المؤشر وتُصعد النافذة.
+  const textField = ['label', 'instructionEn', 'instructionAr', 'x', 'y'].indexOf(field) >= 0;
+  setColoringTasks(pageIdx, tasks, !textField);
 }
 
 function setColoringTaskPointFromClick(ev, pageIdx, taskIdx) {
