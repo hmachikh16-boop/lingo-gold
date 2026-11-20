@@ -99,6 +99,24 @@ class ProgressService {
     }).length;
   }
 
+  List<String> dueIds() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    return _cache.entries
+        .where((e) => e.value.nextDueMs > 0 && e.value.nextDueMs <= now)
+        .map((e) => e.key)
+        .toList();
+  }
+
+  bool isMastered(String id, {int streak = 2}) =>
+      id.trim().isNotEmpty && get(id).streak >= streak;
+
+  double masteryRatio(Iterable<String> ids, {int streak = 2}) {
+    final list = ids.toList();
+    if (list.isEmpty) return 0;
+    final done = list.where((id) => isMastered(id, streak: streak)).length;
+    return done / list.length;
+  }
+
   void _save() {
     final mapped = _cache.map((k, v) =>
         MapEntry<String, dynamic>(k, v.toJson()));

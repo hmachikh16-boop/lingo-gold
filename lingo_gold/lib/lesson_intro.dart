@@ -9,11 +9,13 @@ import 'widgets.dart';
 /// used in the lesson before the learner starts the exercises.
 class LessonIntroStep extends StatefulWidget {
   final List<Lesson> items;
+  final List<Lesson> storyItems;
   final VoidCallback onComplete;
 
   const LessonIntroStep({
     super.key,
     required this.items,
+    this.storyItems = const [],
     required this.onComplete,
   });
 
@@ -127,6 +129,36 @@ class _LessonIntroStepState extends State<LessonIntroStep> {
               ],
             ),
           ),
+          if (widget.storyItems.length > 1) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 62,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.storyItems.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, i) {
+                  final s = widget.storyItems[i];
+                  final current = s.id == _item.id || s.storyOrder == _item.storyOrder;
+                  return Container(
+                    width: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: current ? kPrimary : kLine,
+                        width: current ? 2 : 1,
+                      ),
+                      color: Colors.white,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LessonImage(lesson: s),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 14),
           Stack(
             children: [

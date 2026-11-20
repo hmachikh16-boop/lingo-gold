@@ -1012,6 +1012,8 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
                               }
                               return introItemsFor(_lessonIndex);
                             }(),
+                            storyItems:
+                                LessonContentService.instance.storyLessons(_lesson),
                             onComplete: () =>
                                 setState(() => _showIntro = false),
                           )

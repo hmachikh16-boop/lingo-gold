@@ -993,8 +993,12 @@ function levelForCategory(cat) {
 function renderCurriculum() {
   const el = document.getElementById('curriculumCard');
   if (!el || !appContent) return;
+  const cfg = (latestPublishedBundle && latestPublishedBundle.curriculum) || {};
+  const ruleText = cfg.unlockRule === 'stageMastery'
+    ? 'قاعدة الفتح: إتقان المستوى السابق • الترجمة تظهر بعد ' + (Number(cfg.revealTranslationAfter) || 2) + ' إجابات'
+    : 'قاعدة الفتح: مفتوح • الترجمة تظهر بعد ' + (Number(cfg.revealTranslationAfter) || 2) + ' إجابات';
   el.innerHTML = '<div class="curriculum-title">خريطة المنهج — تعليم بالانغماس مثل Rosetta Stone</div>' +
-    '<div class="curriculum-sub">نفس واجهات التطبيق: استماع → تحدث → مطابقة → كتابة → اختيار → تلوين موجّه</div>' +
+    '<div class="curriculum-sub">نفس واجهات التطبيق: استماع → تحدث → مطابقة → كتابة → اختيار → تلوين موجّه • ' + escapeHtml(ruleText) + '</div>' +
     '<div class="curriculum-stages">' + CURRICULUM_STAGES.map(st => {
       const count = st.cats.reduce((sum, c) => sum + ((appContent.lessonsByCat && appContent.lessonsByCat[c]) ? appContent.lessonsByCat[c].length : 0), 0);
       return '<div class="curriculum-stage">' +

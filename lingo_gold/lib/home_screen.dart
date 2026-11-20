@@ -12,6 +12,8 @@ class HomeScreen extends StatelessWidget {
   final int totalLessons;
   final int stars;
   final VoidCallback onStart;
+  final VoidCallback? onReview;
+  final int reviewDue;
 
   const HomeScreen({
     super.key,
@@ -20,6 +22,8 @@ class HomeScreen extends StatelessWidget {
     required this.totalLessons,
     required this.stars,
     required this.onStart,
+    this.onReview,
+    this.reviewDue = 0,
   });
 
   @override
@@ -145,6 +149,21 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
+              if (reviewDue > 0 && onReview != null) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: onReview,
+                  icon: const Icon(Icons.replay_rounded, size: 18),
+                  label: Text('مراجعة مستحقة: $reviewDue'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF1F7A44),
+                    side: const BorderSide(color: Color(0xFFE6E8EC)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 70),
 
               // ===== Current lesson =====

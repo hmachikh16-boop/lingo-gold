@@ -10,6 +10,7 @@ import 'lessons_screen.dart';
 import 'lesson_flow.dart';
 import 'lesson_content_service.dart';
 import 'profile_screen.dart';
+import 'review_screen.dart';
 import 'progress_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
@@ -89,10 +90,63 @@ class _MainShellState extends State<MainShell> {
     super.dispose();
   }
 
+  bool _stageUnlocked(int lessonId) {
+    final cfg = LessonContentService.instance.curriculumConfig;
+    if (cfg == null || cfg['unlockRule'] != 'stageMastery') return true;
+    final idx = lessonId - 1;
+    if (idx < 0 || idx >= app_data.lessons.length) return true;
+    final level = app_data.lessons[idx].level;
+    if (level <= 1) return true;
+    final mastery = cfg['mastery'];
+    final required = (mastery is Map && mastery['accuracy'] is num)
+        ? (mastery['accuracy'] as num).toDouble() / 100.0
+        : 0.7;
+    for (var lv = 1; lv < level; lv++) {
+      final ids = <String>[];
+      for (var i = 0; i < app_data.lessons.length; i++) {
+        if (app_data.lessons[i].level == lv) {
+          ids.addAll(LessonContentService.instance.targetItemIds(i));
+        }
+      }
+      if (ids.isEmpty) continue;
+      final ratio = ProgressService.instance.masteryRatio(ids);
+      if (ratio < required) return false;
+    }
+    return true;
+  }
+
   Future<void> _startLesson() async {
     final up = UserProfile.instance;
     final restart = up.lessonsCompleted.value >= _totalLessons;
     final start = restart ? 1 : up.currentLessonId.value.clamp(1, _totalLessons);
+    if (!_stageUnlocked(start)) {
+      final openAnyway = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('المستوى التالي مغلق'),
+          content: const Text(
+            'أتقن المستوى السابق أولاً، أو افتح هذا الدرس للتدريب.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('رجوع'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('فتح للتدريب'),
+            ),
+          ],
+        ),
+      );
+      if (openAnyway != true) return;
+    }
+    await _launchLesson(start);
+  }
+
+  Future<void> _launchLesson(int start) async {
+    final up = UserProfile.instance;
+    final restart = up.lessonsCompleted.value >= _totalLessons;
     if (restart) {
       await up.saveCourseProgress(
         lessonId: 1,
@@ -109,6 +163,51 @@ class _MainShellState extends State<MainShell> {
           totalLessons: _totalLessons,
           onLessonComplete: _onLessonComplete,
           onExit: () => setState(() => _tab = 0),
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openLessonAt(int id) async {
+    if (!_stageUnlocked(id)) {
+      final openAnyway = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('المستوى التالي مغلق'),
+          content: const Text('أتقن المستوى السابق أولاً، أو افتح للتدريب.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('رجوع'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('فتح للتدريب'),
+            ),
+          ],
+        ),
+      );
+      if (openAnyway != true) return;
+    }
+    await _launchLesson(id);
+  }
+
+  Future<void> _openReview() async {
+    final ids = ProgressService.instance.dueIds();
+    if (ids.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لا توجد مراجعة مستحقة الآن.')),
+        );
+      }
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReviewScreen(
+          itemIds: ids,
+          onExit: () => Navigator.of(context).pop(),
         ),
       ),
     );
@@ -134,6 +233,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final up = UserProfile.instance;
+    final reviewDue = ProgressService.instance.dueIds().length;
     return Scaffold(
       backgroundColor: Colors.white,
       body: ValueListenableBuilder<int>(
@@ -160,21 +260,11 @@ class _MainShellState extends State<MainShell> {
                             totalLessons: _totalLessons,
                             stars: stars,
                             onStart: _startLesson,
+                            onReview: reviewDue > 0 ? _openReview : null,
+                            reviewDue: reviewDue,
                           ),
                           LessonsScreen(
-                            onStartLesson: (id) async {
-                              await Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => LessonFlowScreen(
-                                    startLessonId: id,
-                                    totalLessons: _totalLessons,
-                                    onLessonComplete: _onLessonComplete,
-                                    onExit: () => setState(() => _tab = 0),
-                                  ),
-                                ),
-                              );
-                              if (mounted) setState(() {});
-                            },
+                            onStartLesson: (id) => _openLessonAt(id),
                           ),
                           ProfileScreen(
                             completedCount: completed,

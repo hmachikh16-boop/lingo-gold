@@ -59,6 +59,147 @@ class LessonContentService {
     return m;
   }
 
+  /// معرّفات العناصر المستهدفة في درس واحد (الإجابات الصحيحة).
+  List<String> targetItemIds(int appIndex) {
+    final m = stepOverridesByIndex[appIndex];
+    if (m == null) return const [];
+    final ids = <String>{};
+    void walk(dynamic node) {
+      if (node is Map) {
+        final id = _asString(node['id']);
+        if (id.isNotEmpty && (node['correct'] == true || id.endsWith('-t'))) {
+          ids.add(id);
+        }
+        node.forEach((_, v) => walk(v));
+      } else if (node is List) {
+        for (final v in node) {
+          walk(v);
+        }
+      }
+    }
+    walk(m);
+    return ids.toList();
+  }
+
+  Map<String, dynamic>? _findItemMap(String id) {
+    for (final entry in stepOverridesByIndex.entries) {
+      final found = _findInNode(entry.value, id);
+      if (found != null) {
+        return Map<String, dynamic>.from(found)..['_appIndex'] = entry.key;
+      }
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _findInNode(dynamic node, String id) {
+    if (node is Map) {
+      if (_asString(node['id']) == id) return Map<String, dynamic>.from(node);
+      for (final v in node.values) {
+        final found = _findInNode(v, id);
+        if (found != null) return found;
+      }
+    } else if (node is List) {
+      for (final v in node) {
+        final found = _findInNode(v, id);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
+  app.Lesson? lessonForItemId(String id) {
+    final found = _findItemMap(id);
+    if (found == null) return null;
+    final idx = _asInt(found['_appIndex'], 0);
+    final base = idx >= 0 && idx < app.lessons.length
+        ? app.lessons[idx]
+        : (app.lessons.isNotEmpty ? app.lessons.first : null);
+    if (base == null) return null;
+    return app.Lesson(
+      word: found.containsKey('word') ? _asString(found['word']) : base.word,
+      sentence: found.containsKey('sentence')
+          ? _asString(found['sentence'])
+          : base.sentence,
+      spoken: found.containsKey('spoken')
+          ? _asNullableString(found['spoken'])
+          : base.spoken,
+      options: found.containsKey('options')
+          ? _asStringList(found['options'])
+          : base.options,
+      imageFile: found.containsKey('imageFile')
+          ? _asString(found['imageFile'])
+          : base.imageFile,
+      indexInPack: found.containsKey('indexInPack')
+          ? _asInt(found['indexInPack'], base.indexInPack)
+          : base.indexInPack,
+      isPack: found.containsKey('isPack') ? found['isPack'] == true : base.isPack,
+      category: base.category,
+      translation: found.containsKey('translation')
+          ? _asString(found['translation'])
+          : base.translation,
+      order: base.order,
+      imageUrl: found.containsKey('imageUrl')
+          ? _asNullableString(found['imageUrl'])
+          : base.imageUrl,
+      zoom: found.containsKey('zoom')
+          ? _asDouble(found['zoom'], base.zoom)
+          : base.zoom,
+      title: found.containsKey('title') ? _asString(found['title']) : base.title,
+      level: found.containsKey('level') ? _asInt(found['level'], base.level) : base.level,
+      id: id,
+      hintLevel: found.containsKey('hintLevel')
+          ? _asInt(found['hintLevel'], base.hintLevel)
+          : base.hintLevel,
+      storyId: found.containsKey('storyId') ? _asString(found['storyId']) : base.storyId,
+      storyOrder: found.containsKey('storyOrder')
+          ? _asInt(found['storyOrder'], base.storyOrder)
+          : base.storyOrder,
+      storyTitle: found.containsKey('storyTitle')
+          ? _asString(found['storyTitle'])
+          : base.storyTitle,
+    );
+  }
+
+  /// عناصر أخرى من نفس الدرس تصلح كخيارات للمراجعة.
+  List<app.Lesson> siblingsForItemId(String id, int count) {
+    final found = _findItemMap(id);
+    if (found == null) return const [];
+    final idx = _asInt(found['_appIndex'], -1);
+    final ov = getStepOverrides(idx);
+    final intro = ov?['intro'];
+    if (intro is! Map || intro['items'] is! List) return const [];
+    final out = <app.Lesson>[];
+    for (final it in intro['items'] as List) {
+      if (it is! Map) continue;
+      final sid = _asString(it['id']);
+      if (sid.isEmpty || sid == id) continue;
+      final lesson = lessonForItemId(sid);
+      if (lesson != null) out.add(lesson);
+      if (out.length >= count) break;
+    }
+    return out;
+  }
+
+  List<app.Lesson> lessonsForIds(Iterable<String> ids) {
+    final out = <app.Lesson>[];
+    for (final id in ids) {
+      final l = lessonForItemId(id);
+      if (l != null) out.add(l);
+    }
+    return out;
+  }
+
+  /// بطاقات القصة الخاصة بالدرس (حتى البطاقة الحالية).
+  List<app.Lesson> storyLessons(app.Lesson lesson) {
+    if (lesson.storyId.trim().isEmpty) return const [];
+    final items = app.lessons
+        .where((l) =>
+            l.storyId == lesson.storyId && l.storyOrder > 0 && l.storyOrder <= lesson.storyOrder)
+        .toList()
+      ..sort((a, b) => a.storyOrder.compareTo(b.storyOrder));
+    return items.length > 4 ? items.sublist(items.length - 4) : items;
+  }
+
   @visibleForTesting
   bool applyBundleForTest(Map<String, dynamic> bundle) =>
       _applyRemoteBundle(bundle);
