@@ -211,6 +211,84 @@ function saveLessonBundle(req, res) {
   });
 }
 
+async function bundleHistory() {
+  const items = [];
+  try {
+    if (!fs.existsSync(CONTENT_REPO_DIR)) return items;
+    await runAsync('git', ['-C', CONTENT_REPO_DIR, 'fetch', 'origin', 'main']);
+    const log = await runAsync('git', [
+      '-C', CONTENT_REPO_DIR, 'log', 'FETCH_HEAD',
+      '--pretty=format:%H|%ci|%s', '-n', '15', '--', 'lingo-lessons-bundle.json'
+    ]);
+    (log.stdout || '').split(/\r?\n/).forEach(line => {
+      if (!line.trim()) return;
+      const parts = line.split('|');
+      if (parts.length >= 3) {
+        items.push({ sha: parts[0], date: parts[1], message: parts.slice(2).join('|') });
+      }
+    });
+  } catch (_) {}
+  return items;
+}
+
+function rollbackBundle(req, res) {
+  let body = '';
+  req.setEncoding('utf8');
+  req.on('data', chunk => {
+    body += chunk;
+    if (body.length > 64 * 1024) req.destroy();
+  });
+  req.on('end', async () => {
+    try {
+      const parsed = JSON.parse(body || '{}');
+      const sha = String((parsed && parsed.sha) || '').trim();
+      if (!/^[0-9a-f]{7,40}$/i.test(sha)) {
+        return sendJson(res, 400, { ok: false, error: 'SHA غير صالح' });
+      }
+      await runAsync('git', ['-C', CONTENT_REPO_DIR, 'fetch', 'origin', 'main']);
+      const show = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'show', sha + ':lingo-lessons-bundle.json']);
+      if (show.status !== 0 || !show.stdout) {
+        return sendJson(res, 404, { ok: false, error: 'النسخة غير موجودة في السجل' });
+      }
+      const bundle = JSON.parse(show.stdout);
+      if (!bundle || !Array.isArray(bundle.lessons)) {
+        return sendJson(res, 400, { ok: false, error: 'محتوى النسخة غير صالح' });
+      }
+      fs.writeFileSync(LESSON_BUNDLE_FILE, JSON.stringify(bundle, null, 2), 'utf8');
+      fs.writeFileSync(CONTENT_REPO_FILE, JSON.stringify(bundle, null, 2), 'utf8');
+
+      queuePublish(async () => {
+        const add = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'add', 'lingo-lessons-bundle.json']);
+        const commit = await runAsync('git', [
+          '-C', CONTENT_REPO_DIR, '-c', 'user.name=Lingo Gold Admin',
+          '-c', 'user.email=admin@lingogold.com', 'commit',
+          '-m', 'Rollback lesson bundle to ' + sha.slice(0, 8)
+        ]);
+        const push = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'push', 'origin', 'HEAD:main']);
+        const repoOk = push.status === 0;
+        if (repoOk) await purgeCdn('lingo-lessons-bundle.json');
+        const gist = await runAsync('gh', ['gist', 'edit', GIST_ID, '--filename', GIST_FILENAME, LESSON_BUNDLE_FILE]);
+        return {
+          repo: {
+            ok: repoOk,
+            url: CONTENT_CDN_BASE + 'lingo-lessons-bundle.json',
+            error: repoOk ? undefined : (push.stderr || push.stdout || commit.stderr || add.stderr || 'git push failed').trim()
+          },
+          gist: {
+            ok: gist.status === 0,
+            url: 'https://gist.github.com/hmachikh16-boop/' + GIST_ID,
+            error: gist.status === 0 ? undefined : (gist.stderr || gist.stdout || 'gh gist edit failed').trim()
+          }
+        };
+      });
+
+      return sendJson(res, 200, { ok: true, queued: true, sha: sha.slice(0, 8) });
+    } catch (e) {
+      return sendJson(res, 400, { ok: false, error: e && e.message ? e.message : String(e) });
+    }
+  });
+}
+
 function uploadImage(req, res) {
   let body = '';
   req.setEncoding('utf8');
@@ -278,6 +356,18 @@ http.createServer((req,res)=>{
     // رفع صورة الدرس/الواجهة مباشرة إلى مستودع المحتوى (بدون Firebase Storage)
     if (req.method === 'POST' && (urlPath === '/api/upload-image' || urlPath === '/upload-image')) {
       return uploadImage(req, res);
+    }
+
+    // سجل إصدارات الحزمة + استعادة نسخة سابقة
+    if (req.method === 'GET' && urlPath === '/api/bundle-history') {
+      (async () => {
+        const items = await bundleHistory();
+        return sendJson(res, 200, { ok: true, items: items });
+      })();
+      return;
+    }
+    if (req.method === 'POST' && urlPath === '/api/rollback-bundle') {
+      return rollbackBundle(req, res);
     }
 
     // الحزمة المنشورة حالياً: تُستخدم في اللوحة لدمج stepOverrides القديمة

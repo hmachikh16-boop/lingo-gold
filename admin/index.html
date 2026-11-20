@@ -272,6 +272,21 @@
     background:#fff; border-radius:16px; width:100%; max-width:440px;
     padding:18px; box-shadow:0 24px 70px rgba(0,0,0,.28);
   }
+  .modal-card.wide { max-width:780px; }
+  .review-body { max-height:58vh; overflow:auto; margin-top:8px; }
+  .review-summary { display:flex; gap:8px; flex-wrap:wrap; margin:4px 0 12px; }
+  .review-badge { padding:5px 10px; border-radius:999px; font-size:11px; font-weight:900; border:1px solid #E5E7EB; background:#F9FAFB; }
+  .review-badge.error { color:#B91C1C; background:#FEF2F2; border-color:#FECACA; }
+  .review-badge.warn { color:#92400E; background:#FFFBEB; border-color:#FDE68A; }
+  .review-badge.ok { color:#166534; background:#ECFDF3; border-color:#BBF7D0; }
+  .review-list { border:1px solid #E5E7EB; border-radius:10px; overflow:hidden; }
+  .review-row { display:flex; gap:8px; align-items:flex-start; padding:8px 10px; border-bottom:1px solid #F3F4F6; font-size:12px; line-height:1.6; }
+  .review-row:last-child { border-bottom:none; }
+  .review-row.error { color:#B91C1C; background:#FEF2F2; }
+  .review-row.warning { color:#92400E; background:#FFFBEB; }
+  .review-row.info { color:#374151; background:#fff; }
+  .review-row .review-tag { flex:0 0 auto; font-weight:900; opacity:.8; }
+  .review-empty { padding:16px; text-align:center; color:#166534; font-weight:800; background:#ECFDF3; border-radius:10px; }
   .modal-title { font-size:16px; font-weight:900; margin:0 0 12px; }
   .modal-card label { display:block; font-size:12px; font-weight:800; color:#374151; margin:10px 0 4px; }
   .modal-card input, .modal-card textarea { margin:0; }
@@ -358,7 +373,9 @@
         </div>
         <div class="editor-actionbar">
           <span class="action-label">إجراءات سريعة</span>
-          <button class="btn btn-green btn-sm" onclick="exportLessonBundleJson()" title="نشر الحزمة الآن">⚡ نشر الآن</button>
+          <button class="btn btn-green btn-sm" onclick="openPublishReview()" title="مراجعة الفروق ثم النشر">⚡ نشر الآن</button>
+          <button class="btn btn-gray btn-sm" onclick="openQualityReview()" title="فحص جودة الحزمة قبل النشر">🔍 تدقيق</button>
+          <button class="btn btn-gray btn-sm" onclick="openHistoryModal()" title="سجل الإصدارات والاستعادة">🕘 السجل</button>
           <button class="btn btn-gray btn-sm" onclick="location.reload()" title="إعادة تحميل اللوحة من الحزمة المنشورة">↻ إعادة تحميل</button>
           <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()" title="إرجاع الواجهة الحالية إلى إعدادات التطبيق">⟲ إرجاع الواجهة</button>
           <span class="smart-note">كل تعديل يُحفظ ويُنشر تلقائيًا خلال ثانية</span>
@@ -1985,6 +2002,173 @@ function showConfirmModal(title, message, confirmLabel) {
   });
 }
 
+function validateBundle(bundle, published) {
+  const issues = [];
+  const add = (level, lesson, message, path) => issues.push({
+    level: level,
+    lesson: lesson || '—',
+    message: message,
+    path: path || ''
+  });
+  const all = []
+    .concat(Array.isArray(bundle && bundle.lessons) ? bundle.lessons : [])
+    .concat(Array.isArray(bundle && bundle.newLessons) ? bundle.newLessons : []);
+  const seedMap = (typeof seedMapByIndex === 'function') ? seedMapByIndex() : new Map();
+  const seen = new Map();
+  const itemSteps = [['intro','items'], ['listen','choices'], ['match','pairs'], ['choice','options']];
+
+  all.forEach(l => {
+    if (!l || typeof l !== 'object') { add('error', '?', 'درس غير صالح'); return; }
+    const idx = (typeof l.appIndex === 'number') ? l.appIndex : -1;
+    const label = ('#' + (idx >= 0 ? idx + 1 : '?') + ' ' + normText(l.word || l.title));
+    if (idx < 0) add('error', label, 'لا يوجد appIndex');
+    if (seen.has(idx)) add('error', label, 'appIndex مكرر مع ' + seen.get(idx));
+    else seen.set(idx, label);
+    if (!normText(l.word)) add('error', label, 'الكلمة فارغة');
+    if (!normText(l.sentence)) add('warning', label, 'الجملة فارغة');
+    if (normText(l.sentence).indexOf('___') >= 0) add('error', label, 'الجملة تحتوي فراغ ___');
+    if (!normText(l.imageFile) && !normText(l.imageUrl)) add('error', label, 'لا توجد صورة للدرس');
+    if (normText(l.imageUrl) && !/^https?:\/\//i.test(normText(l.imageUrl))) {
+      add('error', label, 'imageUrl غير صالح');
+    }
+    const seed = seedMap.get(idx);
+    if (seed && normText(seed.category) && normText(seed.category) !== normText(l.category)) {
+      add('warning', label, 'الفئة تختلف عن التطبيق: ' + normText(l.category) + ' ≠ ' + normText(seed.category));
+    }
+    const ov = l.stepOverrides || {};
+    itemSteps.forEach(pair => {
+      const step = pair[0], key = pair[1];
+      const arr = ov[step] && ov[step][key];
+      if (!Array.isArray(arr)) {
+        if (ov[step]) add('warning', label, step + ' لا يحتوي قائمة ' + key);
+        return;
+      }
+      if (!arr.length) add('warning', label, step + ' فارغ');
+      arr.forEach((it, j) => {
+        if (!it || typeof it !== 'object' || !Object.keys(it).length) {
+          add('error', label, step + '[' + j + '] عنصر فارغ {}', step + '.' + key + '[' + j + ']');
+          return;
+        }
+        if (!normText(it.word) && !normText(it.label)) {
+          add('warning', label, step + '[' + j + '] بلا كلمة/نص');
+        }
+        if (!normText(it.imageFile) && !normText(it.imageUrl)) {
+          add('warning', label, step + '[' + j + '] بلا صورة');
+        }
+        if (normText(it.sentence).indexOf('___') >= 0) {
+          add('error', label, step + '[' + j + '] جملة فيها ___');
+        }
+        if (normText(it.imageUrl) && !/^https?:\/\//i.test(normText(it.imageUrl))) {
+          add('error', label, step + '[' + j + '] imageUrl غير صالح');
+        }
+      });
+    });
+    const pages = ov.coloring && ov.coloring.pages;
+    if (pages) {
+      if (!Array.isArray(pages) || !pages.length) {
+        add('warning', label, 'صفحات الرسم فارغة');
+      } else {
+        pages.forEach((p, pi) => {
+          if (!p || typeof p !== 'object') {
+            add('error', label, 'coloring.pages[' + pi + '] غير صالح');
+            return;
+          }
+          const tasks = p.tasks;
+          if (Array.isArray(tasks)) {
+            if (!tasks.length) add('warning', label, 'صفحة الرسم ' + (pi + 1) + ' بلا مهام تلوين');
+            tasks.forEach((t, ti) => {
+              if (!t || typeof t !== 'object') {
+                add('error', label, 'مهمة التلوين ' + (ti + 1) + ' غير صالحة');
+                return;
+              }
+              const x = Number(t.x), y = Number(t.y);
+              if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 1 || y < 0 || y > 1) {
+                add('error', label, 'مهمة التلوين ' + (ti + 1) + ' إحداثياتها خارج 0..1');
+              }
+              const cn = normText(t.colorName);
+              if (cn && !COLORING_PALETTE.some(c => c.name.toLowerCase() === cn.toLowerCase())) {
+                add('warning', label, 'لون غير معروف في المهمة ' + (ti + 1) + ': ' + cn);
+              }
+            });
+          }
+        });
+      }
+    }
+  });
+
+  const errors = issues.filter(i => i.level === 'error').length;
+  const warnings = issues.filter(i => i.level === 'warning').length;
+  return { issues: issues.slice(0, 120), errors: errors, warnings: warnings, count: all.length, truncated: issues.length > 120 };
+}
+
+function stableJson(v) {
+  if (Array.isArray(v)) return '[' + v.map(stableJson).join(',') + ']';
+  if (v && typeof v === 'object') {
+    return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stableJson(v[k])).join(',') + '}';
+  }
+  return JSON.stringify(v);
+}
+
+function diffBundle(bundle, published) {
+  const prev = new Map();
+  [].concat(Array.isArray(published && published.lessons) ? published.lessons : [])
+    .concat(Array.isArray(published && published.newLessons) ? published.newLessons : [])
+    .forEach(l => { if (l && typeof l.appIndex === 'number') prev.set(l.appIndex, l); });
+  const next = new Map();
+  [].concat(Array.isArray(bundle && bundle.lessons) ? bundle.lessons : [])
+    .concat(Array.isArray(bundle && bundle.newLessons) ? bundle.newLessons : [])
+    .forEach(l => { if (l && typeof l.appIndex === 'number') next.set(l.appIndex, l); });
+  const short = v => { const s = normText(v); return s.length > 40 ? s.slice(0, 40) + '…' : s; };
+  const changes = [];
+  next.forEach((l, idx) => {
+    const p = prev.get(idx);
+    if (!p) { changes.push({ idx: idx, word: l.word || '', fields: ['درس جديد'] }); return; }
+    const fields = [];
+    ['word','sentence','translation','imageFile','imageUrl','category','title'].forEach(k => {
+      if (normText(p[k]) !== normText(l[k])) {
+        fields.push(k + ': ' + short(p[k]) + ' → ' + short(l[k]));
+      }
+    });
+    if (stableJson(p.stepOverrides || {}) !== stableJson(l.stepOverrides || {})) {
+      fields.push('stepOverrides');
+    }
+    if (fields.length) changes.push({ idx: idx, word: l.word || '', fields: fields });
+  });
+  prev.forEach((l, idx) => {
+    if (!next.has(idx)) changes.push({ idx: idx, word: l.word || '', fields: ['درس محذوف'] });
+  });
+  return changes;
+}
+
+function showHtmlModal(opts) {
+  const o = opts || {};
+  return new Promise(resolve => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    const card = document.createElement('div');
+    card.className = 'modal-card wide';
+    const btnDefs = Array.isArray(o.buttons) ? o.buttons : [{ key: 'close', label: 'إغلاق', cls: 'btn-gray' }];
+    card.innerHTML =
+      '<div class="modal-title">' + escapeHtml(o.title || '') + '</div>' +
+      '<div class="review-body">' + (o.html || '') + '</div>' +
+      '<div class="modal-actions">' + btnDefs.map(b =>
+        '<button type="button" class="btn btn-sm ' + escapeHtml(b.cls || '') + '" data-action="' + escapeHtml(b.key) + '">' + escapeHtml(b.label) + '</button>'
+      ).join('') + '</div>';
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+    const close = value => {
+      document.removeEventListener('keydown', onKey, true);
+      try { backdrop.remove(); } catch (_) {}
+      resolve(value);
+    };
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(null); } };
+    document.addEventListener('keydown', onKey, true);
+    card.querySelectorAll('[data-action]').forEach(b => { b.onclick = () => close(b.getAttribute('data-action')); });
+    backdrop.onclick = e => { if (e.target === backdrop) close(null); };
+    if (typeof o.onRender === 'function') o.onRender(card, close);
+  });
+}
+
 function _readJsonStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -2400,6 +2584,34 @@ async function buildLessonBundleObject() {
 let _autoPublishTimer = null;
 let _autoPublishInFlight = false;
 let _autoPublishPending = false;
+async function postBundleToServer(bundle, opts) {
+  const options = opts || {};
+  const json = JSON.stringify(bundle, null, 2);
+  const endpoint = (location.protocol === 'file:')
+    ? 'http://localhost:8080/api/save-lesson-bundle'
+    : '/api/save-lesson-bundle';
+  setPublishChip('saving', 'جارٍ النشر...');
+  if (!options.silent) showSaveStatus('تم الحفظ ✓ — جارٍ النشر في الخلفية...', false);
+  const resp = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json;charset=utf-8' },
+    body: json,
+    cache: 'no-store'
+  });
+  const out = await resp.json().catch(() => ({}));
+  if (!resp.ok || !out.ok) throw new Error((out && out.error) || ('HTTP ' + resp.status));
+  const repo = out.repo || {};
+  const gist = out.gist || {};
+  const queued = !!(repo.queued || gist.queued || repo.ok || gist.ok);
+  setPublishChip(queued ? 'saved' : 'error', queued ? 'تم النشر' : 'فشل النشر');
+  if (!options.silent) {
+    showSaveStatus(queued
+      ? 'تم الحفظ والنشر ✓ — التطبيق سيجلب التحديث خلال ثوانٍ.'
+      : 'تم الحفظ محلياً لكن تعذر نشر GitHub: ' + (repo.error || gist.error || ''), !queued);
+  }
+  return { ok: true, repo, gist, out, queued };
+}
+
 async function publishBundleToGitHub(options) {
   const opts = options || {};
   if (_autoPublishInFlight) {
@@ -2413,30 +2625,18 @@ async function publishBundleToGitHub(options) {
       setPublishChip('error', 'فشل النشر');
       return { ok: false, error: 'bundle-build-failed' };
     }
-    const json = JSON.stringify(bundle, null, 2);
-    const endpoint = (location.protocol === 'file:')
-      ? 'http://localhost:8080/api/save-lesson-bundle'
-      : '/api/save-lesson-bundle';
-    setPublishChip('saving', 'جارٍ النشر...');
-    if (!opts.silent) showSaveStatus('تم الحفظ ✓ — جارٍ النشر في الخلفية...', false);
-    const resp = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      body: json,
-      cache: 'no-store'
-    });
-    const out = await resp.json().catch(() => ({}));
-    if (!resp.ok || !out.ok) throw new Error((out && out.error) || ('HTTP ' + resp.status));
-    const repo = out.repo || {};
-    const gist = out.gist || {};
-    const queued = !!(repo.queued || gist.queued || repo.ok || gist.ok);
-    setPublishChip(queued ? 'saved' : 'error', queued ? 'تم النشر' : 'فشل النشر');
-    if (!opts.silent) {
-      showSaveStatus(queued
-        ? 'تم الحفظ والنشر ✓ — التطبيق سيجلب التحديث خلال ثوانٍ.'
-        : 'تم الحفظ محلياً لكن تعذر نشر GitHub: ' + (repo.error || gist.error || ''), !queued);
+    const report = validateBundle(bundle, latestPublishedBundle);
+    if (report.errors) {
+      setPublishChip('error', report.errors + ' أخطاء');
+      if (!opts.silent) {
+        showSaveStatus('تم منع النشر: ' + report.errors + ' خطأ في الحزمة. اضغط «تدقيق» للتفاصيل.', true);
+        showToast('تم منع النشر — يوجد أخطاء', 'error');
+      } else {
+        showToast('تم منع النشر — يوجد ' + report.errors + ' أخطاء', 'error');
+      }
+      return { ok: false, blocked: true, report };
     }
-    return { ok: true, repo, gist, out };
+    return await postBundleToServer(bundle, opts);
   } catch (e) {
     console.error('auto publish failed', e);
     setPublishChip('error', 'فشل النشر');
@@ -2464,38 +2664,18 @@ async function exportLessonBundleJson() {
   try {
     const bundle = await buildLessonBundleObject();
     if (!bundle) return;
-    const json = JSON.stringify(bundle, null, 2);
-
-    // حفظ مباشر إلى ملف التطبيق على القرص عبر خادم لوحة التحكم (بدون تنزيل يدوي)
-    let savedDirectly = false;
+    const report = validateBundle(bundle, latestPublishedBundle);
+    if (report.errors) {
+      setPublishChip('error', report.errors + ' أخطاء');
+      showSaveStatus('تم منع النشر: ' + report.errors + ' خطأ في الحزمة. اضغط «تدقيق» للتفاصيل.', true);
+      showToast('تم منع النشر — يوجد أخطاء', 'error');
+      return;
+    }
     try {
-      const saveEndpoint = (location.protocol === 'file:')
-        ? 'http://localhost:8080/api/save-lesson-bundle'
-        : '/api/save-lesson-bundle';
-      setPublishChip('saving', 'جارٍ النشر...');
-      const resp = await fetch(saveEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json;charset=utf-8' },
-        body: json,
-        cache: 'no-store'
-      });
-      const out = await resp.json().catch(() => ({}));
-      if (resp.ok && out && out.ok) {
-        savedDirectly = true;
-        const r = out.repo || {};
-        const g = out.gist || {};
-        const queued = !!(r.queued || g.queued || r.ok || g.ok);
-        const netMsg = queued
-          ? 'تم النشر على الإنترنت ✓ (جارٍ في الخلفية)'
-          : 'تعذر النشر على الإنترنت: ' + (r.error || g.error || '');
-        setPublishChip(queued ? 'saved' : 'error', queued ? 'تم النشر' : 'فشل النشر');
-        showSaveStatus('تم الحفظ (' + out.lessons + ' درس + ' + (out.newLessons || 0) + ' جديد). ' + netMsg + ' — التطبيق سيجلب التحديث خلال ثوانٍ.', !queued);
-        showToast(queued ? 'تم النشر بنجاح ✓' : 'تعذر النشر', queued ? 'success' : 'error');
-      } else {
-        throw new Error((out && out.error) || ('HTTP ' + resp.status));
-      }
+      await postBundleToServer(bundle, { silent: false });
     } catch (e) {
       console.error('direct bundle save failed, falling back to download', e);
+      const json = JSON.stringify(bundle, null, 2);
       const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2509,12 +2689,162 @@ async function exportLessonBundleJson() {
       showSaveStatus('تعذر الحفظ المباشر (' + (e && e.message ? e.message : '') + '). تم تنزيل JSON ك بديل؛ انسخه يدويًا إلى مسار التطبيق. تأكد أن لوحة التحكم تعمل من serve.cjs على 8080.', true);
       showToast('تعذر النشر — تم تنزيل JSON كبديل', 'error');
     }
-    if (!savedDirectly) return;
   } catch (e) {
     console.error(e);
     setPublishChip('error', 'فشل النشر');
     showSaveStatus('تعذر تصدير JSON: ' + (e && e.message ? e.message : ''), true);
     showToast('تعذر تصدير JSON', 'error');
+  }
+}
+
+function reviewHtml(report, changes) {
+  const badges = '<div class="review-summary">' +
+    '<span class="review-badge">' + (report.count || 0) + ' درس</span>' +
+    '<span class="review-badge ' + (report.errors ? 'error' : 'ok') + '">' + report.errors + ' أخطاء</span>' +
+    '<span class="review-badge ' + (report.warnings ? 'warn' : 'ok') + '">' + report.warnings + ' تحذيرات</span>' +
+    (report.truncated ? '<span class="review-badge warn">عرض أول 147 مشكلة فقط</span>' : '') +
+    '</div>';
+  let html = badges;
+  if (!report.issues.length) {
+    html += '<div class="review-empty">✓ الحزمة سليمة — لا توجد أخطاء أو تحذيرات.</div>';
+  } else {
+    html += '<div class="review-list">' + report.issues.map(i => {
+      const m = String(i.lesson || '').match(/^#(\d+)/);
+      const idx = m ? (parseInt(m[1], 10) - 1) : null;
+      const lvl = i.level === 'error' ? 'خطأ' : 'تنبيه';
+      return '<div class="review-row ' + (i.level === 'error' ? 'error' : 'warning') + '">' +
+        '<span class="review-tag">' + lvl + '</span>' +
+        '<span style="flex:1"><b>' + escapeHtml(i.lesson) + '</b> — ' + escapeHtml(i.message) +
+        (i.path ? ' <span class="muted">' + escapeHtml(i.path) + '</span>' : '') + '</span>' +
+        (idx != null && idx >= 0 ? '<button type="button" class="btn btn-gray btn-sm" data-jump="' + idx + '">فتح</button>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+  }
+  if (changes && changes.length) {
+    html += '<div style="font-size:13px;font-weight:900;margin:14px 0 6px">التعديلات مقابل الحزمة المنشورة (' + changes.length + ')</div>';
+    html += '<div class="review-list">' + changes.slice(0, 25).map(c =>
+      '<div class="review-row info"><span class="review-tag">#' + (c.idx + 1) + '</span>' +
+      '<span style="flex:1"><b>' + escapeHtml(c.word || '') + '</b><br>' +
+      c.fields.map(f => escapeHtml(f)).join('<br>') + '</span></div>'
+    ).join('') + '</div>';
+    if (changes.length > 25) html += '<div class="muted" style="margin-top:6px">و ' + (changes.length - 25) + ' تعديلات إضافية…</div>';
+  }
+  return html;
+}
+
+function attachReviewJumps(card, close) {
+  card.querySelectorAll('[data-jump]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.getAttribute('data-jump'), 10);
+      close(null);
+      if (Number.isFinite(idx) && idx >= 0) setTimeout(() => { try { editAppLesson(idx); } catch (_) {} }, 60);
+    };
+  });
+}
+
+async function openQualityReview() {
+  setPublishChip('saving', 'جارٍ التدقيق...');
+  const bundle = await buildLessonBundleObject();
+  if (!bundle) { setPublishChip('error', 'فشل التدقيق'); return; }
+  const report = validateBundle(bundle, latestPublishedBundle);
+  const changes = diffBundle(bundle, latestPublishedBundle);
+  setPublishChip(report.errors ? 'error' : 'saved',
+    report.errors ? (report.errors + ' أخطاء') : (report.warnings ? (report.warnings + ' تحذيرات') : 'سليم'));
+  await showHtmlModal({
+    title: 'تدقيق جودة الحزمة',
+    html: reviewHtml(report, changes),
+    buttons: [{ key: 'close', label: 'إغلاق', cls: 'btn-gray' }],
+    onRender: attachReviewJumps
+  });
+}
+
+async function openPublishReview() {
+  setPublishChip('saving', 'جارٍ المراجعة...');
+  const bundle = await buildLessonBundleObject();
+  if (!bundle) { setPublishChip('error', 'فشل المراجعة'); return; }
+  const report = validateBundle(bundle, latestPublishedBundle);
+  const changes = diffBundle(bundle, latestPublishedBundle);
+  setPublishChip(report.errors ? 'error' : 'saved',
+    report.errors ? (report.errors + ' أخطاء') : (report.warnings ? (report.warnings + ' تحذيرات') : 'جاهز للنشر'));
+  const buttons = [{ key: 'cancel', label: 'إلغاء', cls: 'btn-gray' }];
+  if (!report.errors) buttons.push({ key: 'publish', label: 'نشر الآن', cls: 'btn-green' });
+  const action = await showHtmlModal({
+    title: 'مراجعة النشر قبل التطبيق',
+    html: reviewHtml(report, changes),
+    buttons: buttons,
+    onRender: attachReviewJumps
+  });
+  if (action !== 'publish') {
+    setPublishChip('error', 'تم الإلغاء');
+    return;
+  }
+  try {
+    await postBundleToServer(bundle, { silent: false });
+  } catch (e) {
+    console.error(e);
+    setPublishChip('error', 'فشل النشر');
+    showSaveStatus('تعذر النشر: ' + (e && e.message ? e.message : ''), true);
+  }
+}
+
+async function openHistoryModal() {
+  try {
+    setPublishChip('saving', 'جارٍ تحميل السجل...');
+    const res = await fetch('/api/bundle-history?t=' + Date.now(), { cache: 'no-store' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error((data && data.error) || ('HTTP ' + res.status));
+    const items = Array.isArray(data.items) ? data.items : [];
+    const html = items.length
+      ? '<div class="review-list">' + items.map(it =>
+          '<div class="review-row info"><span class="review-tag">' + escapeHtml((it.sha || '').slice(0, 8)) + '</span>' +
+          '<span style="flex:1"><b>' + escapeHtml(it.message || '') + '</b><br><span class="muted">' + escapeHtml(it.date || '') + '</span></span>' +
+          '<button type="button" class="btn btn-sm" data-restore="' + escapeHtml(it.sha) + '">استعادة</button></div>'
+        ).join('') + '</div>'
+      : '<div class="review-empty">لا توجد نسخ سابقة في السجل.</div>';
+    setPublishChip('saved', 'جاهز');
+    await showHtmlModal({
+      title: 'سجل إصدارات الحزمة',
+      html: html,
+      buttons: [{ key: 'close', label: 'إغلاق', cls: 'btn-gray' }],
+      onRender: (card, close) => {
+        card.querySelectorAll('[data-restore]').forEach(btn => {
+          btn.onclick = () => {
+            const sha = btn.getAttribute('data-restore');
+            close(null);
+            setTimeout(() => restoreBundleVersion(sha), 60);
+          };
+        });
+      }
+    });
+  } catch (e) {
+    setPublishChip('error', 'فشل السجل');
+    showToast('تعذر تحميل السجل: ' + (e && e.message ? e.message : ''), 'error');
+  }
+}
+
+async function restoreBundleVersion(sha) {
+  const ok = await showConfirmModal(
+    'استعادة نسخة سابقة',
+    'سيتم نشر محتوى النسخة المختارة كإصدار جديد في الحزمة. هل تريد المتابعة؟',
+    'استعادة'
+  );
+  if (!ok) return;
+  try {
+    setPublishChip('saving', 'جارٍ الاستعادة...');
+    const res = await fetch('/api/rollback-bundle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json;charset=utf-8' },
+      body: JSON.stringify({ sha: sha }),
+      cache: 'no-store'
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok || !out.ok) throw new Error((out && out.error) || ('HTTP ' + res.status));
+    setPublishChip('saved', 'تمت الاستعادة');
+    showToast('تمت الاستعادة والنشر ✓', 'success');
+    setTimeout(() => { try { location.reload(); } catch (_) {} }, 1200);
+  } catch (e) {
+    setPublishChip('error', 'فشل الاستعادة');
+    showToast('تعذر الاستعادة: ' + (e && e.message ? e.message : ''), 'error');
   }
 }
 
