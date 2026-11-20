@@ -703,6 +703,26 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
   Lesson get _lesson => lessons[_lessonIndex];
   List<Lesson> get _distractors => pickDistractors(_lessonIndex, 3);
 
+  /// التصنيف الحقيقي للدرس من بياناته، وليس من ترتيبه الرقمي.
+  LessonGroup get _lessonGroup {
+    final name = _lesson.category.trim();
+    for (final g in groups) {
+      if (g.name == name) return g;
+    }
+    final idx = (_lessonIndex ~/ 10).clamp(0, groups.isEmpty ? 0 : groups.length - 1);
+    return groups[idx];
+  }
+
+  /// رقم الدرس داخل فئته (1..N)، كما يريد المستخدم عند التصنيف.
+  int get _localLessonNumber {
+    final cat = _lesson.category.trim();
+    var n = 0;
+    for (var i = 0; i <= _lessonIndex && i < lessons.length; i++) {
+      if (lessons[i].category.trim() == cat) n++;
+    }
+    return n < 1 ? 1 : n;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -900,7 +920,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
       valueListenable: LessonContentService.instance.revision,
       builder: (context, _rev, __) {
     final lesson = _lesson;
-    final group = groups[(_lessonIndex ~/ 10).clamp(0, groups.isEmpty ? 0 : groups.length - 1)];
+    final group = _lessonGroup;
     final introOverride = _stepOverrides?['intro'];
     final hasIntroOverride = introOverride is Map &&
         introOverride['items'] is List &&
@@ -920,7 +940,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
                   coloring: !showIntro &&
                       _step == 5 &&
                       (_isSpecialLesson(_lessonIndex) || _hasChoiceOverride),
-                  lessonNumber: _lessonId,
+                  lessonNumber: _localLessonNumber,
                   groupName: group.name,
                   onBack: () => Navigator.of(context).pop(),
                   onHome: _exitToHome,

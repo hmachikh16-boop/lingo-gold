@@ -18,6 +18,16 @@ class LessonsScreen extends StatelessWidget {
       valueListenable: LessonContentService.instance.revision,
       builder: (context, _, __) {
         final sections = _buildSections();
+        final localNumbers = <int, int>{};
+        final counters = <String, int>{};
+        for (var i = 0; i < lessons.length; i++) {
+          final cat = lessons[i].category.trim().isEmpty
+              ? 'دروس أخرى'
+              : lessons[i].category.trim();
+          final n = (counters[cat] ?? 0) + 1;
+          counters[cat] = n;
+          localNumbers[i] = n;
+        }
         return SafeArea(
           bottom: false,
           child: ListView.builder(
@@ -92,7 +102,8 @@ class LessonsScreen extends StatelessWidget {
                   ),
                   ...section.indices.map((idx) {
                     final lesson = lessons[idx];
-                    final lessonNumber = idx + 1;
+                    final lessonNumber = localNumbers[idx] ?? idx + 1;
+                    final globalLessonNumber = idx + 1;
                     final isNew = idx >= 140;
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -156,7 +167,7 @@ class LessonsScreen extends StatelessWidget {
                           Icons.play_arrow_rounded,
                           color: kPrimary,
                         ),
-                        onTap: () => onStartLesson(lessonNumber),
+                        onTap: () => onStartLesson(globalLessonNumber),
                       ),
                     );
                   }),
