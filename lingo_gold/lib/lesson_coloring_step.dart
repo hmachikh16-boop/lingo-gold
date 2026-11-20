@@ -469,7 +469,7 @@ class _LessonColoringStepState extends State<LessonColoringStep> {
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.medium,
                   ),
-                  if (task != null)
+                  if (task != null && task.hintLevel > 0)
                     Positioned.fill(
                       child: IgnorePointer(
                         child: CustomPaint(

@@ -29,6 +29,7 @@ class LessonColoringTask {
   /// تعليمات مخصصة من لوحة التحكم (إن وُجدت).
   final String? instructionEn;
   final String? instructionAr;
+  final int hintLevel;
 
   const LessonColoringTask({
     required this.label,
@@ -39,6 +40,7 @@ class LessonColoringTask {
     this.extraPoints = const [],
     this.instructionEn,
     this.instructionAr,
+    this.hintLevel = 0,
   });
 
   String get instruction =>

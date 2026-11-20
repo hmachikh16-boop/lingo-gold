@@ -10,6 +10,7 @@ import 'lessons_screen.dart';
 import 'lesson_flow.dart';
 import 'lesson_content_service.dart';
 import 'profile_screen.dart';
+import 'progress_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
 import 'widgets.dart';
@@ -24,6 +25,7 @@ void main() async {
     // Firebase is not configured yet (missing google-services.json).
     // The app still runs; Firestore features are disabled until configured.
   }
+  await ProgressService.instance.init();
   // Start listening for admin edits (sentences/images) from Firestore.
   LessonContentService.instance.start();
   runApp(const LingoGoldApp());

@@ -31,6 +31,11 @@ class Lesson {
   final double zoom; // تكبير/تصغير الصورة داخل إطارها (1 = الحجم العادي)
   final String title; // الاسم العربي للدرس من لوحة التحكم
   final int level; // مستوى المنهج (1..5)
+  final String id; // معرّف ثابت لتتبّع التقدّم
+  final int hintLevel; // مستوى التلميح 2/1/0
+  final String storyId;
+  final int storyOrder;
+  final String storyTitle;
 
   const Lesson({
     required this.word,
@@ -47,6 +52,11 @@ class Lesson {
     this.zoom = 1.0,
     this.title = '',
     this.level = 0,
+    this.id = '',
+    this.hintLevel = 0,
+    this.storyId = '',
+    this.storyOrder = 0,
+    this.storyTitle = '',
   });
 
   String get spokenText {
@@ -79,6 +89,11 @@ class Lesson {
     double? zoom,
     String? title,
     int? level,
+    String? id,
+    int? hintLevel,
+    String? storyId,
+    int? storyOrder,
+    String? storyTitle,
   }) {
     return Lesson(
       word: word ?? this.word,
@@ -95,6 +110,11 @@ class Lesson {
       zoom: zoom ?? this.zoom,
       title: title ?? this.title,
       level: level ?? this.level,
+      id: id ?? this.id,
+      hintLevel: hintLevel ?? this.hintLevel,
+      storyId: storyId ?? this.storyId,
+      storyOrder: storyOrder ?? this.storyOrder,
+      storyTitle: storyTitle ?? this.storyTitle,
     );
   }
 }

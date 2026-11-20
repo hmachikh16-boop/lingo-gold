@@ -13,6 +13,7 @@ import 'lesson_matching.dart';
 import 'lesson_smart_choose.dart';
 import 'lesson_speaking.dart';
 import 'lesson_writing.dart';
+import 'progress_service.dart';
 import 'services/sound_service.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -696,6 +697,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
   int _score = 0;
   int _speakingScore = 0;
   int _coloringPage = 0;
+  String? _currentTargetId;
   bool _showIntro = true;
   bool _rewardVisible = false;
   bool _congratsVisible = false;
@@ -724,6 +726,33 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
     return n < 1 ? 1 : n;
   }
 
+  String _stepKey(int step) {
+    if (step == 0) return 'listen';
+    if (step == 1) return 'speak';
+    if (step == 2) return 'match';
+    if (step == 3) return 'write';
+    if (step == 4) return _showsChoiceStep ? 'choice' : 'coloring';
+    if (step == 5) return 'coloring';
+    return 'listen';
+  }
+
+  String? _stepObjective(int step) {
+    final m = _stepOverrides?[_stepKey(step)];
+    if (m is Map) {
+      final v = m['objective']?.toString().trim();
+      if (v != null && v.isNotEmpty) return v;
+    }
+    return null;
+  }
+
+  bool _revealTranslation(String id) {
+    final cfg = LessonContentService.instance.curriculumConfig;
+    if (cfg == null || cfg['immersion'] != true) return true;
+    final after = cfg['revealTranslationAfter'];
+    final n = after is num ? after.toInt() : 2;
+    return ProgressService.instance.shouldRevealTranslation(id, n);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -732,6 +761,8 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
   }
 
   String get _title {
+    final objective = _stepObjective(_step);
+    if (objective != null) return objective;
     switch (_step) {
       case 0:
         return 'درس الاستماع';
@@ -760,6 +791,9 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
   void _completeStep({required bool correct, int? speakingScore}) {
     if (_step == 1) {
       _speakingScore = speakingScore ?? 0;
+    }
+    if (_currentTargetId != null && _currentTargetId!.isNotEmpty) {
+      ProgressService.instance.record(_currentTargetId!, correct);
     }
     if (correct) {
       _score++;
@@ -886,7 +920,16 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
               : base.imageUrl),
       zoom: zoom,
       title: s('title', base.title),
-      level: base.level,
+      level: m['level'] is num ? (m['level'] as num).toInt() : base.level,
+      id: s('id', base.id),
+      hintLevel: m['hintLevel'] is num
+          ? (m['hintLevel'] as num).toInt()
+          : base.hintLevel,
+      storyId: s('storyId', base.storyId),
+      storyOrder: m['storyOrder'] is num
+          ? (m['storyOrder'] as num).toInt()
+          : base.storyOrder,
+      storyTitle: s('storyTitle', base.storyTitle),
     );
   }
 
@@ -1071,24 +1114,31 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
             if (others.isNotEmpty) distractors = others;
           }
         }
+        _currentTargetId = target.id.isNotEmpty ? target.id : 'L$_lessonId';
         return ListeningStep(
           lesson: target,
           distractors: distractors,
           onComplete: _onSimpleComplete,
-          showTranslation: true,
+          showTranslation: _revealTranslation(_currentTargetId!),
         );
       }
       case 1:
+        _currentTargetId = effectiveLesson.id.isNotEmpty
+            ? effectiveLesson.id
+            : 'L$_lessonId';
         return SpeakingStep(
           lesson: effectiveLesson,
           onComplete: (correct, score) =>
               _completeStep(correct: correct, speakingScore: score),
-          showTranslation: true,
+          showTranslation: _revealTranslation(_currentTargetId!),
         );
       case 2: {
         if (matchOv is Map && matchOv['pairs'] is List) {
           final pairs = _lessonsFromOverrideList(matchOv['pairs'], fallback: lesson);
           if (pairs.length >= 2) {
+            _currentTargetId = pairs.first.id.isNotEmpty
+                ? pairs.first.id
+                : 'L$_lessonId';
             return MatchingStep(
               lesson: pairs.first,
               distractors: pairs.sublist(1),
@@ -1098,12 +1148,16 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
         }
         if (_isSpecialLesson(_lessonIndex)) {
           final pairs = _specialMatchingPairs(_lessonIndex);
+          _currentTargetId = pairs.first.id.isNotEmpty
+              ? pairs.first.id
+              : 'L$_lessonId';
           return MatchingStep(
             lesson: pairs.first,
             distractors: pairs.sublist(1),
             onComplete: _onSimpleComplete,
           );
         }
+        _currentTargetId = lesson.id.isNotEmpty ? lesson.id : 'L$_lessonId';
         return MatchingStep(
           lesson: lesson,
           distractors: _distractors.take(2).toList(),
@@ -1115,6 +1169,9 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
         if (writeOv is Map && (writeOv['word'] ?? '').toString().trim().isNotEmpty) {
           targetWord = writeOv['word'].toString().trim();
         }
+        _currentTargetId = effectiveLesson.id.isNotEmpty
+            ? effectiveLesson.id
+            : 'L$_lessonId';
         return WritingStep(
           lesson: effectiveLesson,
           targetWord: targetWord,
@@ -1160,6 +1217,9 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
                 others.add(_lessonFromOverride(c, fallback: lesson));
               }
               final question = questionText.trim().isEmpty ? rawQuestion : questionText.trim();
+              _currentTargetId = correctLesson.id.isNotEmpty
+                  ? correctLesson.id
+                  : 'L$_lessonId';
               return SmartChooseStep(
                 lesson: correctLesson,
                 lessonIndex: _lessonIndex,

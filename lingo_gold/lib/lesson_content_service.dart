@@ -47,6 +47,7 @@ class LessonContentService {
   Timer? _remoteTimer;
   String? _lastContentSha;
   final Map<int, Map<String, dynamic>> stepOverridesByIndex = {};
+  Map<String, dynamic>? curriculumConfig;
 
   /// عدد دروس التطبيق الأساسية قبل أي دروس تُضاف من لوحة التحكم.
   /// يُستخدم لتنظيف الدروس الديناميكية التي حُذفت من الحزمة البعيدة.
@@ -246,6 +247,14 @@ class LessonContentService {
 
   bool _applyRemoteBundle(Map<String, dynamic> bundle) {
     var changed = false;
+    if (bundle['curriculum'] is Map) {
+      final cfg = Map<String, dynamic>.from(bundle['curriculum'] as Map);
+      final cur = curriculumConfig;
+      if (cur == null || _mapEqualsShallow(cur, cfg) == false) {
+        curriculumConfig = cfg;
+        changed = true;
+      }
+    }
 
     // Support a few shapes:
     // { lessons: [...] } where each item may include appIndex/base fields/stepOverrides
@@ -314,6 +323,11 @@ class LessonContentService {
           zoom: _asDouble(m['zoom'], 1.0),
           title: _asString(m['title']),
           level: _asInt(m['level'], 0),
+          id: _asString(m['id']),
+          hintLevel: _asInt(m['hintLevel'], 0),
+          storyId: _asString(m['storyId']),
+          storyOrder: _asInt(m['storyOrder'], 0),
+          storyTitle: _asString(m['storyTitle']),
         ));
         changed = true;
       }
@@ -424,6 +438,11 @@ class LessonContentService {
       zoom: m.containsKey('zoom') ? _asDouble(m['zoom'], 1.0) : base.zoom,
       title: m.containsKey('title') ? _asString(m['title']) : base.title,
       level: m.containsKey('level') ? _asInt(m['level'], base.level) : base.level,
+      id: m.containsKey('id') ? _asString(m['id']) : base.id,
+      hintLevel: m.containsKey('hintLevel') ? _asInt(m['hintLevel'], base.hintLevel) : base.hintLevel,
+      storyId: m.containsKey('storyId') ? _asString(m['storyId']) : base.storyId,
+      storyOrder: m.containsKey('storyOrder') ? _asInt(m['storyOrder'], base.storyOrder) : base.storyOrder,
+      storyTitle: m.containsKey('storyTitle') ? _asString(m['storyTitle']) : base.storyTitle,
     );
   }
 
@@ -439,6 +458,11 @@ class LessonContentService {
         a.category == b.category &&
         a.title == b.title &&
         a.level == b.level &&
+        a.id == b.id &&
+        a.hintLevel == b.hintLevel &&
+        a.storyId == b.storyId &&
+        a.storyOrder == b.storyOrder &&
+        a.storyTitle == b.storyTitle &&
         a.zoom == b.zoom &&
         _listEquals(a.options, b.options);
   }

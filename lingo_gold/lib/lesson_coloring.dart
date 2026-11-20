@@ -256,6 +256,9 @@ LessonColoringData? customColoringDataFromOverride(
         extraPoints: _parseExtraPoints(raw['extraPoints']),
         instructionEn: raw['instructionEn']?.toString(),
         instructionAr: raw['instructionAr']?.toString(),
+        hintLevel: raw['hintLevel'] is num
+            ? (raw['hintLevel'] as num).toInt()
+            : 0,
       ));
     }
   }
