@@ -544,6 +544,7 @@ let latestPublishedGeneratedAt = null;
 let _publishedBundlePromise = null;
 // لا توجد مسودات محلية. التعديلات تُكتب مباشرة في نسخة العمل هذه، ثم تُنشر.
 let workingBundle = null;
+const editedLessonIndices = new Set();
 
 function getWorkingBundle() {
   if (!workingBundle) {
@@ -559,6 +560,26 @@ function getWorkingLessonForIndex(index) {
   return [].concat(Array.isArray(wb.lessons) ? wb.lessons : [])
     .concat(Array.isArray(wb.newLessons) ? wb.newLessons : [])
     .find(x => x && x.appIndex === index) || null;
+}
+
+// تحديث نسخة العمل بالحزمة الحقيقية المنشورة (التي يقرأها التطبيق)،
+// مع الإبقاء على أي تعديل لم يُنشر بعد في هذه الجلسة فقط.
+function syncWorkingBundleFromPublished() {
+  const pub = latestPublishedBundle;
+  if (!pub) return;
+  const wb = getWorkingBundle();
+  const fresh = deepClone(pub);
+  [].concat(Array.isArray(fresh.lessons) ? fresh.lessons : [])
+    .concat(Array.isArray(fresh.newLessons) ? fresh.newLessons : [])
+    .forEach(l => {
+      if (!l || typeof l.appIndex !== 'number') return;
+      if (editedLessonIndices.has(l.appIndex)) return;
+      const arr = l.appIndex < getBaseLessonCount() ? wb.lessons : wb.newLessons;
+      if (!Array.isArray(arr)) return;
+      const i = arr.findIndex(x => x && x.appIndex === l.appIndex);
+      if (i >= 0) arr[i] = l; else arr.push(l);
+    });
+  wb.generatedAt = fresh.generatedAt || wb.generatedAt;
 }
 
 // آخر حزمة منشورة من الخادم (تُستخدم لدمج stepOverrides ومنع المسودات القديمة
@@ -1608,10 +1629,12 @@ function openEditorWithSeed(appIndex, title) {
 }
 
 async function editAppLesson(appIndex, title) {
-  // فتح فوري من بيانات التطبيق/المسودة المحلية (بدون انتظار Firestore)
+  // افتح الدرس الحقيقي الذي يقرأه التطبيق: نجلب أحدث حزمة منشورة ثم نحدّث
+  // نسخة العمل، مع الحفاظ على التعديلات التي لم تُنشر بعد في هذه الجلسة.
   try {
     if (!appContent) await loadAppContent();
-    await ensurePublishedBundle();
+    await ensurePublishedBundle(true);
+    syncWorkingBundleFromPublished();
     openEditorWithSeed(appIndex, title || '');
   } catch (e) {
     console.error(e);
@@ -2196,6 +2219,7 @@ function saveLocalLessonDraft(silent) {
     if (!Array.isArray(arr)) return { ok: false, error: 'no-array' };
     const i = arr.findIndex(x => x && x.appIndex === appIndex);
     if (i >= 0) arr[i] = clean; else arr.push(clean);
+    editedLessonIndices.add(appIndex);
     if (!silent) {
       showSaveStatus('تم تعديل الدرس — جارٍ النشر التلقائي على GitHub...', false);
       scheduleAutoPublish(150);

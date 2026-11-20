@@ -76,15 +76,26 @@ function httpsGetText(url, redirects = 0) {
 // من مستودع المحتوى (Git) ونستخدمها إذا كانت أحدث، حتى لا يمسح أول نشر
 // التعديلات التي سبق نشرها من جهاز آخر أو من جلسة سابقة.
 let contentSyncPromise = null;
+let lastContentSyncAt = 0;
 function ensureContentSynced() {
-  if (contentSyncPromise) return contentSyncPromise;
+  // لا نجعل المزامنة مرة واحدة فقط: قد يعدّل المستخدم من تطبيق المحرر المستقل
+  // أو من جهاز آخر، فيجب أن يجلب الخادم الحزمة الحقيقية عند كل فتح للوحة.
+  const now = Date.now();
+  if (contentSyncPromise && now - lastContentSyncAt < 1500) return contentSyncPromise;
+  lastContentSyncAt = now;
   contentSyncPromise = (async () => {
     let remote = null;
     try {
       if (fs.existsSync(CONTENT_REPO_DIR)) {
-        await runAsync('git', ['-C', CONTENT_REPO_DIR, 'fetch', 'origin', 'main']);
-        const show = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'show', 'origin/main:lingo-lessons-bundle.json']);
-        if (show.status === 0 && show.stdout) remote = JSON.parse(show.stdout);
+        // لا نعتمد على refs/remotes/origin/main (قد يكون تالفاً بعد دفع سابق).
+        const ls = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'ls-remote', 'origin', 'refs/heads/main']);
+        const m = (ls.stdout || '').match(/([0-9a-f]{40})\s+refs\/heads\/main/i);
+        if (m) {
+          const sha = m[1];
+          await runAsync('git', ['-C', CONTENT_REPO_DIR, 'fetch', 'origin', 'main']);
+          const show = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'show', sha + ':lingo-lessons-bundle.json']);
+          if (show.status === 0 && show.stdout) remote = JSON.parse(show.stdout);
+        }
       }
     } catch (_) {}
     if (!remote) {
