@@ -670,6 +670,92 @@ function setLoading(id, show) {
 // ---------- CATEGORIES (cached, fetched once) ----------
 // اللوحة هي أداة تعديل فقط: نعرض دروس التطبيق (lessons_seed.json) مباشرة،
 // بدون Firestore ولا أي مصدر خارجي، حتى لا تظهر نسخ دروس من غير التطبيق.
+function seedMapByIndex() {
+  const map = new Map();
+  if (!appContent || !appContent.lessonsByCat) return map;
+  Object.keys(appContent.lessonsByCat).forEach(cat => {
+    (appContent.lessonsByCat[cat] || []).forEach(it => {
+      if (it && typeof (it.seedIdx != null ? it.seedIdx : it.appIndex) === 'number') {
+        map.set(it.seedIdx != null ? it.seedIdx : it.appIndex, Object.assign({ category: cat }, it));
+      }
+    });
+  });
+  return map;
+}
+
+function seedItemForIndex(index, map) {
+  return map.get(index) || null;
+}
+
+function buildCleanStepOverrides(index, map) {
+  const s = seedItemForIndex(index, map) || {};
+  const t = normItem(Object.assign({}, s, { imageUrl: '' }));
+  const same = [];
+  map.forEach((it, i) => {
+    if (i !== index && it.category === s.category) same.push(normItem(Object.assign({}, it, { imageUrl: '' })));
+  });
+  const ds = same.slice(0, 3);
+  for (let d = 1; ds.length < 3 && d < map.size; d++) {
+    for (const j of [index - d, index + d]) {
+      const it = map.get(j);
+      if (!it) continue;
+      const n = normItem(Object.assign({}, it, { imageUrl: '' }));
+      if (ds.some(x => x.imageFile === n.imageFile && x.word === n.word)) continue;
+      ds.push(n);
+      if (ds.length >= 3) break;
+    }
+  }
+  return {
+    intro: { items: [t, ...ds] },
+    speak: Object.assign({}, t),
+    listen: {
+      sentence: s.sentence || '',
+      spoken: s.spoken || s.sentence || '',
+      choices: [Object.assign({}, t, { correct: true, label: t.word }),
+        ...ds.map(x => Object.assign({}, x, { correct: false, label: x.word }))]
+    },
+    match: { pairs: [t, ...ds.slice(0, 2)] },
+    choice: {
+      question: 'Which picture is ' + (s.word || '') + '?',
+      options: [Object.assign({}, t, { correct: true, label: t.word }),
+        ...ds.map(x => Object.assign({}, x, { correct: false, label: x.word }))]
+    },
+    write: Object.assign({}, t),
+    // coloring يبقى كما هو إن وُجد في المسودة، وإلا يولّد الافتراضي في التطبيق
+  };
+}
+
+async function migrateLocalDraftsFromSeed() {
+  const key = 'lingo_drafts_migration_20261120_v4';
+  if (localStorage.getItem(key)) return;
+  try {
+    await loadAppContent();
+    const map = seedMapByIndex();
+    const drafts = getLocalLessonDrafts();
+    map.forEach((s, i) => {
+      const d = Object.assign({}, drafts[String(i)] || {});
+      d.appIndex = i;
+      d.word = s.word || '';
+      d.sentence = s.sentence || '';
+      d.translation = s.translation || '';
+      d.spoken = s.spoken || '';
+      d.imageFile = s.imageFile || '';
+      d.isPack = !!s.isPack;
+      d.indexInPack = Number.isFinite(s.indexInPack) ? s.indexInPack : 0;
+      d.imageUrl = '';
+      d.category = s.category || '';
+      d.order = i + 1;
+      d.lessonNumber = i + 1;
+      d.title = 'الدرس ' + (s.lessonNumber || i + 1) + ' • ' + (s.word || '');
+      d.isActive = true;
+      d.stepOverrides = buildCleanStepOverrides(i, map);
+      drafts[String(i)] = d;
+    });
+    setLocalLessonDrafts(drafts);
+    localStorage.setItem(key, '1');
+  } catch (_) {}
+}
+
 async function initCategories() {
   if (categoriesLoaded) { showCategoriesView(); return; }
   if (categoriesLoading) return;
@@ -677,6 +763,7 @@ async function initCategories() {
   setLoading('catLoading', true);
   try {
     await loadAppContent();
+    await migrateLocalDraftsFromSeed();
     categoriesLoaded = true;
     setPreviewMode(true);
     renderCategories();
