@@ -311,6 +311,7 @@ class LessonContentService {
           translation: (m['translation'] ?? '').toString(),
           imageUrl: _asNullableString(m['imageUrl']),
           spoken: _asNullableString(m['spoken']),
+          zoom: _asDouble(m['zoom'], 1.0),
         ));
         changed = true;
       }
@@ -418,6 +419,7 @@ class LessonContentService {
       // قيمة صريحة فارغة/فارغة null تعني «إزالة الصورة المرفوعة»، لا الرجوع
       // للصورة القديمة. بدون ذلك يستحيل حذف صورة سبق نشرها.
       imageUrl: imageUrlProvided ? (imageUrlStr ?? '') : base.imageUrl,
+      zoom: m.containsKey('zoom') ? _asDouble(m['zoom'], 1.0) : base.zoom,
     );
   }
 
@@ -431,6 +433,7 @@ class LessonContentService {
         a.isPack == b.isPack &&
         a.indexInPack == b.indexInPack &&
         a.category == b.category &&
+        a.zoom == b.zoom &&
         _listEquals(a.options, b.options);
   }
 
@@ -445,6 +448,11 @@ class LessonContentService {
     if (v is int) return v;
     if (v is num) return v.toInt();
     return int.tryParse(_asString(v)) ?? fallback;
+  }
+
+  double _asDouble(dynamic v, double fallback) {
+    if (v is num) return v.toDouble();
+    return double.tryParse(_asString(v)) ?? fallback;
   }
 
   List<String> _asStringList(dynamic v) {

@@ -25,6 +25,7 @@ class ColoringCanvas extends StatefulWidget {
   final double? guideY;
   final String? guideColorHex;
   final List<Offset> guideExtraPoints;
+  final double zoom;
 
   const ColoringCanvas({
     super.key,
@@ -38,6 +39,7 @@ class ColoringCanvas extends StatefulWidget {
     this.guideY,
     this.guideColorHex,
     this.guideExtraPoints = const [],
+    this.zoom = 1.0,
   });
 
   @override
@@ -308,27 +310,30 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (_guidedImage != null)
-                        RawImage(image: _guidedImage, fit: BoxFit.contain)
-                      else if (widget.imageUrl != null &&
-                          widget.imageUrl!.trim().isNotEmpty)
-                        Image.network(
-                          widget.imageUrl!.trim(),
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Center(
-                            child: Icon(Icons.image_outlined,
-                                size: 64, color: Color(0xFFCBD5E1)),
-                          ),
-                        )
-                      else
-                        Image.asset(
-                          widget.imageAsset,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Center(
-                            child: Icon(Icons.image_outlined,
-                                size: 64, color: Color(0xFFCBD5E1)),
-                          ),
-                        ),
+                      Transform.scale(
+                        scale: widget.zoom,
+                        alignment: Alignment.center,
+                        child: _guidedImage != null
+                            ? RawImage(image: _guidedImage, fit: BoxFit.contain)
+                            : (widget.imageUrl != null &&
+                                    widget.imageUrl!.trim().isNotEmpty)
+                                ? Image.network(
+                                    widget.imageUrl!.trim(),
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Icon(Icons.image_outlined,
+                                          size: 64, color: Color(0xFFCBD5E1)),
+                                    ),
+                                  )
+                                : Image.asset(
+                                    widget.imageAsset,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Icon(Icons.image_outlined,
+                                          size: 64, color: Color(0xFFCBD5E1)),
+                                    ),
+                                  ),
+                      ),
                       if (_guideLoading)
                         const Center(child: CircularProgressIndicator()),
                       if (_guideError != null)

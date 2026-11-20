@@ -3864,17 +3864,80 @@ function setPreviewImageSrc(src, altText, fallbackList) {
 }
 
 const imageZoomState = {};
+const zoomTargets = {};
+
+function getZoomTargetByKey(key) {
+  const ov = currentStepOverrides || {};
+  if (key === 'pv-speak') return ov.speak || null;
+  if (key === 'pv-write') return ov.write || null;
+  const m = String(key).match(/^(?:pv-)?(intro|listen|match|choice|coloring)-(\d+)$/);
+  if (!m) return null;
+  const step = m[1];
+  const idx = parseInt(m[2], 10) || 0;
+  if (step === 'intro') return (ov.intro && ov.intro.items && ov.intro.items[idx]) || null;
+  if (step === 'listen') return (ov.listen && ov.listen.choices && ov.listen.choices[idx]) || null;
+  if (step === 'match') return (ov.match && ov.match.pairs && ov.match.pairs[idx]) || null;
+  if (step === 'choice') return (ov.choice && ov.choice.options && ov.choice.options[idx]) || null;
+  if (step === 'coloring') return (ov.coloring && ov.coloring.pages && ov.coloring.pages[idx]) || null;
+  return null;
+}
+
+function ensureZoomTarget(key) {
+  let target = getZoomTargetByKey(key);
+  if (target) return target;
+  const eff = getEffectiveStepData();
+  const ov = ensureStepOverrides();
+  if (key === 'pv-speak') { ov.speak = deepClone(eff.merged.speak); }
+  else if (key === 'pv-write') { ov.write = deepClone(eff.merged.write); }
+  else {
+    const m = String(key).match(/^(?:pv-)?(intro|listen|match|choice|coloring)-(\d+)$/);
+    if (!m) return null;
+    const step = m[1];
+    const idx = parseInt(m[2], 10) || 0;
+    if (step === 'intro') {
+      if (!ov.intro || !Array.isArray(ov.intro.items)) ov.intro = deepClone(eff.merged.intro);
+      target = ov.intro.items[idx] || null;
+    } else if (step === 'listen') {
+      if (!ov.listen || !Array.isArray(ov.listen.choices)) ov.listen = deepClone(eff.merged.listen);
+      target = ov.listen.choices[idx] || null;
+    } else if (step === 'match') {
+      if (!ov.match || !Array.isArray(ov.match.pairs)) ov.match = deepClone(eff.merged.match);
+      target = ov.match.pairs[idx] || null;
+    } else if (step === 'choice') {
+      if (!ov.choice || !Array.isArray(ov.choice.options)) ov.choice = deepClone(eff.merged.choice);
+      target = ov.choice.options[idx] || null;
+    } else if (step === 'coloring') {
+      if (!ov.coloring || !Array.isArray(ov.coloring.pages)) ov.coloring = deepClone(eff.merged.coloring);
+      target = ov.coloring.pages[idx] || null;
+    }
+  }
+  currentStepOverrides = ov;
+  if (currentLessonData) currentLessonData.stepOverrides = ov;
+  return getZoomTargetByKey(key);
+}
+
 function zoomFromButton(btn) {
   const key = btn.parentElement && btn.parentElement.dataset.zoomControls;
   if (!key) return;
+  const target = ensureZoomTarget(key);
+  const current = (target && Number(target.zoom)) || imageZoomState[key] || 1;
   const delta = btn.dataset.zoomDir === '1' ? 0.15 : -0.15;
-  const next = Math.max(0.5, Math.min(2.5, (imageZoomState[key] || 1) + delta));
-  imageZoomState[key] = Math.round(next * 100) / 100;
+  const next = Math.max(0.5, Math.min(2.5, current + delta));
+  const rounded = Math.round(next * 100) / 100;
+  if (target) target.zoom = rounded;
+  imageZoomState[key] = rounded;
   applyImageZooms();
+  try {
+    saveLocalLessonDraft(true);
+    scheduleAutoPublish(250);
+    showSaveStatus('تم تغيير حجم الصورة — جارٍ النشر التلقائي...', false);
+  } catch (_) {}
 }
 function applyImageZooms() {
   document.querySelectorAll('[data-zoom-key]').forEach(img => {
-    const z = imageZoomState[img.dataset.zoomKey] || 1;
+    const key = img.dataset.zoomKey;
+    const target = getZoomTargetByKey(key);
+    const z = (target && Number(target.zoom)) || imageZoomState[key] || 1;
     img.style.transform = 'scale(' + z + ')';
   });
 }

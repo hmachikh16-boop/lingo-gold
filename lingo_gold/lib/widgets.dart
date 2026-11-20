@@ -30,6 +30,17 @@ class LessonImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final image = _buildImage();
+    final z = lesson.zoom;
+    if (z == 1.0) return image;
+    return Transform.scale(
+      scale: z,
+      alignment: Alignment.center,
+      child: image,
+    );
+  }
+
+  Widget _buildImage() {
     final url = lesson.imageUrl;
     if (url != null && url.trim().isNotEmpty) {
       return Image.network(

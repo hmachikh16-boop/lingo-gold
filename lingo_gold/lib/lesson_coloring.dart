@@ -240,6 +240,10 @@ class ColoringStep extends StatelessWidget {
     final imageUrl = (pageOverride?['imageUrl'] ?? '').toString().trim();
     final promptEn = (pageOverride?['promptEn'] ?? '').toString().trim();
     final promptAr = (pageOverride?['promptAr'] ?? '').toString().trim();
+    final zoomRaw = pageOverride?['zoom'];
+    final zoom = zoomRaw is num
+        ? zoomRaw.toDouble()
+        : (double.tryParse((zoomRaw ?? '').toString()) ?? 1.0);
     final targetColor = (pageOverride?['targetColor'] ?? '').toString().trim();
     final rawX = pageOverride?['targetX'];
     final rawY = pageOverride?['targetY'];
@@ -266,6 +270,7 @@ class ColoringStep extends StatelessWidget {
       guideY: targetY,
       guideColorHex: targetColor.isEmpty ? null : targetColor,
       guideExtraPoints: extraPoints,
+      zoom: zoom,
       prompt: promptEn.isEmpty
           ? coloringPromptEn(lesson, lessonIndex, pageIndex)
           : promptEn,

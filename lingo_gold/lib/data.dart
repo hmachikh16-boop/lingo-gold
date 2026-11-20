@@ -28,6 +28,7 @@ class Lesson {
   final String translation;
   final int order; // ترتيب الدرس (لا تعتمد على ترتيب Firestore)
   final String? imageUrl; // صورة مرفوعة من لوحة التحكم (Firestore/Storage) - أولوية على الأصل
+  final double zoom; // تكبير/تصغير الصورة داخل إطارها (1 = الحجم العادي)
 
   const Lesson({
     required this.word,
@@ -41,6 +42,7 @@ class Lesson {
     required this.translation,
     this.order = 0,
     this.imageUrl,
+    this.zoom = 1.0,
   });
 
   String get spokenText {
@@ -70,6 +72,7 @@ class Lesson {
     int? order,
     String? imageUrl,
     bool clearImageUrl = false,
+    double? zoom,
   }) {
     return Lesson(
       word: word ?? this.word,
@@ -83,6 +86,7 @@ class Lesson {
       translation: translation ?? this.translation,
       order: order ?? this.order,
       imageUrl: clearImageUrl ? null : (imageUrl ?? this.imageUrl),
+      zoom: zoom ?? this.zoom,
     );
   }
 }

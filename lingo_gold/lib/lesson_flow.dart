@@ -846,6 +846,10 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
     final hasImage = m.containsKey('imageFile') || m.containsKey('imageUrl') || m.containsKey('isPack') || m.containsKey('indexInPack');
     final imageFileRaw = (m['imageFile'] ?? '').toString().trim();
     final wordRaw = m['word']?.toString().trim();
+    final zoomRaw = m['zoom'];
+    final zoom = zoomRaw is num
+        ? zoomRaw.toDouble()
+        : (double.tryParse((zoomRaw ?? '').toString()) ?? base.zoom);
     // إذا كانت نسخة الخطوة تمثّل الدرس نفسه (نفس الكلمة أو نفس ملف الصورة)
     // ولم تحمل imageUrl، نرث الصورة المرفوعة في أعلى الدرس. بدون ذلك تبقى
     // نسخة قديمة داخل stepOverrides وتعيد الصورة القديمة في التطبيق.
@@ -879,6 +883,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
           : (hasImage && imageFileRaw.isNotEmpty
               ? inheritedImageUrl
               : base.imageUrl),
+      zoom: zoom,
     );
   }
 
