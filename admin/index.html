@@ -4521,30 +4521,14 @@ function resetCurrentStepOverride() {
 async function saveStepOverrides() {
   try {
     showSaveStatus('جاري حفظ تعديلات الواجهات...', false);
-    try {
-      requireAuthForWrite();
-      if (!currentLesson) await ensureCurrentLessonId();
-    } catch (e) {
-      console.error(e);
-      const m = 'تعذر ربط/حفظ الواجهات: ' + formatFirebaseError(e, e && e.message ? e.message : '');
-      showSaveStatus(m, true);
-      showToast(m, 'error');
-      return;
-    }
-    if (!currentLesson) { showSaveStatus('لا يوجد درس مرتبط للحفظ', true); return; }
-    const payload = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-    if (currentStepOverrides && Object.keys(currentStepOverrides).length) payload.stepOverrides = currentStepOverrides;
-    else payload.stepOverrides = firebase.firestore.FieldValue.delete();
-    await withTimeout(db.collection('lessons').doc(currentLesson).set(payload, { merge: true }), 30000, 'انتهت مهلة الحفظ');
+    // القانون: المصدر الوحيد للتعديل هو لوحة التحكم، ولا يُكتب إلى Firestore.
     if (currentLessonData) currentLessonData.stepOverrides = currentStepOverrides || null;
+    saveLocalLessonDraft(true);
     showSaveStatus('تم حفظ تعديلات الواجهات — جارٍ النشر التلقائي على GitHub...', false);
     scheduleAutoPublish(150);
   } catch (e) {
     console.error(e);
-    try { saveLocalLessonDraft(true); } catch (_) {}
-    const m = 'فشل حفظ تعديلات الواجهات في Firestore: ' + formatFirebaseError(e, e && e.message ? e.message : '') + ' — تم حفظ التعديل محليًا وجارٍ نشره تلقائيًا على GitHub.';
-    showSaveStatus(m, true);
-    scheduleAutoPublish(150);
+    showSaveStatus('تعذر حفظ التعديلات: ' + (e && e.message ? e.message : ''), true);
   }
 }
 
@@ -4566,17 +4550,7 @@ async function ensureCurrentLessonId() {
 async function saveLessonContent() {
   try {
     showSaveStatus('جاري حفظ محتوى الدرس...', false);
-    try {
-      requireAuthForWrite();
-      if (!currentLesson) await ensureCurrentLessonId();
-    } catch (e) {
-      console.error(e);
-      const m = 'تعذر ربط/حفظ الدرس: ' + formatFirebaseError(e, e && e.message ? e.message : '');
-      showSaveStatus(m, true);
-      showToast(m, 'error');
-      return;
-    }
-    if (!currentLesson) { showSaveStatus('لا يوجد درس مرتبط للحفظ', true); return; }
+    // القانون: لا مصدر تعديل إلا لوحة التحكم؛ الحفظ يتم إلى الحزمة المنشورة فقط.
     const word = (document.getElementById('lc_word').value || '').trim();
     const sentence = (document.getElementById('lc_sentence').value || '').trim();
     const spoken = (document.getElementById('lc_spoken').value || '').trim();
@@ -4584,22 +4558,18 @@ async function saveLessonContent() {
     const title = (document.getElementById('lc_title').value || '').trim();
     const optionsRaw = (document.getElementById('lc_options').value || '').trim();
     const options = optionsRaw ? optionsRaw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean) : [];
-    const payload = { word, sentence, translation, options };
-    if (spoken) payload.spoken = spoken; else payload.spoken = firebase.firestore.FieldValue.delete();
-    if (title) payload.title = title;
-    payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-    await withTimeout(db.collection('lessons').doc(currentLesson).set(payload, { merge: true }), 30000, 'انتهت مهلة الحفظ');
-    currentLessonData = Object.assign({}, currentLessonData || {}, payload);
-    if (!spoken && currentLessonData.spoken) delete currentLessonData.spoken;
+    const oldTranslation = normText((currentLessonData && currentLessonData.translation) || '');
+    currentLessonData = Object.assign({}, currentLessonData || {}, { word, sentence, translation, options });
+    if (spoken) currentLessonData.spoken = spoken; else delete currentLessonData.spoken;
+    if (title) currentLessonData.title = title;
+    syncTranslationToOverrides(oldTranslation, translation);
     updateLivePreview();
+    saveLocalLessonDraft(true);
     showSaveStatus('تم حفظ محتوى الدرس — جارٍ النشر التلقائي على GitHub...', false);
     scheduleAutoPublish(150);
   } catch (e) {
     console.error(e);
-    try { saveLocalLessonDraft(true); } catch (_) {}
-    const m = 'فشل حفظ محتوى الدرس في Firestore: ' + formatFirebaseError(e, e && e.message ? e.message : '') + ' — تم حفظ التعديل محليًا وجارٍ نشره تلقائيًا على GitHub.';
-    showSaveStatus(m, true);
-    scheduleAutoPublish(150);
+    showSaveStatus('تعذر حفظ محتوى الدرس: ' + (e && e.message ? e.message : ''), true);
   }
 }
 

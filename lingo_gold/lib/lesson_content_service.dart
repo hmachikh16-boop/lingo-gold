@@ -69,18 +69,9 @@ class LessonContentService {
   void start() {
     if (_started) return;
     _started = true;
-    // Firestore يعمل كمسار احتياطي فقط: يُستمع إليه قبل نجاح أول جلب للحزمة،
-    // وبمجرد نجاح الحزمة البعيدة يتوقف عن الكتابة حتى لا تكتب نسخة قديمة فوقها.
-    if (Firebase.apps.isNotEmpty) {
-      try {
-        _sub = FirestoreService.instance.allLessonsStream().listen(
-          _apply,
-          onError: (_) {},
-        );
-      } catch (_) {
-        // Firestore غير متاح؛ نعتمد على الحزمة البعيدة فقط.
-      }
-    }
+    // القانون الصارم: الدروس تُعدَّل فقط من لوحة التحكم، والمصدر الوحيد
+    // الذي يقرأه التطبيق هو الحزمة المنشورة. لا يُسمح لـ Firestore (أو أي
+    // مصدر آخر) بتغيير الدروس، حتى لا يحدث تضارب أو استبدال لتعديلات اللوحة.
     _startRemoteSync();
     // عند العودة للتطبيق، اجلب آخر حزمة فورًا (بدلاً من انتظار دورة الـ polling).
     SystemChannels.lifecycle.setMessageHandler((state) async {

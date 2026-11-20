@@ -52,3 +52,8 @@ lingo_gold_qr*.png
 public/download/*.apk
 public/lin-go-gold-*.apk
 android-nova/local.properties
+
+lingo_editor/
+lingo_gold_app_qr.png
+lingo_standalone_editor_qr.png
+
