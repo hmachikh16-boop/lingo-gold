@@ -1,4 +1,10 @@
+import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 
 import 'theme.dart';
 import 'widgets.dart';
@@ -12,6 +18,14 @@ class ColoringCanvas extends StatefulWidget {
   final String? promptAr;
   final String? pageLabel;
   final VoidCallback onDone;
+
+  /// تلوين موجّه: نقطة داخل المنطقة المطلوب تلوينها (0..1) واللون المطلوب.
+  /// عند ضبطها يلوّن التطبيق المنطقة تلقائيًا بدل الانتظار لتلوين يدوي.
+  final double? guideX;
+  final double? guideY;
+  final String? guideColorHex;
+  final List<Offset> guideExtraPoints;
+
   const ColoringCanvas({
     super.key,
     required this.imageAsset,
@@ -20,6 +34,10 @@ class ColoringCanvas extends StatefulWidget {
     this.promptAr,
     this.pageLabel,
     required this.onDone,
+    this.guideX,
+    this.guideY,
+    this.guideColorHex,
+    this.guideExtraPoints = const [],
   });
 
   @override
@@ -38,6 +56,153 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
   Color _color = const Color(0xFFE53935);
   double _width = 18;
   bool _showPalette = true;
+  ui.Image? _guidedImage;
+  bool _guideLoading = false;
+  String? _guideError;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.guideX != null &&
+        widget.guideY != null &&
+        (widget.guideColorHex ?? '').trim().isNotEmpty) {
+      _buildGuidedImage();
+    }
+  }
+
+  @override
+  void dispose() {
+    _guidedImage?.dispose();
+    super.dispose();
+  }
+
+  static Color _parseHexColor(String? raw) {
+    final s = (raw ?? '').trim().replaceAll('#', '');
+    if (s.length == 6) {
+      final v = int.tryParse(s, radix: 16);
+      if (v != null) return Color(0xFF000000 | v);
+    }
+    if (s.length == 8) {
+      final v = int.tryParse(s, radix: 16);
+      if (v != null) return Color(v);
+    }
+    return const Color(0xFF43A047);
+  }
+
+  Future<Uint8List> _loadImageBytes() async {
+    final url = (widget.imageUrl ?? '').trim();
+    if (url.isNotEmpty) {
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 20));
+      if (res.statusCode != 200) throw StateError('HTTP ${res.statusCode}');
+      return res.bodyBytes;
+    }
+    final data = await rootBundle.load(widget.imageAsset);
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+
+  bool _isFillable(Uint8List pixels, int index) {
+    if (index < 0 || index + 3 >= pixels.length) return false;
+    if (pixels[index + 3] < 128) return false;
+    final r = pixels[index];
+    final g = pixels[index + 1];
+    final b = pixels[index + 2];
+    final luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    return luminance > 200;
+  }
+
+  void _floodFill(Uint8List pixels, int width, int height, int startX, int startY, Color color) {
+    if (width <= 0 || height <= 0) return;
+    final sx = startX.clamp(0, width - 1);
+    final sy = startY.clamp(0, height - 1);
+    final start = sy * width + sx;
+    if (!_isFillable(pixels, start * 4)) return;
+    final fillR = (color.r * 255.0).round();
+    final fillG = (color.g * 255.0).round();
+    final fillB = (color.b * 255.0).round();
+    final visited = Uint8List(width * height);
+    final stack = <int>[start];
+    while (stack.isNotEmpty) {
+      final pixel = stack.removeLast();
+      if (visited[pixel] != 0) continue;
+      visited[pixel] = 1;
+      final index = pixel * 4;
+      if (!_isFillable(pixels, index)) continue;
+      pixels[index] = fillR;
+      pixels[index + 1] = fillG;
+      pixels[index + 2] = fillB;
+      pixels[index + 3] = 255;
+      final x = pixel % width;
+      final y = pixel ~/ width;
+      if (x > 0) stack.add(pixel - 1);
+      if (x < width - 1) stack.add(pixel + 1);
+      if (y > 0) stack.add(pixel - width);
+      if (y < height - 1) stack.add(pixel + width);
+    }
+  }
+
+  Future<ui.Image> _decodePixels(Uint8List pixels, int width, int height) {
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      pixels,
+      width,
+      height,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
+    );
+    return completer.future;
+  }
+
+  Future<void> _buildGuidedImage() async {
+    setState(() {
+      _guideLoading = true;
+      _guideError = null;
+    });
+    try {
+      final bytes = await _loadImageBytes();
+      final codec = await ui.instantiateImageCodec(bytes, targetWidth: 900);
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      final image = frame.image;
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      if (byteData == null) {
+        image.dispose();
+        throw StateError('Could not read image pixels');
+      }
+      final pixels = byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      );
+      final w = image.width;
+      final h = image.height;
+      final color = _parseHexColor(widget.guideColorHex);
+      final points = <Offset>[
+        Offset(widget.guideX!.clamp(0.0, 1.0), widget.guideY!.clamp(0.0, 1.0)),
+        ...widget.guideExtraPoints.map(
+          (p) => Offset(p.dx.clamp(0.0, 1.0), p.dy.clamp(0.0, 1.0)),
+        ),
+      ];
+      for (final p in points) {
+        _floodFill(pixels, w, h, (p.dx * w).floor(), (p.dy * h).floor(), color);
+      }
+      final done = await _decodePixels(Uint8List.fromList(pixels), w, h);
+      image.dispose();
+      if (!mounted) {
+        done.dispose();
+        return;
+      }
+      setState(() {
+        _guidedImage?.dispose();
+        _guidedImage = done;
+        _guideLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _guideLoading = false;
+        _guideError = '$e';
+      });
+    }
+  }
 
   static const List<Color> _palette = [
     Color(0xFFE53935),
@@ -143,24 +308,43 @@ class _ColoringCanvasState extends State<ColoringCanvas> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      (widget.imageUrl != null &&
-                              widget.imageUrl!.trim().isNotEmpty)
-                          ? Image.network(
-                              widget.imageUrl!.trim(),
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(Icons.image_outlined,
-                                    size: 64, color: Color(0xFFCBD5E1)),
-                              ),
-                            )
-                          : Image.asset(
-                              widget.imageAsset,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(Icons.image_outlined,
-                                    size: 64, color: Color(0xFFCBD5E1)),
+                      if (_guidedImage != null)
+                        RawImage(image: _guidedImage, fit: BoxFit.contain)
+                      else if (widget.imageUrl != null &&
+                          widget.imageUrl!.trim().isNotEmpty)
+                        Image.network(
+                          widget.imageUrl!.trim(),
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.image_outlined,
+                                size: 64, color: Color(0xFFCBD5E1)),
+                          ),
+                        )
+                      else
+                        Image.asset(
+                          widget.imageAsset,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.image_outlined,
+                                size: 64, color: Color(0xFFCBD5E1)),
+                          ),
+                        ),
+                      if (_guideLoading)
+                        const Center(child: CircularProgressIndicator()),
+                      if (_guideError != null)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              'تعذر التلوين التلقائي: $_guideError',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: kMuted,
                               ),
                             ),
+                          ),
+                        ),
                       CustomPaint(
                         painter: _PaintPainter(_strokes),
                         size: Size(constraints.maxWidth, constraints.maxHeight),

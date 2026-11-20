@@ -54,6 +54,63 @@ function runAsync(cmd, args, options) {
   });
 }
 
+// جلب نص عبر HTTPS (يُستخدم كاحتياط إذا لم يوجد مستودع المحتوى المحلي).
+function httpsGetText(url, redirects = 0) {
+  return new Promise(resolve => {
+    const req = https.get(url, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirects < 3) {
+        res.resume();
+        return resolve(httpsGetText(res.headers.location, redirects + 1));
+      }
+      let out = '';
+      res.setEncoding('utf8');
+      res.on('data', d => { out += d; });
+      res.on('end', () => resolve({ ok: res.statusCode === 200, status: res.statusCode, body: out }));
+    });
+    req.on('error', e => resolve({ ok: false, status: 0, error: String(e), body: '' }));
+    req.setTimeout(20000, () => req.destroy(new Error('timeout')));
+  });
+}
+
+// عند تشغيل الخادم من جديد، ملف الحزمة المحلي قد يكون قديماً. نقرأ آخر نسخة
+// من مستودع المحتوى (Git) ونستخدمها إذا كانت أحدث، حتى لا يمسح أول نشر
+// التعديلات التي سبق نشرها من جهاز آخر أو من جلسة سابقة.
+let contentSyncPromise = null;
+function ensureContentSynced() {
+  if (contentSyncPromise) return contentSyncPromise;
+  contentSyncPromise = (async () => {
+    let remote = null;
+    try {
+      if (fs.existsSync(CONTENT_REPO_DIR)) {
+        await runAsync('git', ['-C', CONTENT_REPO_DIR, 'fetch', 'origin', 'main']);
+        const show = await runAsync('git', ['-C', CONTENT_REPO_DIR, 'show', 'origin/main:lingo-lessons-bundle.json']);
+        if (show.status === 0 && show.stdout) remote = JSON.parse(show.stdout);
+      }
+    } catch (_) {}
+    if (!remote) {
+      try {
+        const raw = await httpsGetText(CONTENT_RAW_BASE + 'lingo-lessons-bundle.json?t=' + Date.now());
+        if (raw.ok && raw.body) remote = JSON.parse(raw.body);
+      } catch (_) {}
+    }
+    if (!remote || !Array.isArray(remote.lessons)) return null;
+    let local = null;
+    try {
+      if (fs.existsSync(LESSON_BUNDLE_FILE)) {
+        local = JSON.parse(fs.readFileSync(LESSON_BUNDLE_FILE, 'utf8'));
+      }
+    } catch (_) {}
+    const rg = Date.parse((remote && remote.generatedAt) || '') || 0;
+    const lg = Date.parse((local && local.generatedAt) || '') || 0;
+    if (rg >= lg) {
+      try { fs.writeFileSync(LESSON_BUNDLE_FILE, JSON.stringify(remote, null, 2), 'utf8'); } catch (_) {}
+      try { fs.writeFileSync(CONTENT_REPO_FILE, JSON.stringify(remote, null, 2), 'utf8'); } catch (_) {}
+    }
+    return remote;
+  })().catch(() => null);
+  return contentSyncPromise;
+}
+
 // إبطال كاش jsDelivr فوراً بعد الدفع حتى تصل التعديلات للتطبيق خلال ثوانٍ
 function purgeCdn(relPath) {
   const url = 'https://purge.jsdelivr.net/gh/hmachikh16-boop/lingo-gold-content@main/' + relPath;
@@ -211,12 +268,14 @@ http.createServer((req,res)=>{
     // الحزمة المنشورة حالياً: تُستخدم في اللوحة لدمج stepOverrides القديمة
     // بدل فقدانها عند كل نشر جديد (كانت تختفي إذا لم توجد مسودة محلية).
     if (req.method === 'GET' && (urlPath === '/api/published-bundle' || urlPath === '/published-bundle')) {
-      fs.readFile(LESSON_BUNDLE_FILE, 'utf8', (err, data) => {
-        if (err) return sendJson(res, 404, { ok: false, error: 'bundle not found' });
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.setHeader('Cache-Control', 'no-store');
-        res.end(data);
+      ensureContentSynced().finally(() => {
+        fs.readFile(LESSON_BUNDLE_FILE, 'utf8', (err, data) => {
+          if (err) return sendJson(res, 404, { ok: false, error: 'bundle not found' });
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(data);
+        });
       });
       return;
     }

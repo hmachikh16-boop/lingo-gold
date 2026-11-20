@@ -1046,7 +1046,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
           lesson: target,
           distractors: distractors,
           onComplete: _onSimpleComplete,
-          showTranslation: !_isSpecialLesson(_lessonIndex),
+          showTranslation: true,
         );
       }
       case 1:
@@ -1054,7 +1054,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
           lesson: effectiveLesson,
           onComplete: (correct, score) =>
               _completeStep(correct: correct, speakingScore: score),
-          showTranslation: !_isSpecialLesson(_lessonIndex),
+          showTranslation: true,
         );
       case 2: {
         if (matchOv is Map && matchOv['pairs'] is List) {

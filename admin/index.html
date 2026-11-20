@@ -1931,6 +1931,36 @@ function syncStepOverridesToBase(oldData, newData) {
   if (currentLessonData) currentLessonData.stepOverrides = currentStepOverrides;
 }
 
+function _syncTranslationTree(node, oldTranslation, newTranslation) {
+  if (Array.isArray(node)) return node.map(v => _syncTranslationTree(v, oldTranslation, newTranslation));
+  if (node && typeof node === 'object') {
+    const out = {};
+    Object.keys(node).forEach(k => {
+      const v = node[k];
+      if (k === 'translation') {
+        const cur = normText(v);
+        out[k] = (!cur || cur === oldTranslation) ? newTranslation : v;
+      } else {
+        out[k] = _syncTranslationTree(v, oldTranslation, newTranslation);
+      }
+    });
+    return out;
+  }
+  return node;
+}
+// عند تغيير ترجمة الدرس من الحقل الرئيسي، انقل الترجمة إلى نسخ الخطوات التي
+// كانت فارغة أو تحمل الترجمة القديمة فقط. لا نلمس ترجمة مخصّصة كتبها المستخدم.
+function syncTranslationToOverrides(oldTranslation, newTranslation) {
+  if (!currentStepOverrides) return;
+  const oldT = normText(oldTranslation);
+  const newT = normText(newTranslation);
+  if (!newT || oldT === newT) return;
+  try {
+    currentStepOverrides = _syncTranslationTree(currentStepOverrides, oldT, newT);
+    if (currentLessonData) currentLessonData.stepOverrides = currentStepOverrides;
+  } catch (_) {}
+}
+
 function buildCurrentLessonDraftPayload() {
   const appIndex = getCurrentAppIndexForDraft();
   const base = (typeof getPreviewLessonData === 'function') ? getPreviewLessonData() : (currentLessonData || {});
@@ -1946,6 +1976,9 @@ function buildCurrentLessonDraftPayload() {
   // seed كمرجع احتياطي لإصلاح المسودات القديمة التي تحمل نصاً أصلياً.
   syncStepOverridesToBase(lessonBaseSnapshot || seedForSync, payload);
   if (seedForSync) syncStepOverridesToBase(seedForSync, payload);
+  const oldTranslation = normText((lessonBaseSnapshot && lessonBaseSnapshot.translation) ||
+    (currentLessonData && currentLessonData.translation) || '');
+  syncTranslationToOverrides(oldTranslation, payload.translation);
   lessonBaseSnapshot = deepClone(payload);
   if (currentStepOverrides && Object.keys(currentStepOverrides).length) payload.stepOverrides = deepClone(currentStepOverrides);
   else delete payload.stepOverrides;
@@ -2086,15 +2119,8 @@ async function buildLessonBundleObject() {
     // اقرأ آخر حزمة منشورة أولاً. بدونها كان النشر من دون مسودة محلية يمسح
     // stepOverrides والتعديلات السابقة (تختفي الصور/النصوص المخصصة).
     const published = await ensurePublishedBundle(true);
-    // تخلّص من المسودات الأقدم من النشر الحالي قبل البناء.
-    try {
-      const ds = getLocalLessonDrafts();
-      let removed = false;
-      Object.keys(ds).forEach(k => {
-        if (isLocalDraftStale(ds[k])) { delete ds[k]; removed = true; }
-      });
-      if (removed) setLocalLessonDrafts(ds);
-    } catch (_) {}
+    // لا نحذف المسودات المحلية تلقائيًا. تعديل المستخدم يبقى محفوظًا حتى
+    // يعدّله هو بنفسه، حتى لو تأخر النشر أو أُعيد تشغيل الجهاز.
 
     // احفظ الدرس الحالي كمحليًا أولاً ليُضمن في الحزمة. لا نستدعي الحفظ إذا
     // لم يكن هناك درس مفتوح، وإلا أنشأ درسًا جديدًا فارغًا مع كل بناء.
@@ -2184,8 +2210,10 @@ async function buildLessonBundleObject() {
       if (!prev) {
         mergedNew.set(k, Object.assign({}, x));
       } else {
+        // أي درس جديد له تعديل محلي (updatedAtLocal) يفوز على المنشور،
+        // حتى لا يضيع تعديل المستخدم عند إعادة تشغيل الجهاز أو تأخر النشر.
         const own = Date.parse((x && x.updatedAtLocal) || '') || 0;
-        const localIsNewer = own > publishedGeneratedAt;
+        const localIsNewer = own > 0 || !publishedGeneratedAt;
         mergedNew.set(k, localIsNewer
           ? Object.assign({}, prev, x, { appIndex: prev.appIndex })
           : Object.assign({}, x, prev, { appIndex: prev.appIndex }));
@@ -3691,6 +3719,41 @@ function updateColoringField(idx, field, value) {
   scheduleAutoPublish(250);
 }
 
+function setColoringTargetFromClick(ev, idx) {
+  const img = ev.currentTarget;
+  const rect = img.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const naturalW = img.naturalWidth || rect.width;
+  const naturalH = img.naturalHeight || rect.height;
+  const imageRatio = naturalW / naturalH;
+  const boxRatio = rect.width / rect.height;
+  let drawW = rect.width;
+  let drawH = rect.height;
+  let offsetX = 0;
+  let offsetY = 0;
+  if (imageRatio > boxRatio) {
+    drawH = rect.width / imageRatio;
+    offsetY = (rect.height - drawH) / 2;
+  } else {
+    drawW = rect.height * imageRatio;
+    offsetX = (rect.width - drawW) / 2;
+  }
+  const x = Math.max(0, Math.min(1, (ev.clientX - rect.left - offsetX) / drawW));
+  const y = Math.max(0, Math.min(1, (ev.clientY - rect.top - offsetY) / drawH));
+  updateColoringField(idx, 'targetX', Math.round(x * 1000) / 1000);
+  updateColoringField(idx, 'targetY', Math.round(y * 1000) / 1000);
+  renderStepEditor();
+  showSaveStatus('تم تحديد مكان التلوين — جارٍ النشر التلقائي', false);
+}
+
+function clearColoringTarget(idx) {
+  updateColoringField(idx, 'targetX', null);
+  updateColoringField(idx, 'targetY', null);
+  updateColoringField(idx, 'targetColor', '');
+  renderStepEditor();
+  showSaveStatus('تم مسح التلوين الموجّه لهذه الصفحة', false);
+}
+
 function pvPickAndUploadColoringImage(idx) {
   const tmp = document.createElement('input');
   tmp.type = 'file';
@@ -4386,7 +4449,7 @@ function renderStepEditor() {
       <div style="grid-column:1/-1"><label>الجملة</label><input value="${escapeHtml(it.sentence||'')}" oninput="updateStepScalar('speak','sentence',this.value)"></div>
       <div style="grid-column:1/-1"><label>الترجمة</label><input value="${escapeHtml(it.translation||'')}" oninput="updateStepScalar('speak','translation',this.value)"></div>
     </div>`;
-    html += `<div style="margin-top:10px">${renderStepItemEditor('speak', 0, it, { label: 'صورة/عنصر التحدث', showSentence:false, showTranslation:false })}</div>`;
+    html += `<div style="margin-top:10px">${renderStepItemEditor('speak', 0, it, { label: 'صورة/عنصر التحدث', showSentence:true, showTranslation:true })}</div>`;
     // speak scalar edits are fine but renderStepItemEditor calls updateStepItemField for speak? we didn't handle speak in updateStepItemField - handle specially
   } else if (step === 'listen') {
     const it = s.listen || {};
@@ -4395,16 +4458,16 @@ function renderStepEditor() {
       <div><label>نطق بديل (spoken)</label><input value="${escapeHtml(it.spoken||'')}" oninput="updateStepScalar('listen','spoken',this.value);updateLivePreview()"></div>
     </div>`;
     html += `<div class="hint" style="margin-bottom:8px">خيارات الاستماع (الصور الأخرى تظهر هنا ويمكن تعديلها)</div>`;
-    html += (it.choices || []).map((c,i)=>renderStepItemEditor('listen', i, c, { label: 'خيار استماع ' + (i+1), canCorrect: true })).join('');
+    html += (it.choices || []).map((c,i)=>renderStepItemEditor('listen', i, c, { label: 'خيار استماع ' + (i+1), canCorrect: true, showSentence: true, showTranslation: true })).join('');
   } else if (step === 'choice') {
     const it = s.choice || {};
     html += `<div style="margin-bottom:10px"><label>سؤال الاختيار (يمكن كتابة: السؤال | الإجابة)</label><input id="lc_choiceQuestion" value="${escapeHtml(it.question||'')}" oninput="updateStepScalar('choice','question',this.value);updateLivePreview()"></div>`;
     html += `<div class="hint" style="margin-bottom:8px">خيارات الاختيار (كل الصور/النصوص)</div>`;
-    html += (it.options || []).map((c,i)=>renderStepItemEditor('choice', i, c, { label: 'خيار ' + (i+1), canCorrect: true })).join('');
+    html += (it.options || []).map((c,i)=>renderStepItemEditor('choice', i, c, { label: 'خيار ' + (i+1), canCorrect: true, showSentence: true, showTranslation: true })).join('');
   } else if (step === 'match') {
     const pairs = s.match.pairs || [];
     html += `<div class="hint" style="margin-bottom:8px">أزواج المطابقة (الكلمة + الصورة)</div>`;
-    html += pairs.map((p,i)=>renderStepItemEditor('match', i, p, { label: 'زوج ' + (i+1) })).join('');
+    html += pairs.map((p,i)=>renderStepItemEditor('match', i, p, { label: 'زوج ' + (i+1), showSentence: true, showTranslation: true })).join('');
   } else if (step === 'write') {
     const it = s.write || {};
     html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -4412,7 +4475,7 @@ function renderStepEditor() {
       <div><label>الترجمة</label><input value="${escapeHtml(it.translation||'')}" oninput="updateStepScalar('write','translation',this.value)"></div>
       <div style="grid-column:1/-1"><label>الجملة</label><input value="${escapeHtml(it.sentence||'')}" oninput="updateStepScalar('write','sentence',this.value)"></div>
     </div>`;
-    html += `<div style="margin-top:10px">${renderStepItemEditor('write', 0, it, { label: 'صورة الكتابة' })}</div>`;
+    html += `<div style="margin-top:10px">${renderStepItemEditor('write', 0, it, { label: 'صورة الكتابة', showSentence: true, showTranslation: true })}</div>`;
   } else if (step === 'coloring') {
     const pages = (s.coloring && Array.isArray(s.coloring.pages)) ? s.coloring.pages : [];
     html += `<div class="hint" style="margin-bottom:8px">صفحات الرسم الخمس. يمكنك تغيير صورة كل صفحة أو تعديل نص التعليمات.${eff.isSpecial ? ' (الدروس 1-10 تستخدم الرسم الموجّه داخل التطبيق، لذا تُطبّق هذه التعديلات على الدروس العادية.)' : ''}</div>`;
@@ -4427,8 +4490,9 @@ function renderStepEditor() {
           </label>
         </div>
         <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:start">
-          <div style="border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;background:#F9FAFB;height:100px;display:flex;align-items:center;justify-content:center">
-            <img src="${escapeHtml(src)}" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">
+          <div style="position:relative;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;background:#F9FAFB;height:120px;display:flex;align-items:center;justify-content:center">
+            <img src="${escapeHtml(src)}" title="انقر على المنطقة التي تريد تلوينها تلقائيًا" style="max-width:100%;max-height:100%;object-fit:contain;cursor:crosshair" onclick="setColoringTargetFromClick(event, ${i})" onerror="this.style.display='none'">
+            ${p.targetX != null && p.targetY != null ? `<span style="position:absolute;left:${Number(p.targetX)*100}%;top:${Number(p.targetY)*100}%;width:14px;height:14px;border-radius:50%;background:${escapeHtml(p.targetColor || '#43A047')};border:2px solid #fff;box-shadow:0 0 0 2px #111;transform:translate(-50%,-50%);pointer-events:none"></span>` : ''}
           </div>
           <div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
@@ -4440,6 +4504,16 @@ function renderStepEditor() {
             <input value="${escapeHtml(p.promptEn || '')}" oninput="updateColoringField(${i}, 'promptEn', this.value)" style="direction:ltr">
             <label style="margin-top:6px">تعليمات عربية</label>
             <input value="${escapeHtml(p.promptAr || '')}" oninput="updateColoringField(${i}, 'promptAr', this.value)">
+            <div style="margin-top:8px;padding:8px;border:1px dashed #CBD5E1;border-radius:8px;background:#fff">
+              <div style="font-size:12px;font-weight:700;margin-bottom:6px">تلوين موجّه (مثل الدروس الأولى)</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:end">
+                <div><label style="font-size:11px">X %</label><input type="number" min="0" max="100" value="${p.targetX != null ? Math.round(Number(p.targetX)*100) : ''}" oninput="updateColoringField(${i}, 'targetX', this.value === '' ? null : (Number(this.value)/100))" style="width:70px"></div>
+                <div><label style="font-size:11px">Y %</label><input type="number" min="0" max="100" value="${p.targetY != null ? Math.round(Number(p.targetY)*100) : ''}" oninput="updateColoringField(${i}, 'targetY', this.value === '' ? null : (Number(this.value)/100))" style="width:70px"></div>
+                <div><label style="font-size:11px">اللون</label><input type="color" value="${escapeHtml(p.targetColor || '#43A047')}" oninput="updateColoringField(${i}, 'targetColor', this.value)" style="width:46px;height:34px;padding:2px"></div>
+                <button type="button" class="btn btn-gray btn-sm" onclick="clearColoringTarget(${i})">مسح الهدف</button>
+              </div>
+              <div class="hint" style="margin-top:4px">انقر على الصورة لتحديد المكان، أو أدخل النسب يدويًا. التطبيق سيلوّن هذه المنطقة بهذا اللون تلقائيًا.</div>
+            </div>
           </div>
         </div>
       </div>`;

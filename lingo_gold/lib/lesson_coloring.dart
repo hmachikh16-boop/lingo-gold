@@ -240,10 +240,32 @@ class ColoringStep extends StatelessWidget {
     final imageUrl = (pageOverride?['imageUrl'] ?? '').toString().trim();
     final promptEn = (pageOverride?['promptEn'] ?? '').toString().trim();
     final promptAr = (pageOverride?['promptAr'] ?? '').toString().trim();
+    final targetColor = (pageOverride?['targetColor'] ?? '').toString().trim();
+    final rawX = pageOverride?['targetX'];
+    final rawY = pageOverride?['targetY'];
+    final targetX = rawX is num ? rawX.toDouble() : double.tryParse('${rawX ?? ''}');
+    final targetY = rawY is num ? rawY.toDouble() : double.tryParse('${rawY ?? ''}');
+    final extraPoints = <Offset>[];
+    final rawExtra = pageOverride?['extraPoints'];
+    if (rawExtra is List) {
+      for (final p in rawExtra) {
+        if (p is Map) {
+          final px = p['x'];
+          final py = p['y'];
+          final dx = px is num ? px.toDouble() : double.tryParse('${px ?? ''}');
+          final dy = py is num ? py.toDouble() : double.tryParse('${py ?? ''}');
+          if (dx != null && dy != null) extraPoints.add(Offset(dx, dy));
+        }
+      }
+    }
 
     return ColoringCanvas(
       imageAsset: asset,
       imageUrl: imageUrl.isEmpty ? null : imageUrl,
+      guideX: targetX,
+      guideY: targetY,
+      guideColorHex: targetColor.isEmpty ? null : targetColor,
+      guideExtraPoints: extraPoints,
       prompt: promptEn.isEmpty
           ? coloringPromptEn(lesson, lessonIndex, pageIndex)
           : promptEn,
