@@ -49,7 +49,7 @@
   .editor-split { display:flex; gap:16px; align-items:stretch; }
   .editor-preview-pane { flex: 1; min-width: 320px; max-width: 100%; }
   .editor-preview-pane .pane-card { max-width: 520px; margin: 0 auto; }
-  .editor-form-pane { display: none !important; } /* مخفي - التعديل والإضافة من المعاينة فقط */
+  .editor-form-pane { display:block; flex:1; min-width:340px; max-width:100%; }
   .pane-card { background:#fff; border:1px solid #E5E7EB; border-radius:14px; overflow:hidden; }
   .pane-header { padding:12px 14px; border-bottom:1px solid #E5E7EB; font-weight:700; font-size:14px; background:#FAFAFA; display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .pane-body { padding:14px; }
@@ -340,7 +340,7 @@
           <div class="editor-form-pane">
             <div class="pane-card" id="lessonContentCard">
               <div class="pane-header">
-                <span>بيانات الدرس (إدخال/تعديل)</span>
+                <span>محرر الواجهات — مهام التلوين والصور</span>
                 <span id="lc_saveMsg" class="hint"></span>
               </div>
               <div class="pane-body">
@@ -4269,6 +4269,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
     const page = pages[pvColoringIndex] || {};
     const pageNumber = Number(page.page) || 1;
     const src = String(page.imageUrl || '').trim() || coloringAssetUrl(pageNumber);
+    const colorTasks = getColoringTasks(pvColoringIndex);
     content.innerHTML = `
       <div class="pv-header"><div class="pv-header-icon">🎨</div><div><div class="pv-header-title">رسم وتلوين</div><div class="pv-header-sub">5 صفحات • انقر الصورة أو النص للتعديل</div></div></div>
       <div class="pv-image-wrap" style="margin-bottom:8px">
@@ -4278,6 +4279,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
       </div>
       <div class="pv-sentence pv-editable" style="font-size:16px;direction:ltr" title="انقر لتعديل التعليمات بالإنجليزية" onclick="pvEditColoringPrompt(${pvColoringIndex}, 'promptEn')">${escapeHtml(page.promptEn || '')}</div>
       <div class="pv-translation pv-editable" title="انقر لتعديل الترجمة العربية" onclick="pvEditColoringPrompt(${pvColoringIndex}, 'promptAr')">${escapeHtml(page.promptAr || '')}</div>
+      ${colorTasks.length ? `<div class="pv-options" title="الألوان المضبوطة لهذه الصفحة">${colorTasks.map(t=>`<span class="pv-opt" style="display:inline-flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:50%;background:${escapeHtml(t.color||'#43A047')};border:1px solid #111"></span>${escapeHtml(t.colorName||'')}</span>`).join('')}</div>` : `<div class="pv-note">لا توجد ألوان مضبوطة بعد — أضف «مهمة تلوين» من المحرر على اليمين.</div>`}
       <div class="pv-dots">${pages.map((_,i)=>`<span class="pv-dot ${i===pvColoringIndex?'active':''}" style="cursor:pointer" onclick="pvColoringIndex=${i};updateLivePreview()"></span>`).join('')}</div>
       <div class="pv-counter">${pvColoringIndex + 1} / ${pages.length || 5}</div>
       <div class="pv-note">هذه هي واجهة الرسم في التطبيق. التلوين يتم بالإصبع داخل التطبيق، وهنا تعدّل صورة كل صفحة ونصّها.</div>
