@@ -49,6 +49,17 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
   .cat { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 16px 10px; text-align: center; cursor: pointer; transition: background .1s; }
   .cat:hover { background: #F9FAFB; }
+  .curriculum-card { background:linear-gradient(180deg,#fff,#F9FAFB); border:1px solid #E5E7EB; border-radius:14px; padding:14px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .curriculum-title { font-size:14px; font-weight:900; color:#111827; margin-bottom:4px; }
+  .curriculum-sub { font-size:11.5px; color:#6B7280; margin-bottom:10px; }
+  .curriculum-stages { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
+  .curriculum-stage { border:1px solid #E5E7EB; border-radius:12px; padding:10px; background:#fff; }
+  .curriculum-stage .stage-head { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+  .stage-num { width:24px; height:24px; border-radius:999px; background:#111827; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; }
+  .stage-name { font-size:12.5px; font-weight:900; color:#111827; }
+  .stage-desc { font-size:11px; color:#6B7280; line-height:1.6; }
+  .stage-cats { font-size:10.5px; color:#9CA3AF; margin-top:6px; }
+  .level-badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px; background:#E5E7EB; color:#374151; font-size:10px; font-weight:900; margin-inline-start:6px; }
   .cat-emoji { font-size: 32px; line-height: 1.1; margin-bottom: 6px; }
   .cat-name { font-size: 14px; margin-bottom: 2px; word-break: break-word; }
   .hidden { display: none; }
@@ -360,6 +371,7 @@
         <button class="btn" onclick="saveCategory()">حفظ الفئة</button>
       </div>
       <div id="catLoading" class="loading hidden">جاري التحميل...</div>
+      <div class="curriculum-card" id="curriculumCard"></div>
       <div id="catGrid" class="grid"></div>
     </div>
 
@@ -701,6 +713,11 @@ function logout() { auth.signOut(); }
 async function loadAppContent() {
   if (appContent) return appContent;
   const seed = await fetchSeedLessons();
+  const pubByIndex = new Map();
+  [].concat(
+    Array.isArray(latestPublishedBundle && latestPublishedBundle.lessons) ? latestPublishedBundle.lessons : [],
+    Array.isArray(latestPublishedBundle && latestPublishedBundle.newLessons) ? latestPublishedBundle.newLessons : []
+  ).forEach(l => { if (l && typeof l.appIndex === 'number') pubByIndex.set(l.appIndex, l); });
   const catNames = [];
   const byCat = {};
   seed.forEach((l, idx) => {
@@ -716,18 +733,20 @@ async function loadAppContent() {
     const isPack = !!(l && l.isPack);
     const indexInPack = Number.isFinite(l && l.indexInPack) ? l.indexInPack : 0;
     const num = byCat[c].length + 1;
+    const pub = pubByIndex.get(idx) || {};
     byCat[c].push({
       seedIdx: idx,
       appIndex: idx,
       word,
-      sentence,
+      sentence: String(pub.sentence || sentence),
       spoken,
       translation,
       options,
       imageFile,
       isPack,
       indexInPack,
-      title: 'الدرس ' + num + ' • ' + word,
+      title: String(pub.title || ('الدرس ' + num + ' • ' + word)),
+      level: Number(pub.level) || levelForCategory(c),
       lessonNumber: num,
       order: num,
       category: c,
@@ -930,6 +949,7 @@ async function initCategories() {
   categoriesLoading = true;
   setLoading('catLoading', true);
   try {
+    await ensurePublishedBundle(true);
     await loadAppContent();
     // مسح نهائي لأي مسودات محلية قديمة: لا تُستخدم اللوحة بها بعد الآن.
     try {
@@ -957,7 +977,36 @@ function showCategoriesView() {
   if (categoriesLoaded) renderCategories();
 }
 
+const CURRICULUM_STAGES = [
+  { n:1, name:'التأسيس البصري', desc:'أتعرف على الأشياء والصفات والألوان', cats:['Verb To Be','Adjectives','Colors','Nature'] },
+  { n:2, name:'الناس والأفعال', desc:'أتعرف على الأسرة والتحيات والأفعال اليومية', cats:['Family','People & Actions','Greetings'] },
+  { n:3, name:'الطعام والحيوانات', desc:'أميّز الطعام والحيوانات والأشياء المكتشفة', cats:['Food','Food & More','Animals','Discover'] },
+  { n:4, name:'المنزل والمدرسة', desc:'أبني مفردات المكان والوظائف والأرقام', cats:['Home & Nature','Fun & School','Jobs','Numbers'] },
+  { n:5, name:'الدمج والتطبيق', desc:'أستخدم الجمل في مواقف جديدة وأراجع ما تعلمته', cats:['Actions'] }
+];
+
+function levelForCategory(cat) {
+  const s = CURRICULUM_STAGES.find(x => x.cats.indexOf(cat) >= 0);
+  return s ? s.n : 5;
+}
+
+function renderCurriculum() {
+  const el = document.getElementById('curriculumCard');
+  if (!el || !appContent) return;
+  el.innerHTML = '<div class="curriculum-title">خريطة المنهج — تعليم بالانغماس مثل Rosetta Stone</div>' +
+    '<div class="curriculum-sub">نفس واجهات التطبيق: استماع → تحدث → مطابقة → كتابة → اختيار → تلوين موجّه</div>' +
+    '<div class="curriculum-stages">' + CURRICULUM_STAGES.map(st => {
+      const count = st.cats.reduce((sum, c) => sum + ((appContent.lessonsByCat && appContent.lessonsByCat[c]) ? appContent.lessonsByCat[c].length : 0), 0);
+      return '<div class="curriculum-stage">' +
+        '<div class="stage-head"><span class="stage-num">' + st.n + '</span><span class="stage-name">' + escapeHtml(st.name) + '</span></div>' +
+        '<div class="stage-desc">' + escapeHtml(st.desc) + '</div>' +
+        '<div class="stage-cats">' + count + ' درس • ' + st.cats.map(escapeHtml).join(' / ') + '</div>' +
+        '</div>';
+    }).join('') + '</div>';
+}
+
 function renderCategories() {
+  renderCurriculum();
   const grid = document.getElementById('catGrid');
   const q = (catSearch || '').trim().toLowerCase();
   const source = (previewMode && appContent) ? appContent.categories : allCategories;
@@ -1379,7 +1428,7 @@ function showLessons(catId, catName) {
       row.className = 'lesson-row';
       const title = escapeHtml(d.title || '');
       const safeTitle = (d.title || '').replace(/'/g, "\\'");
-      row.innerHTML = `<div><b>${title}</b> <span class="muted">#${d.lessonNumber || ''}</span></div>
+      row.innerHTML = `<div><b>${title}</b> <span class="muted">#${d.lessonNumber || ''}</span><span class="level-badge">المستوى ${Number(d.level) || levelForCategory(catName)}</span></div>
         <div class="row">
           <button class="btn btn-sm" onclick="editAppLesson(${d.seedIdx}, '${safeTitle}')">تحرير</button>
         </div>`;
@@ -1660,7 +1709,7 @@ function openEditorWithSeed(appIndex, title) {
   document.getElementById('editorView').classList.remove('hidden');
   document.getElementById('editorTitle').textContent = 'تحرير: ' + (currentLessonData.title || title || '');
   const sub = document.getElementById('editorSubtitle');
-  if (sub) sub.textContent = (currentCategoryName ? currentCategoryName + ' • ' : '') + 'تعديل مباشر من المعاينة — يُنشر تلقائيًا';
+  if (sub) sub.textContent = 'المستوى ' + (Number(currentLessonData.level) || levelForCategory(currentCategoryName)) + ' • ' + (currentCategoryName ? currentCategoryName + ' • ' : '') + 'تعديل مباشر من المعاينة — يُنشر تلقائيًا';
   pvIntroIndex = 0;
   currentPreviewStep = 'intro';
   document.querySelectorAll('.pv-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.step === 'intro'));
