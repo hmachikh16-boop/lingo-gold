@@ -243,7 +243,7 @@
     <div id="lessonsView" class="hidden">
       <div class="row" style="justify-content:space-between">
         <h2 id="lessonsTitle">دروس الفئة</h2>
-        <button class="btn" onclick="openNewLesson()">+ درس جديد</button>
+        <span class="muted">اللوحة أداة تعديل دروس التطبيق فقط</span>
       </div>
       <div id="newLessonForm" class="card hidden">
         <p class="muted">الترقيم آلي: الدرس الجديد يأخذ أكبر رقم + 1.</p>
@@ -271,7 +271,7 @@
           <div class="toolbar-group">
             <button class="btn btn-sm" onclick="exportLessonBundleJson()" title="حفظ ونشر الآن إلى GitHub">نشر الآن</button>
             <button class="btn btn-gray btn-sm" onclick="saveLocalLessonDraft()">حفظ مسودة</button>
-            <button class="btn btn-green btn-sm" onclick="addLessonFromPreview()">+ درس جديد</button>
+            <span class="muted" style="font-size:12px">اللوحة أداة تعديل دروس التطبيق فقط</span>
             <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()">إرجاع الواجهة</button>
           </div>
         </div>
@@ -673,45 +673,26 @@ function setLoading(id, show) {
 }
 
 // ---------- CATEGORIES (cached, fetched once) ----------
-function initCategories() {
-  if (categoriesLoaded || categoriesLoading) { showCategoriesView(); return; }
+// اللوحة هي أداة تعديل فقط: نعرض دروس التطبيق (lessons_seed.json) مباشرة،
+// بدون Firestore ولا أي مصدر خارجي، حتى لا تظهر نسخ دروس من غير التطبيق.
+async function initCategories() {
+  if (categoriesLoaded) { showCategoriesView(); return; }
+  if (categoriesLoading) return;
   categoriesLoading = true;
   setLoading('catLoading', true);
-  showCategoriesView();
-  catUnsub = db.collection('categories').onSnapshot(async snap => {
-    allCategories = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  try {
+    await loadAppContent();
     categoriesLoaded = true;
+    setPreviewMode(true);
+    renderCategories();
+  } catch (e) {
+    console.error(e);
+    const grid = document.getElementById('catGrid');
+    if (grid) grid.innerHTML = '<div class="muted">تعذر قراءة محتوى التطبيق: ' + escapeHtml(e && e.message ? e.message : '') + '</div>';
+  } finally {
     categoriesLoading = false;
     setLoading('catLoading', false);
-
-    if (allCategories.length === 0) {
-      // قراءة محتوى التطبيق مباشرة لعرضه مع إمكانية تعديل مباشر
-      try {
-        await loadAppContent();
-        setPreviewMode(true);
-        renderCategories();
-      } catch (e) {
-        setPreviewMode(false);
-        renderCategories();
-      }
-    } else {
-      setPreviewMode(false);
-      renderCategories();
-    }
-  }, async err => {
-    categoriesLoading = false;
-    setLoading('catLoading', false);
-    console.error(err);
-    // في حال فشل قراءة Firestore، اعرض محتوى التطبيق مباشرة
-    try {
-      await loadAppContent();
-      categoriesLoaded = true;
-      setPreviewMode(true);
-      renderCategories();
-    } catch (e2) {
-      document.getElementById('catGrid').innerHTML = '<div class="muted">تعذر تحميل الفئات من Firestore: ' + escapeHtml(err.message) + '<br>وتعذر قراءة محتوى التطبيق: ' + escapeHtml(e2.message) + '</div>';
-    }
-  });
+  }
 }
 
 function showCategoriesView() {
@@ -1484,7 +1465,7 @@ async function syncToEdit() {
   setPreviewMode(false);
   showCategoriesView();
 }
-function openNewLesson() { addLessonFromPreview(); }
+function openNewLesson() { showToast('إضافة دروس جديدة غير مدعومة. عدّل الدروس الموجودة في التطبيق فقط.', 'error'); }
 async function saveLesson() {
   const title = document.getElementById('lessonTitle').value.trim();
   if (!title || !currentCategory) { alert('أدخل عنوان الدرس'); return; }
@@ -1567,6 +1548,8 @@ function deleteLocalNewLesson(localId) {
 }
 
 async function addLessonFromPreview() {
+  showToast('إضافة دروس جديدة غير مدعومة. عدّل الدروس الموجودة في التطبيق فقط.', 'error');
+  return;
   if (!currentCategory && !currentCategoryName) {
     showToast('اختر فئة أولاً', 'error');
     return;
