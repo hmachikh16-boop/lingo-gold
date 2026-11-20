@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen.dart';
 import 'lessons_screen.dart';
 import 'lesson_flow.dart';
+import 'level_select_screen.dart';
 import 'lesson_content_service.dart';
 import 'profile_screen.dart';
 import 'review_screen.dart';
@@ -18,6 +20,8 @@ import 'update_service.dart';
 import 'widgets.dart';
 import 'theme.dart';
 import 'data.dart' as app_data;
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +43,7 @@ class LingoGoldApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: rootNavigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'تعلم',
       theme: buildAppTheme(),
@@ -78,7 +83,22 @@ class _MainShellState extends State<MainShell> {
       if (!mounted) return;
       setState(() {});
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getInt('lingo_selected_level_v1') == null && mounted) {
+        rootNavigatorKey.currentState?.pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => LevelSelectScreen(
+              onDone: () {
+                rootNavigatorKey.currentState?.pushReplacement(
+                  MaterialPageRoute(builder: (_) => const MainShell()),
+                );
+              },
+            ),
+          ),
+        );
+        return;
+      }
       _updateTimer = Timer(const Duration(seconds: 3), () {
         if (mounted) UpdateService.checkAndPrompt(context, silent: true);
       });
@@ -168,6 +188,22 @@ class _MainShellState extends State<MainShell> {
       ),
     );
     if (mounted) setState(() {});
+  }
+
+  Future<void> _openLevelSelect() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('lingo_selected_level_v1');
+    rootNavigatorKey.currentState?.pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => LevelSelectScreen(
+          onDone: () {
+            rootNavigatorKey.currentState?.pushReplacement(
+              MaterialPageRoute(builder: (_) => const MainShell()),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _openLessonAt(int id) async {
@@ -279,6 +315,7 @@ class _MainShellState extends State<MainShell> {
                             speakingScore: up.pronunciationScore.value,
                             xp: xp,
                             onContinue: () => _startLesson(),
+                            onChangeLevel: _openLevelSelect,
                           ),
                         ],
                       );

@@ -16,6 +16,7 @@ class ProfileScreen extends StatefulWidget {
   final int speakingScore;
   final int xp;
   final VoidCallback onContinue;
+  final VoidCallback? onChangeLevel;
 
   const ProfileScreen({
     super.key,
@@ -25,6 +26,7 @@ class ProfileScreen extends StatefulWidget {
     required this.speakingScore,
     required this.xp,
     required this.onContinue,
+    this.onChangeLevel,
   });
 
   @override
@@ -738,6 +740,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             : 'تحديث الدروس الآن',
                                       ),
                                     ),
+                                    if (widget.onChangeLevel != null) ...[
+                                      const SizedBox(height: 8),
+                                      OutlinedButton.icon(
+                                        onPressed: widget.onChangeLevel,
+                                        icon: const Icon(Icons.flag_outlined, size: 20),
+                                        label: const Text('تغيير المستوى'),
+                                      ),
+                                    ],
                                     const SizedBox(height: 8),
                                     OutlinedButton.icon(
                                       onPressed: () =>
