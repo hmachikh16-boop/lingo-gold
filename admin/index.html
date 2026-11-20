@@ -82,6 +82,12 @@
   #basicFieldsSection, #imageFieldsSection, #basicActionsBar { display:none; }
   /* عناصر Firestore/إنشاء فئات أو دروس: معطّلة تمامًا لأنها قد تخرب الدروس */
   #newCatForm, #newLessonForm { display:none !important; }
+  /* تكبير/تصغير الصور داخل أطر المعاينة */
+  .pv-image, .pv-choice-img, .pv-match-img { position:relative; }
+  [data-zoom-key] { transform-origin:center center; transition:transform .12s ease-out; }
+  .zoom-badge { position:absolute; top:5px; right:5px; display:flex; gap:3px; z-index:5; }
+  .zoom-btn { width:22px; height:22px; border-radius:999px; border:1px solid #E5E7EB; background:rgba(255,255,255,.96); color:#111827; font-size:13px; font-weight:800; line-height:1; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.10); }
+  .zoom-btn:active { transform:scale(.92); }
   .pv-options { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:4px 0 6px; }
   .pv-opt { padding:6px 10px; border:1px solid #D1D5DB; border-radius:999px; font-size:12.5px; color:#111827; background:#fff; font-weight:600; }
   .pv-counter { text-align:center; font-size:12px; font-weight:700; color:#6B7280; direction:ltr; margin:4px 0 6px; }
@@ -3857,13 +3863,40 @@ function setPreviewImageSrc(src, altText, fallbackList) {
   }
 }
 
-function renderPreviewImageTag(src, alt, onClick, fallbacks) {
+const imageZoomState = {};
+function zoomFromButton(btn) {
+  const key = btn.parentElement && btn.parentElement.dataset.zoomControls;
+  if (!key) return;
+  const delta = btn.dataset.zoomDir === '1' ? 0.15 : -0.15;
+  const next = Math.max(0.5, Math.min(2.5, (imageZoomState[key] || 1) + delta));
+  imageZoomState[key] = Math.round(next * 100) / 100;
+  applyImageZooms();
+}
+function applyImageZooms() {
+  document.querySelectorAll('[data-zoom-key]').forEach(img => {
+    const z = imageZoomState[img.dataset.zoomKey] || 1;
+    img.style.transform = 'scale(' + z + ')';
+  });
+}
+function zoomControls(key) {
+  return `<div class="zoom-badge" data-zoom-controls="${escapeHtml(key)}" onclick="event.stopPropagation()">
+    <button type="button" class="zoom-btn" data-zoom-dir="-1" title="تصغير" onclick="event.stopPropagation();zoomFromButton(this)">−</button>
+    <button type="button" class="zoom-btn" data-zoom-dir="1" title="تكبير" onclick="event.stopPropagation();zoomFromButton(this)">+</button>
+  </div>`;
+}
+function zoomWrap(html, key) {
+  return zoomControls(key) + String(html || '').replace('<img ', '<img data-zoom-key="' + key + '" ');
+}
+
+function renderPreviewImageTag(src, alt, onClick, fallbacks, zoomKey) {
   const clickAttr = onClick ? ` onclick="${onClick}"` : '';
   const cls = onClick ? 'pv-image pv-img-editable' : 'pv-image';
   const fb = Array.isArray(fallbacks) ? fallbacks.filter(Boolean) : (fallbacks ? [fallbacks] : []);
   const data = fb.length ? ` data-fallbacks="${escapeHtml(JSON.stringify(fb))}" data-fbi="0"` : '';
-  if (!src) return `<div class="${cls}"${clickAttr}><span class="muted" style="text-align:center;padding:8px">${escapeHtml(alt || 'صورة الدرس')}</span></div>`;
-  return `<div class="${cls}"${clickAttr}><img src="${escapeHtml(src)}" alt="${escapeHtml(alt || 'lesson')}" style="width:100%;height:100%;object-fit:contain;background:#fff"${data} onerror="(function(img){try{var fs=JSON.parse(img.dataset.fallbacks||'[]');var i=parseInt(img.dataset.fbi||'0',10);if(i<fs.length){img.dataset.fbi=String(i+1);img.src=fs[i];return;}}catch(e){}img.onerror=null;img.parentElement.innerHTML='<span class=&quot;muted&quot; style=&quot;text-align:center;padding:8px&quot;>${escapeHtml(alt || 'صورة الدرس')}</span>';})(this)"></div>`;
+  const zoomAttr = zoomKey ? ` data-zoom-key="${escapeHtml(zoomKey)}"` : '';
+  const zc = zoomKey ? zoomControls(zoomKey) : '';
+  if (!src) return `<div class="${cls}"${clickAttr}>${zc}<span class="muted" style="text-align:center;padding:8px">${escapeHtml(alt || 'صورة الدرس')}</span></div>`;
+  return `<div class="${cls}"${clickAttr}>${zc}<img src="${escapeHtml(src)}" alt="${escapeHtml(alt || 'lesson')}" style="width:100%;height:100%;object-fit:contain;background:#fff"${data}${zoomAttr} onerror="(function(img){try{var fs=JSON.parse(img.dataset.fallbacks||'[]');var i=parseInt(img.dataset.fbi||'0',10);if(i<fs.length){img.dataset.fbi=String(i+1);img.src=fs[i];return;}}catch(e){}img.onerror=null;img.parentElement.innerHTML='<span class=&quot;muted&quot; style=&quot;text-align:center;padding:8px&quot;>${escapeHtml(alt || 'صورة الدرس')}</span>';})(this)"></div>`;
 }
 
 function updateLivePreview() {
@@ -3934,7 +3967,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
         <span class="muted" style="font-size:11px">أضف بطاقة جديدة أو احذف البطاقات الإضافية</span>
       </div>
       <div class="pv-image-wrap">
-        ${renderPreviewImageTag(curSrc, cur.word || 'lesson', imgClick, curFallbacks)}
+        ${renderPreviewImageTag(curSrc, cur.word || 'lesson', imgClick, curFallbacks, 'pv-intro-' + pvIntroIndex)}
         <div class="pv-pill">تعلّم</div>
         <button type="button" class="pv-speaker" title="استماع" onclick="speakPreviewText()">🔊</button>
       </div>
@@ -3947,7 +3980,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
         ${items.slice(0,8).map((it,idx)=>`
           <div class="pv-choice" style="${idx===pvIntroIndex?'outline:2px solid #2563EB;':''}">
             ${idx > 0 ? `<button type="button" class="pv-item-del" title="حذف النافذة" onclick="event.stopPropagation();pvDeleteIntroItem(${idx})">×</button>` : ''}
-            <div class="pv-choice-img pv-img-editable" onclick="pvIntroGridImageClick(${idx})" title="انقر لتغيير الصورة">${(() => { const cands = it.imageFile ? getAppAssetImageCandidates(it.imageFile, it.isPack, it.indexInPack) : []; const src = cands[0] || imageSrcForItem(it) || (idx === 0 ? imgSrc : ''); const fb = (cands.length > 1 ? cands.slice(1) : []).concat((idx === 0 && imgSrc && imgSrc !== src) ? [imgSrc] : []); const data = fb.length ? ` data-fallbacks="${escapeHtml(JSON.stringify(fb))}" data-fbi="0"` : ''; if (!src) return `<span class="muted">صورة</span>`; return `<img src="${escapeHtml(src)}" style="width:100%;height:100%;object-fit:contain;background:#fff"${data} onerror="(function(img){try{var fs=JSON.parse(img.dataset.fallbacks||'[]');var i=parseInt(img.dataset.fbi||'0',10);if(i<fs.length){img.dataset.fbi=String(i+1);img.src=fs[i];return;}}catch(e){}img.onerror=null;img.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>';})(this)">`; })()}</div>
+            <div class="pv-choice-img pv-img-editable" onclick="pvIntroGridImageClick(${idx})" title="انقر لتغيير الصورة">${zoomWrap((() => { const cands = it.imageFile ? getAppAssetImageCandidates(it.imageFile, it.isPack, it.indexInPack) : []; const src = cands[0] || imageSrcForItem(it) || (idx === 0 ? imgSrc : ''); const fb = (cands.length > 1 ? cands.slice(1) : []).concat((idx === 0 && imgSrc && imgSrc !== src) ? [imgSrc] : []); const data = fb.length ? ` data-fallbacks="${escapeHtml(JSON.stringify(fb))}" data-fbi="0"` : ''; if (!src) return `<span class="muted">صورة</span>`; return `<img src="${escapeHtml(src)}" style="width:100%;height:100%;object-fit:contain;background:#fff"${data} onerror="(function(img){try{var fs=JSON.parse(img.dataset.fallbacks||'[]');var i=parseInt(img.dataset.fbi||'0',10);if(i<fs.length){img.dataset.fbi=String(i+1);img.src=fs[i];return;}}catch(e){}img.onerror=null;img.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>';})(this)">`; })(), 'intro-' + idx)}</div>
             <div class="pv-choice-label pv-editable" title="انقر لتعديل الكلمة/الجملة" onclick="pvEditStepItemWord('intro', ${idx})">${escapeHtml(it.word || it.sentence || (d.word || '') || (eff.target && eff.target.word) || '')}</div>
             ${it.sentence && it.sentence !== it.word ? `<div class="pv-editable" style="font-size:10px;color:#6B7280;text-align:center;padding:0 4px 6px;direction:ltr" title="انقر لتعديل الجملة" onclick="pvEditStepItemWord('intro', ${idx})">${escapeHtml(it.sentence)}</div>` : ''}
           </div>`).join('')}
@@ -3968,7 +4001,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
         ${choices.slice(0,8).map((c,i)=>`
           <div class="pv-choice" style="${c.correct?'outline:2px solid #16A34A;':''}">
             ${choices.length > 2 ? `<button type="button" class="pv-item-del" title="حذف الخيار" onclick="event.stopPropagation();pvDeleteListenOption(${i})">×</button>` : ''}
-            <div class="pv-choice-img pv-img-editable" onclick="pvPickAndUploadStepItemImage('listen', ${i})" title="انقر لتغيير الصورة">${imageSrcForItem(c) ? `<img src="${escapeHtml(imageSrcForItem(c))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>'">` : `<span class="muted">صورة</span>`}</div>
+            <div class="pv-choice-img pv-img-editable" onclick="pvPickAndUploadStepItemImage('listen', ${i})" title="انقر لتغيير الصورة">${zoomWrap(imageSrcForItem(c) ? `<img src="${escapeHtml(imageSrcForItem(c))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>'">` : `<span class="muted">صورة</span>`, 'listen-' + i)}</div>
             <div class="pv-choice-label pv-editable" title="انقر لتعديل الكلمة/الجملة" onclick="pvEditStepItemWord('listen', ${i})">${escapeHtml(c.word || c.label || '')}</div>
             ${c.sentence ? `<div class="pv-editable" style="font-size:10px;color:#6B7280;text-align:center;padding:0 4px 6px;direction:ltr" onclick="pvEditStepItemWord('listen', ${i})">${escapeHtml(c.sentence)}</div>` : ''}
           </div>`).join('')}
@@ -3980,7 +4013,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
     const src = imageSrcForItem(it) || imgSrc;
     content.innerHTML = `
       <div class="pv-header"><div class="pv-header-icon">🎤</div><div><div class="pv-header-title">تحدّث</div><div class="pv-header-sub">انقر النص أو الصورة للتعديل</div></div></div>
-      <div class="pv-image-wrap">${renderPreviewImageTag(src, it.word || 'lesson', "pvPickAndUploadStepImage('speak')")}<button type="button" class="pv-speaker" title="استماع" onclick="speakPreviewText()">🔊</button></div>
+      <div class="pv-image-wrap">${renderPreviewImageTag(src, it.word || 'lesson', "pvPickAndUploadStepImage('speak')", [], 'pv-speak')}<button type="button" class="pv-speaker" title="استماع" onclick="speakPreviewText()">🔊</button></div>
       <div class="pv-word pv-editable" title="انقر لتعديل الجملة" onclick="pvInlineEdit('lc_sentence', this)">${escapeHtml(it.sentence || it.word || '—')}</div>
       <div class="pv-sentence pv-editable" style="font-size:18px" title="انقر لتعديل الكلمة" onclick="pvEditStepText('speak','word')">${escapeHtml(it.word || '')}</div>
       ${it.translation ? `<div class="pv-translation pv-editable" title="انقر للتعديل" onclick="pvInlineEdit('lc_translation', this)">${escapeHtml(it.translation)}</div>` : `<div class="pv-translation pv-editable muted" title="انقر لإضافة ترجمة" onclick="pvInlineEdit('lc_translation', this)">+ ترجمة</div>`}
@@ -3998,7 +4031,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
         ${pairs.slice(0,8).map((p,i)=>`
           <div class="pv-match-row">
             ${pairs.length > 2 ? `<button type="button" class="pv-match-del" title="حذف الزوج" onclick="event.stopPropagation();pvDeleteMatchPair(${i})">×</button>` : ''}
-            <div class="pv-match-img pv-img-editable" onclick="pvPickAndUploadStepItemImage('match', ${i})" title="انقر لتغيير الصورة">${imageSrcForItem(p) ? `<img src="${escapeHtml(imageSrcForItem(p))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div style=&quot;display:flex;height:100%;align-items:center;justify-content:center&quot; class=&quot;muted&quot;>صورة</div>'">` : `<div style="display:flex;height:100%;align-items:center;justify-content:center" class="muted">صورة</div>`}</div>
+            <div class="pv-match-img pv-img-editable" onclick="pvPickAndUploadStepItemImage('match', ${i})" title="انقر لتغيير الصورة">${zoomWrap(imageSrcForItem(p) ? `<img src="${escapeHtml(imageSrcForItem(p))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div style=&quot;display:flex;height:100%;align-items:center;justify-content:center&quot; class=&quot;muted&quot;>صورة</div>'">` : `<div style="display:flex;height:100%;align-items:center;justify-content:center" class="muted">صورة</div>`, 'match-' + i)}</div>
             <div class="pv-match-word" style="text-align:center">
               <div class="pv-editable" style="font-weight:800;font-size:13px;direction:ltr;border-radius:6px;padding:2px 4px" title="انقر لتعديل الكلمة/الجملة" onclick="pvEditStepItemWord('match', ${i})">${escapeHtml(p.word || '')}</div>
               ${p.sentence ? `<div class="pv-editable" style="font-size:11px;color:#6B7280;margin-top:4px;direction:ltr;border-radius:6px;padding:2px 4px" title="انقر لتعديل الجملة" onclick="pvEditStepItemWord('match', ${i})">${escapeHtml(p.sentence)}</div>` : `<div class="pv-editable" style="font-size:11px;color:#9CA3AF;margin-top:4px;border-radius:6px;padding:2px 4px" title="انقر لإضافة جملة" onclick="pvEditStepItemWord('match', ${i})">+ جملة</div>`}
@@ -4014,7 +4047,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
     const src = imageSrcForItem(it) || imgSrc;
     content.innerHTML = `
       <div class="pv-header"><div class="pv-header-icon">✍️</div><div><div class="pv-header-title">كتابة</div><div class="pv-header-sub">انقر الكلمة أو الصورة للتعديل</div></div></div>
-      <div class="pv-image-wrap" style="margin-bottom:8px">${renderPreviewImageTag(src, it.word || 'lesson', "pvPickAndUploadStepImage('write')")}</div>
+      <div class="pv-image-wrap" style="margin-bottom:8px">${renderPreviewImageTag(src, it.word || 'lesson', "pvPickAndUploadStepImage('write')", [], 'pv-write')}</div>
       <div class="pv-write-boxes">${(letters.length ? letters : ['_','_','_']).map(()=>`<div class="pv-box"></div>`).join('')}</div>
       <div class="pv-sentence pv-editable" title="انقر لتعديل كلمة الكتابة" onclick="pvEditStepText('write','word')">${escapeHtml(target || '')}</div>
       ${it.translation ? `<div class="pv-translation pv-editable" title="انقر للتعديل" onclick="pvInlineEdit('lc_translation', this)">${escapeHtml(it.translation)}</div>` : `<div class="pv-translation pv-editable muted" title="انقر لإضافة ترجمة" onclick="pvInlineEdit('lc_translation', this)">+ ترجمة</div>`}
@@ -4033,7 +4066,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
         ${opts.slice(0,8).map((c,i)=>`
           <div class="pv-choice" style="${c.correct?'outline:2px solid #16A34A;':''}">
             ${opts.length > 2 ? `<button type="button" class="pv-item-del" title="حذف الخيار" onclick="event.stopPropagation();pvDeleteChoiceOption(${i})">×</button>` : ''}
-            <div class="pv-choice-img pv-img-editable" onclick="pvPickAndUploadStepItemImage('choice', ${i})" title="انقر لتغيير الصورة">${imageSrcForItem(c) ? `<img src="${escapeHtml(imageSrcForItem(c))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>'">` : `<span class="muted">صورة</span>`}</div>
+            <div class="pv-choice-img pv-img-editable" onclick="pvPickAndUploadStepItemImage('choice', ${i})" title="انقر لتغيير الصورة">${zoomWrap(imageSrcForItem(c) ? `<img src="${escapeHtml(imageSrcForItem(c))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>'">` : `<span class="muted">صورة</span>`, 'choice-' + i)}</div>
             <div class="pv-choice-label pv-editable" title="انقر لتعديل الكلمة/الجملة" onclick="pvEditStepItemWord('choice', ${i})">${escapeHtml(c.word || c.label || '')}</div>
             ${c.sentence ? `<div class="pv-editable" style="font-size:10px;color:#6B7280;text-align:center;padding:0 4px 6px;direction:ltr" onclick="pvEditStepItemWord('choice', ${i})">${escapeHtml(c.sentence)}</div>` : ''}
           </div>`).join('')}
@@ -4050,7 +4083,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
     content.innerHTML = `
       <div class="pv-header"><div class="pv-header-icon">🎨</div><div><div class="pv-header-title">رسم وتلوين</div><div class="pv-header-sub">5 صفحات • انقر الصورة أو النص للتعديل</div></div></div>
       <div class="pv-image-wrap" style="margin-bottom:8px">
-        ${renderPreviewImageTag(src, 'coloring', `pvPickAndUploadColoringImage(${pvColoringIndex})`)}
+        ${renderPreviewImageTag(src, 'coloring', `pvPickAndUploadColoringImage(${pvColoringIndex})`, [], 'pv-coloring-' + pvColoringIndex)}
         <div class="pv-pill">صفحة ${pvColoringIndex + 1}</div>
         <button type="button" class="pv-speaker" title="استماع" onclick="speakPreviewText()">🔊</button>
       </div>
@@ -4061,6 +4094,7 @@ const curFallbacks = (curCandidates.length > 1 ? curCandidates.slice(1) : []).co
       <div class="pv-note">هذه هي واجهة الرسم في التطبيق. التلوين يتم بالإصبع داخل التطبيق، وهنا تعدّل صورة كل صفحة ونصّها.</div>
     `;
   }
+  applyImageZooms();
 }
 
 function fillLessonContentForm(d) {
@@ -4532,6 +4566,7 @@ function renderStepEditor() {
   }
   html += `<div id="stepSaveMsg" class="save-msg" style="margin-top:8px"></div>`;
   area.innerHTML = html;
+  applyImageZooms();
   // attach special handling for speak/write item 0 edits: renderStepItemEditor uses updateStepItemField but we didn't support speak/write; patch by re-binding? easier: after render, no - easier to handle in updateStepItemField.
 }
 
