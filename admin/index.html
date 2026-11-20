@@ -753,6 +753,34 @@ async function loadAppContent() {
       isActive: true
     });
   });
+  // الدروس الجديدة المنشورة (مثل الدروس بالصور الحقيقية) تظهر أيضاً في لوحة التحكم.
+  (Array.isArray(latestPublishedBundle && latestPublishedBundle.newLessons)
+      ? latestPublishedBundle.newLessons : []).forEach(l => {
+    if (!l || typeof l.appIndex !== 'number') return;
+    const c = String(l.category || '').trim();
+    if (!c) return;
+    if (!byCat[c]) { byCat[c] = []; catNames.push(c); }
+    const num = byCat[c].length + 1;
+    byCat[c].push({
+      seedIdx: l.appIndex,
+      appIndex: l.appIndex,
+      word: String(l.word || ''),
+      sentence: String(l.sentence || ''),
+      spoken: String(l.spoken || ''),
+      translation: String(l.translation || ''),
+      options: Array.isArray(l.options) ? l.options.map(String) : [],
+      imageFile: String(l.imageFile || ''),
+      isPack: !!l.isPack,
+      indexInPack: Number.isFinite(l.indexInPack) ? l.indexInPack : 0,
+      imageUrl: String(l.imageUrl || ''),
+      title: String(l.title || ('الدرس ' + num + ' • ' + (l.word || ''))),
+      level: Number(l.level) || 5,
+      lessonNumber: num,
+      order: num,
+      category: c,
+      isActive: l.isActive !== false
+    });
+  });
   appContent = {
     catNames,
     categories: catNames.map((name, i) => ({ id: 'app::' + name, name, order: i + 1, lessonCount: (byCat[name] || []).length })),
@@ -1686,6 +1714,7 @@ function openEditorWithSeed(appIndex, title) {
     translation: String(item.translation || ''),
     options: Array.isArray(item.options) ? item.options : [],
     imageFile: String(item.imageFile || ''),
+    imageUrl: String(item.imageUrl || ''),
     isPack: !!item.isPack,
     indexInPack: Number.isFinite(item.indexInPack) ? item.indexInPack : 0
   } : { appIndex, title: title || '' };

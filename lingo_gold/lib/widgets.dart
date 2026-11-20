@@ -469,7 +469,8 @@ class BottomNavBar extends StatelessWidget {
           children: [
             _navTab(index == 0, 'الرئيسية', () => onTap(0)),
             _navTab(index == 1, 'الدروس', () => onTap(1)),
-            _navTab(index == 2, 'ملفي', () => onTap(2)),
+            _navTab(index == 2, 'تدريب', () => onTap(2)),
+            _navTab(index == 3, 'ملفي', () => onTap(3)),
           ],
         ),
       ),

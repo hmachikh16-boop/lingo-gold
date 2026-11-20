@@ -55,5 +55,7 @@ android-nova/local.properties
 
 lingo_editor/
 lingo_gold_app_qr.png
+lingo_gold_app_qr_v*.png
 lingo_standalone_editor_qr.png
+*_preview.html
 

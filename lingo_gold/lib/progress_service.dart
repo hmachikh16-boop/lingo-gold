@@ -117,6 +117,24 @@ class ProgressService {
     return done / list.length;
   }
 
+  double accuracy(String id) {
+    final p = get(id);
+    return p.attempts == 0 ? 0 : p.correct / p.attempts;
+  }
+
+  /// العناصر التي تحتاج عملاً: كثرة المحاولات مع تيار متقطع.
+  List<String> weakIds({int limit = 8}) {
+    final list = _cache.entries
+        .where((e) => e.value.attempts > 0 && e.value.streak < 2)
+        .toList()
+      ..sort((a, b) {
+        final aa = a.value.attempts - a.value.correct;
+        final bb = b.value.attempts - b.value.correct;
+        return bb.compareTo(aa);
+      });
+    return list.take(limit).map((e) => e.key).toList();
+  }
+
   void _save() {
     final mapped = _cache.map((k, v) =>
         MapEntry<String, dynamic>(k, v.toJson()));
