@@ -3910,8 +3910,8 @@ function updateLivePreview() {
         <div class="pv-pill">تعلّم</div>
         <button type="button" class="pv-speaker" title="استماع" onclick="speakPreviewText()">🔊</button>
       </div>
-      <div class="pv-word pv-editable" title="انقر لتعديل الكلمة" onclick="${wordClick}">${escapeHtml(cur.word || cur.sentence || '—')}</div>
-      <div class="pv-sentence pv-editable" title="انقر لتعديل الجملة" onclick="${sentClick}">${escapeHtml(cur.sentence || cur.word || '')}</div>
+      <div class="pv-word pv-editable" title="انقر لتعديل الكلمة" onclick="${wordClick}">${escapeHtml(cur.word || cur.sentence || (d.word || '') || (eff.target && eff.target.word) || '—')}</div>
+      <div class="pv-sentence pv-editable" title="انقر لتعديل الجملة" onclick="${sentClick}">${escapeHtml(cur.sentence || cur.word || (d.word || '') || (eff.target && eff.target.word) || '')}</div>
       ${cur.translation ? `<div class="pv-translation pv-editable" title="انقر لتعديل الترجمة" onclick="${transClick}">${escapeHtml(cur.translation)}</div>` : `<div class="pv-translation pv-editable muted" title="انقر لإضافة ترجمة" onclick="${transClick}">+ ترجمة</div>`}
       <div class="pv-counter">${pvIntroIndex + 1} / ${items.length}</div>
       <div class="pv-dots">${items.slice(0,10).map((_,i)=>`<span class="pv-dot ${i===pvIntroIndex?'active':''}" style="cursor:pointer" onclick="pvIntroIndex=${i};updateLivePreview()"></span>`).join('')}</div>
@@ -3920,7 +3920,7 @@ function updateLivePreview() {
           <div class="pv-choice" style="${idx===pvIntroIndex?'outline:2px solid #2563EB;':''}">
             ${idx > 0 ? `<button type="button" class="pv-item-del" title="حذف النافذة" onclick="event.stopPropagation();pvDeleteIntroItem(${idx})">×</button>` : ''}
             <div class="pv-choice-img pv-img-editable" onclick="pvIntroGridImageClick(${idx})" title="انقر لتغيير الصورة">${imageSrcForItem(it) ? `<img src="${escapeHtml(imageSrcForItem(it))}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span class=&quot;muted&quot;>صورة</span>'">` : `<span class="muted">صورة</span>`}</div>
-            <div class="pv-choice-label pv-editable" title="انقر لتعديل الكلمة/الجملة" onclick="pvEditStepItemWord('intro', ${idx})">${escapeHtml(it.word || it.sentence || '')}</div>
+            <div class="pv-choice-label pv-editable" title="انقر لتعديل الكلمة/الجملة" onclick="pvEditStepItemWord('intro', ${idx})">${escapeHtml(it.word || it.sentence || (d.word || '') || (eff.target && eff.target.word) || '')}</div>
             ${it.sentence && it.sentence !== it.word ? `<div class="pv-editable" style="font-size:10px;color:#6B7280;text-align:center;padding:0 4px 6px;direction:ltr" title="انقر لتعديل الجملة" onclick="pvEditStepItemWord('intro', ${idx})">${escapeHtml(it.sentence)}</div>` : ''}
           </div>`).join('')}
       </div>` : ''}
