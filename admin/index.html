@@ -205,11 +205,14 @@
     cursor:crosshair;
   }
   .coloring-marker {
-    position:absolute; transform:translate(-50%,-50%); pointer-events:none;
-    width:22px; height:22px; border-radius:50%; border:2px solid #fff;
+    position:absolute; transform:translate(-50%,-50%); pointer-events:auto; cursor:pointer;
+    width:24px; height:24px; border-radius:50%; border:2px solid #fff;
     box-shadow:0 0 0 2px #111827; color:#fff; font-size:11px; font-weight:900;
     display:flex; align-items:center; justify-content:center; line-height:1;
+    transition:transform .12s, box-shadow .12s;
   }
+  .coloring-marker:hover { transform:translate(-50%,-50%) scale(1.12); }
+  .coloring-marker.active { box-shadow:0 0 0 3px #fff, 0 0 0 6px #16A34A; transform:translate(-50%,-50%) scale(1.18); z-index:2; }
   .coloring-stage-hint {
     position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
     line-height:normal; white-space:nowrap; pointer-events:none;
@@ -223,6 +226,13 @@
   .coloring-task-title { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; cursor:pointer; }
   .coloring-task-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:900; color:#111827; }
   .coloring-task-dot { width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #111827; }
+  .coloring-task-chips { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px; }
+  .coloring-task-chip {
+    display:inline-flex; align-items:center; gap:6px; border:1px solid #E5E7EB;
+    background:#fff; color:#374151; border-radius:999px; padding:6px 11px;
+    font-size:12px; font-weight:800; cursor:pointer;
+  }
+  .coloring-task-chip.active { background:#111827; color:#fff; border-color:#111827; }
   .pv-tab .tab-icon { margin-inline-end:3px; }
   @media (min-width:901px) {
     .editor-form-pane .pane-body, .editor-preview-pane .pane-body { max-height:calc(100vh - 230px); overflow:auto; }
@@ -4910,11 +4920,16 @@ function renderStepEditor() {
       </div>
     </div>`;
 
+    html += `<div class="coloring-task-chips">${tasks.length ? tasks.map((t, ti) => {
+      const found = COLORING_PALETTE.find(c => c.name === t.colorName);
+      const hex = (found && found.hex) || t.color || '#43A047';
+      return `<button type="button" class="coloring-task-chip ${ti === pvColoringTaskIndex ? 'active' : ''}" onclick="selectColoringTask(${ti})"><span class="coloring-task-dot" style="background:${escapeHtml(hex)}"></span>المهمة ${ti + 1}</button>`;
+    }).join('') : '<span class="hint">لا توجد مهام بعد</span>'}</div>`;
     html += `<div class="coloring-stage-outer">
       <div class="coloring-stage">
         <img src="${escapeHtml(src)}" title="انقر لتحديد مكان المهمة ${pvColoringTaskIndex + 1}" onclick="setColoringTaskPointFromClick(event, ${i}, pvColoringTaskIndex)" onerror="this.style.display='none'">
-        ${tasks.map((t, ti) => `<span class="coloring-marker" style="left:${(Number(t.x)||0)*100}%;top:${(Number(t.y)||0)*100}%;background:${escapeHtml(t.color || '#43A047')}" title="المهمة ${ti + 1}">${ti + 1}</span>`).join('')}
-        <div class="coloring-stage-hint">${tasks.length ? (`المهمة ${pvColoringTaskIndex + 1} — انقر على الصورة لتحديد مكانها`) : 'أضف مهمة تلوين لتحديد الأماكن على الصورة'}</div>
+        ${tasks.map((t, ti) => `<span class="coloring-marker ${ti === pvColoringTaskIndex ? 'active' : ''}" style="left:${(Number(t.x)||0)*100}%;top:${(Number(t.y)||0)*100}%;background:${escapeHtml(t.color || '#43A047')}" title="المهمة ${ti + 1} — انقر لتحديدها" onclick="event.stopPropagation();selectColoringTask(${ti})">${ti + 1}</span>`).join('')}
+        <div class="coloring-stage-hint">${tasks.length ? (`المهمة ${pvColoringTaskIndex + 1} — انقر على الصورة لتحديد مكانها، أو انقر على رقم مهمة أخرى لاختيارها`) : 'أضف مهمة تلوين لتحديد الأماكن على الصورة'}</div>
       </div>
     </div>`;
 
