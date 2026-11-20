@@ -275,16 +275,16 @@ final List<Lesson> lessons = [
   Lesson(word: 'Car', sentence: 'The Car is red.', options: ['Car', 'Ball', 'Book'], imageFile: 'toy_car', indexInPack: 0, isPack: false, translation: 'السيارة حمراء.', order: 130, category: 'Discover'),
 
   // ===== 14. Colors - 131 to 140 =====
-  Lesson(word: 'Red', sentence: 'The ball is Red.', options: ['Red', 'Blue', 'Green'], imageFile: 'color_red', indexInPack: 0, isPack: false, translation: 'الكرة حمراء.', order: 131, category: 'Colors'),
-  Lesson(word: 'Blue', sentence: 'The ball is Blue.', options: ['Blue', 'Red', 'Yellow'], imageFile: 'color_blue', indexInPack: 0, isPack: false, translation: 'الكرة زرقاء.', order: 132, category: 'Colors'),
-  Lesson(word: 'Green', sentence: 'The ball is Green.', options: ['Green', 'Red', 'Blue'], imageFile: 'color_green', indexInPack: 0, isPack: false, translation: 'الكرة خضراء.', order: 133, category: 'Colors'),
-  Lesson(word: 'Yellow', sentence: 'The ball is Yellow.', options: ['Yellow', 'Green', 'Orange'], imageFile: 'color_yellow', indexInPack: 0, isPack: false, translation: 'الكرة صفراء.', order: 134, category: 'Colors'),
-  Lesson(word: 'Orange', sentence: 'The ball is Orange.', options: ['Orange', 'Red', 'Brown'], imageFile: 'color_orange', indexInPack: 0, isPack: false, translation: 'الكرة برتقالية.', order: 135, category: 'Colors'),
-  Lesson(word: 'Purple', sentence: 'The ball is Purple.', options: ['Purple', 'Pink', 'Blue'], imageFile: 'color_purple', indexInPack: 0, isPack: false, translation: 'الكرة بنفسجية.', order: 136, category: 'Colors'),
-  Lesson(word: 'Pink', sentence: 'The ball is Pink.', options: ['Pink', 'Purple', 'Red'], imageFile: 'color_pink', indexInPack: 0, isPack: false, translation: 'الكرة وردية.', order: 137, category: 'Colors'),
-  Lesson(word: 'Brown', sentence: 'The ball is Brown.', options: ['Brown', 'Orange', 'Black'], imageFile: 'color_brown', indexInPack: 0, isPack: false, translation: 'الكرة بنية.', order: 138, category: 'Colors'),
-  Lesson(word: 'Black', sentence: 'The ball is Black.', options: ['Black', 'Brown', 'White'], imageFile: 'color_black', indexInPack: 0, isPack: false, translation: 'الكرة سوداء.', order: 139, category: 'Colors'),
-  Lesson(word: 'White', sentence: 'The ball is White.', options: ['White', 'Black', 'Yellow'], imageFile: 'color_white', indexInPack: 0, isPack: false, translation: 'الكرة بيضاء.', order: 140, category: 'Colors'),
+  Lesson(word: 'Red', sentence: 'The ball is red.', options: ['Red', 'Blue', 'Green'], imageFile: 'color_red', indexInPack: 0, isPack: false, translation: 'الكرة حمراء.', order: 131, category: 'Colors'),
+  Lesson(word: 'Blue', sentence: 'The ball is blue.', options: ['Blue', 'Red', 'Yellow'], imageFile: 'color_blue', indexInPack: 0, isPack: false, translation: 'الكرة زرقاء.', order: 132, category: 'Colors'),
+  Lesson(word: 'Green', sentence: 'The ball is green.', options: ['Green', 'Red', 'Blue'], imageFile: 'color_green', indexInPack: 0, isPack: false, translation: 'الكرة خضراء.', order: 133, category: 'Colors'),
+  Lesson(word: 'Yellow', sentence: 'The ball is yellow.', options: ['Yellow', 'Green', 'Orange'], imageFile: 'color_yellow', indexInPack: 0, isPack: false, translation: 'الكرة صفراء.', order: 134, category: 'Colors'),
+  Lesson(word: 'Orange', sentence: 'The ball is orange.', options: ['Orange', 'Red', 'Brown'], imageFile: 'color_orange', indexInPack: 0, isPack: false, translation: 'الكرة برتقالية.', order: 135, category: 'Colors'),
+  Lesson(word: 'Purple', sentence: 'The ball is purple.', options: ['Purple', 'Pink', 'Blue'], imageFile: 'color_purple', indexInPack: 0, isPack: false, translation: 'الكرة بنفسجية.', order: 136, category: 'Colors'),
+  Lesson(word: 'Pink', sentence: 'The ball is pink.', options: ['Pink', 'Purple', 'Red'], imageFile: 'color_pink', indexInPack: 0, isPack: false, translation: 'الكرة وردية.', order: 137, category: 'Colors'),
+  Lesson(word: 'Brown', sentence: 'The ball is brown.', options: ['Brown', 'Orange', 'Black'], imageFile: 'color_brown', indexInPack: 0, isPack: false, translation: 'الكرة بنية.', order: 138, category: 'Colors'),
+  Lesson(word: 'Black', sentence: 'The ball is black.', options: ['Black', 'Brown', 'White'], imageFile: 'color_black', indexInPack: 0, isPack: false, translation: 'الكرة سوداء.', order: 139, category: 'Colors'),
+  Lesson(word: 'White', sentence: 'The ball is white.', options: ['White', 'Black', 'Yellow'], imageFile: 'color_white', indexInPack: 0, isPack: false, translation: 'الكرة بيضاء.', order: 140, category: 'Colors'),
 ];
 
 // ================= PATH ORDER (zigzag home path) =================

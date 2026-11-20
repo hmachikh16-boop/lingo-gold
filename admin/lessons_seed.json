@@ -85,7 +85,7 @@
   },
   {
     "word": "A red apple",
-    "sentence": "A red apple.",
+    "sentence": "a red apple.",
     "options": [
       "Red",
       "Green",
@@ -1821,7 +1821,7 @@
   },
   {
     "word": "Red",
-    "sentence": "The ball is Red.",
+    "sentence": "The ball is red.",
     "options": [
       "Red",
       "Blue",
@@ -1835,7 +1835,7 @@
   },
   {
     "word": "Blue",
-    "sentence": "The ball is Blue.",
+    "sentence": "The ball is blue.",
     "options": [
       "Blue",
       "Red",
@@ -1849,7 +1849,7 @@
   },
   {
     "word": "Green",
-    "sentence": "The ball is Green.",
+    "sentence": "The ball is green.",
     "options": [
       "Green",
       "Red",
@@ -1863,7 +1863,7 @@
   },
   {
     "word": "Yellow",
-    "sentence": "The ball is Yellow.",
+    "sentence": "The ball is yellow.",
     "options": [
       "Yellow",
       "Green",
@@ -1877,7 +1877,7 @@
   },
   {
     "word": "Orange",
-    "sentence": "The ball is Orange.",
+    "sentence": "The ball is orange.",
     "options": [
       "Orange",
       "Red",
@@ -1891,7 +1891,7 @@
   },
   {
     "word": "Purple",
-    "sentence": "The ball is Purple.",
+    "sentence": "The ball is purple.",
     "options": [
       "Purple",
       "Pink",
@@ -1905,7 +1905,7 @@
   },
   {
     "word": "Pink",
-    "sentence": "The ball is Pink.",
+    "sentence": "The ball is pink.",
     "options": [
       "Pink",
       "Purple",
@@ -1919,7 +1919,7 @@
   },
   {
     "word": "Brown",
-    "sentence": "The ball is Brown.",
+    "sentence": "The ball is brown.",
     "options": [
       "Brown",
       "Orange",
@@ -1933,7 +1933,7 @@
   },
   {
     "word": "Black",
-    "sentence": "The ball is Black.",
+    "sentence": "The ball is black.",
     "options": [
       "Black",
       "Brown",
@@ -1947,7 +1947,7 @@
   },
   {
     "word": "White",
-    "sentence": "The ball is White.",
+    "sentence": "The ball is white.",
     "options": [
       "White",
       "Black",

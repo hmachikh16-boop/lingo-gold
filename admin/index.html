@@ -270,7 +270,7 @@
           <div class="status-chip" id="publishStatusChip"><span class="dot"></span><span id="publishStatusText">جاهز</span></div>
           <div class="toolbar-group">
             <button class="btn btn-sm" onclick="exportLessonBundleJson()" title="حفظ ونشر الآن إلى GitHub">نشر الآن</button>
-            <button class="btn btn-gray btn-sm" onclick="saveLocalLessonDraft()">حفظ مسودة</button>
+            <button class="btn btn-gray btn-sm" onclick="location.reload()">إعادة تحميل</button>
             <span class="muted" style="font-size:12px">اللوحة أداة تعديل دروس التطبيق فقط</span>
             <button class="btn btn-gray btn-sm" onclick="resetCurrentStepOverride()">إرجاع الواجهة</button>
           </div>
@@ -473,6 +473,24 @@ let appContent = null;      // محتوى التطبيق من lessons_seed.json 
 let latestPublishedBundle = null;
 let latestPublishedGeneratedAt = null;
 let _publishedBundlePromise = null;
+// لا توجد مسودات محلية. التعديلات تُكتب مباشرة في نسخة العمل هذه، ثم تُنشر.
+let workingBundle = null;
+
+function getWorkingBundle() {
+  if (!workingBundle) {
+    workingBundle = latestPublishedBundle
+      ? deepClone(latestPublishedBundle)
+      : { version: 1, lessons: [], newLessons: [] };
+  }
+  return workingBundle;
+}
+
+function getWorkingLessonForIndex(index) {
+  const wb = getWorkingBundle();
+  return [].concat(Array.isArray(wb.lessons) ? wb.lessons : [])
+    .concat(Array.isArray(wb.newLessons) ? wb.newLessons : [])
+    .find(x => x && x.appIndex === index) || null;
+}
 
 // آخر حزمة منشورة من الخادم (تُستخدم لدمج stepOverrides ومنع المسودات القديمة
 // من الكتابة فوق محتوى أحدث منها).
@@ -763,7 +781,11 @@ async function initCategories() {
   setLoading('catLoading', true);
   try {
     await loadAppContent();
-    await migrateLocalDraftsFromSeed();
+    // مسح نهائي لأي مسودات محلية قديمة: لا تُستخدم اللوحة بها بعد الآن.
+    try {
+      localStorage.removeItem('lingo_admin_local_lesson_drafts_v1');
+      localStorage.removeItem('lingo_admin_local_new_lessons_v1');
+    } catch (_) {}
     categoriesLoaded = true;
     setPreviewMode(true);
     renderCategories();
@@ -1201,8 +1223,7 @@ function showLessons(catId, catName) {
   if (previewMode && appContent) {
     setLoading('lessonsLoading', false);
     const items = (appContent.lessonsByCat && appContent.lessonsByCat[catName]) ? appContent.lessonsByCat[catName] : [];
-    const localNew = getLocalNewLessons().filter(x => x && ((x.category || '') === (catName || '')));
-    if (!items.length && !localNew.length) { list.innerHTML = '<div class="muted">لا توجد دروس في هذه الفئة.</div>'; return; }
+    if (!items.length) { list.innerHTML = '<div class="muted">لا توجد دروس في هذه الفئة.</div>'; return; }
     items.forEach(d => {
       const row = document.createElement('div');
       row.className = 'lesson-row';
@@ -1211,19 +1232,6 @@ function showLessons(catId, catName) {
       row.innerHTML = `<div><b>${title}</b> <span class="muted">#${d.lessonNumber || ''}</span></div>
         <div class="row">
           <button class="btn btn-sm" onclick="editAppLesson(${d.seedIdx}, '${safeTitle}')">تحرير</button>
-        </div>`;
-      list.appendChild(row);
-    });
-    localNew.forEach(l => {
-      const row = document.createElement('div');
-      row.className = 'lesson-row';
-      row.style.borderColor = '#86EFAC';
-      row.style.background = '#F0FDF4';
-      const title = escapeHtml(l.title || l.word || 'درس جديد');
-      row.innerHTML = `<div><b>${title}</b> <span class="muted">#${l.lessonNumber || ''} • جديد</span></div>
-        <div class="row">
-          <button class="btn btn-sm" onclick="openLocalNewLesson('${l._localId}')">تحرير</button>
-          <button class="btn btn-red btn-sm" onclick="deleteLocalNewLesson('${l._localId}')">حذف</button>
         </div>`;
       list.appendChild(row);
     });
@@ -1491,7 +1499,8 @@ function openEditorWithSeed(appIndex, title) {
   data.appIndex = appIndex;
   currentLesson = null;
   let merged = mergeSeedDefaults(data);
-  merged = applyLocalDraftToLessonData(merged);
+  const workingItem = getWorkingLessonForIndex(appIndex);
+  if (workingItem) merged = Object.assign({}, merged, deepClone(workingItem));
   currentLessonData = merged;
   lessonBaseSnapshot = deepClone(merged);
   currentStepOverrides = (merged && merged.stepOverrides && typeof merged.stepOverrides === 'object' && !Array.isArray(merged.stepOverrides)) ? deepClone(merged.stepOverrides) : null;
@@ -2101,48 +2110,30 @@ function getBaseLessonCount() {
   }
   return n || 140;
 }
+// لا مسودات محلية: التعديل يُكتب مباشرة في نسخة العمل ثم يُنشر تلقائيًا.
 function saveLocalLessonDraft(silent) {
   try {
     const payload = buildCurrentLessonDraftPayload();
-    const appIndex = getCurrentAppIndexForDraft();
-    // الدروس الأساسية تُحفظ في المسودات حسب appIndex.
-    // أما الدروس المضافة من اللوحة (appIndex >= عدد الدروس الأساسية) فيجب أن
-    // تُحفظ في قائمة الدروس الجديدة؛ وإلا يقرأ النشر النسخة القديمة منها ويعيد
-    // كتابة تعديلات المستخدم (مثل كلمة المطابقة) إلى الحالة المنشورة سابقًا.
-    const isDynamicLesson = !!payload.isLocalNew ||
-      (typeof appIndex === 'number' && appIndex >= getBaseLessonCount());
-    if (typeof appIndex === 'number' && !isDynamicLesson) {
-      const drafts = getLocalLessonDrafts();
-      drafts[String(appIndex)] = payload;
-      setLocalLessonDrafts(drafts);
-      if (!silent) {
-        showSaveStatus('تم الحفظ محليًا — جارٍ النشر التلقائي على GitHub...', false);
-        scheduleAutoPublish(150);
-      }
-      return { ok: true, type: 'draft', key: String(appIndex), payload };
+    const appIndex = payload.appIndex;
+    if (typeof appIndex !== 'number') {
+      if (!silent) showSaveStatus('لا يمكن حفظ درس بدون رقم', true);
+      return { ok: false, error: 'no-app-index' };
     }
-    // درس جديد/غير مربوط بـ appIndex: خزّنه في قائمة الدروس الجديدة المحلية
-    const list = getLocalNewLessons();
-    const existing = list.find(x => x && (
-      (typeof appIndex === 'number' && x.appIndex === appIndex) ||
-      newLessonContentKey(x) === newLessonContentKey(payload)
-    ));
-    const localId = payload._localId || (existing && existing._localId) ||
-      ('local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
-    payload._localId = localId;
-    payload.isLocalNew = true;
-    if (currentCategoryName && !payload.category) payload.category = currentCategoryName;
-    const i = list.findIndex(x => x && x._localId === localId);
-    if (i >= 0) list[i] = payload; else list.push(payload);
-    setLocalNewLessons(list);
+    const clean = Object.assign({}, payload);
+    delete clean._localId; delete clean.isLocalNew; delete clean.updatedAtLocal;
+    const wb = getWorkingBundle();
+    const arr = (appIndex < getBaseLessonCount()) ? wb.lessons : wb.newLessons;
+    if (!Array.isArray(arr)) return { ok: false, error: 'no-array' };
+    const i = arr.findIndex(x => x && x.appIndex === appIndex);
+    if (i >= 0) arr[i] = clean; else arr.push(clean);
     if (!silent) {
-      showSaveStatus('تم حفظ الدرس الجديد محليًا — جارٍ النشر التلقائي على GitHub...', false);
+      showSaveStatus('تم تعديل الدرس — جارٍ النشر التلقائي على GitHub...', false);
       scheduleAutoPublish(150);
     }
-    return { ok: true, type: 'new', key: localId, payload };
+    return { ok: true, type: 'working', key: String(appIndex), payload };
   } catch (e) {
     console.error(e);
-    if (!silent) showSaveStatus('تعذر الحفظ المحلي: ' + (e && e.message ? e.message : ''), true);
+    if (!silent) showSaveStatus('تعذر حفظ التعديل: ' + (e && e.message ? e.message : ''), true);
     return { ok: false, error: e };
   }
 }
@@ -2219,52 +2210,34 @@ async function buildLessonBundleObject() {
   try {
     if (!appContent) await loadAppContent();
 
-    // اقرأ آخر حزمة منشورة أولاً. بدونها كان النشر من دون مسودة محلية يمسح
-    // stepOverrides والتعديلات السابقة (تختفي الصور/النصوص المخصصة).
+    // لا مسودات محلية: الحزمة المنشورة + نسخة العمل الحالية هما المصدر الوحيد.
     const published = await ensurePublishedBundle(true);
-    // لا نحذف المسودات المحلية تلقائيًا. تعديل المستخدم يبقى محفوظًا حتى
-    // يعدّله هو بنفسه، حتى لو تأخر النشر أو أُعيد تشغيل الجهاز.
-
-    // احفظ الدرس الحالي كمحليًا أولاً ليُضمن في الحزمة. لا نستدعي الحفظ إذا
-    // لم يكن هناك درس مفتوح، وإلا أنشأ درسًا جديدًا فارغًا مع كل بناء.
-    try {
-      if (getCurrentAppIndexForDraft() != null || (currentLessonData && currentLessonData._localId)) {
-        saveLocalLessonDraft(true);
-      }
-    } catch (_) {}
-    const drafts = getLocalLessonDrafts();
-    const localNew = getLocalNewLessons().filter(x => x &&
-      (String(x.word || '').trim() || String(x.title || '').trim()));
+    if (getCurrentAppIndexForDraft() != null) {
+      try { saveLocalLessonDraft(true); } catch (_) {}
+    }
+    const wb = getWorkingBundle();
+    const workingByIndex = new Map();
+    [].concat(Array.isArray(wb.lessons) ? wb.lessons : [])
+      .concat(Array.isArray(wb.newLessons) ? wb.newLessons : [])
+      .forEach(x => { if (x && typeof x.appIndex === 'number') workingByIndex.set(x.appIndex, x); });
     const lessons = [];
 
-    const publishedByIndex = {};
-    if (published) {
-      const allPublished = []
-        .concat(Array.isArray(published.lessons) ? published.lessons : [])
-        .concat(Array.isArray(published.newLessons) ? published.newLessons : []);
-      allPublished.forEach(x => {
-        if (x && typeof x.appIndex === 'number') publishedByIndex[x.appIndex] = x;
-      });
-    }
-
-    // كل الدروس الأساسية (140) مع دمج المسودات المحلية إن وجدت
+    // كل الدروس الأساسية (140) من نسخة العمل الحالية
     (appContent.categories || []).forEach(cat => {
       const catName = cat && cat.name ? cat.name : '';
       const items = (appContent.lessonsByCat && appContent.lessonsByCat[catName]) ? appContent.lessonsByCat[catName] : [];
       items.forEach(seed => {
         const idx = (seed && typeof seed.appIndex === 'number') ? seed.appIndex : seed.seedIdx;
-        const draft = drafts[String(idx)] || null;
+        const working = workingByIndex.get(idx) || null;
         const base = Object.assign({}, seed, {
           appIndex: idx,
           category: catName,
-          // ترقيم عالمي ثابت: التطبيق يعرض الدروس حسب order وليس حسب ترتيب الفئة.
           lessonNumber: idx + 1,
           order: idx + 1,
           title: seed.title || ('الدرس ' + (idx + 1) + ' • ' + (seed.word || '')),
           isActive: true,
         });
-        // الأولوية: seed الأساسي < آخر حزمة منشورة < المسودة المحلية.
-        const merged = Object.assign({}, base, publishedByIndex[idx] || {}, draft || {});
+        const merged = Object.assign({}, base, working || {});
         merged.appIndex = idx;
         merged.category = catName;
         merged.lessonNumber = idx + 1;
@@ -2281,70 +2254,18 @@ async function buildLessonBundleObject() {
       });
     });
 
-    // دروس جديدة: ادمج المنشور سابقاً مع المحلي حتى لا تختفي عند مسح المتصفح،
-    // وامنع التكرار حتى لو لم يُحفظ appIndex في التخزين المحلي سابقاً.
-    const validPublishedNew = ((published && Array.isArray(published.newLessons)) ? published.newLessons : [])
-      .filter(x => x && (normText(x.word) || normText(x.title)));
-    const validLocalNew = localNew.filter(x => x && (normText(x.word) || normText(x.title)));
-    // إن وُجد أكثر من درس منشور بنفس المحتوى (مثل 140/141) احتفظ بالأحدث فقط.
-    const publishedByContent = new Map();
-    validPublishedNew.forEach(x => publishedByContent.set(newLessonContentKey(x), Object.assign({}, x)));
-    const pubList = Array.from(publishedByContent.values());
-    const localByContent = new Map();
-    validLocalNew.forEach(x => localByContent.set(newLessonContentKey(x), Object.assign({}, x)));
-    const localList = Array.from(localByContent.values());
-
-    const mergedNew = new Map();
-    const contentToKey = new Map();
-    pubList.forEach(x => {
-      const k = newLessonIdentityKey(x);
-      mergedNew.set(k, Object.assign({}, x));
-      contentToKey.set(newLessonContentKey(x), k);
-    });
-    // الحزمة المنشورة هي المرجع ما لم تكن هناك مسودة محلية أحدث منها.
-    // هذا يمنع نسخة محلية قديمة من إعادة صورة/جملة قديمة بعد النشر.
-    const publishedGeneratedAt = Date.parse((published && published.generatedAt) || '') || 0;
-    localList.forEach(x => {
-      const contentKey = newLessonContentKey(x);
-      let k = contentToKey.get(contentKey);
-      if (!k && typeof x.appIndex === 'number') k = 'i' + x.appIndex;
-      if (!k) k = 'k:' + contentKey;
-      const prev = mergedNew.get(k) || null;
-      if (!prev) {
-        mergedNew.set(k, Object.assign({}, x));
-      } else {
-        // أي درس جديد له تعديل محلي (updatedAtLocal) يفوز على المنشور،
-        // حتى لا يضيع تعديل المستخدم عند إعادة تشغيل الجهاز أو تأخر النشر.
-        const own = Date.parse((x && x.updatedAtLocal) || '') || 0;
-        const localIsNewer = own > 0 || !publishedGeneratedAt;
-        mergedNew.set(k, localIsNewer
-          ? Object.assign({}, prev, x, { appIndex: prev.appIndex })
-          : Object.assign({}, x, prev, { appIndex: prev.appIndex }));
-      }
-      contentToKey.set(contentKey, k);
-    });
-
-    const newLessons = Array.from(mergedNew.values()).map((x, i) => {
-      const n = Object.assign({}, x || {});
-      // ترقيم حتمي بعد الدروس الأساسية: لا يمكن أن يظهر درس برقم 141 وآخر 142.
-      n.appIndex = lessons.length + i;
-      n.lessonNumber = n.appIndex + 1;
-      n.order = n.appIndex + 1;
-      delete n._localId; delete n.isLocalNew; delete n.updatedAtLocal;
-      if (!n.stepOverrides || typeof n.stepOverrides !== 'object' || Array.isArray(n.stepOverrides) || !Object.keys(n.stepOverrides).length) delete n.stepOverrides;
-      if (n.isActive == null) n.isActive = true;
-      return n;
-    });
-
-    // احفظ appIndex النهائي في التخزين المحلي حتى لا يتكرر الدرس في النشر القادم.
-    try {
-      const idsByContent = new Map();
-      localList.forEach(x => idsByContent.set(newLessonContentKey(x), x._localId));
-      setLocalNewLessons(newLessons.map(n => Object.assign({}, n, {
-        _localId: idsByContent.get(newLessonContentKey(n)) || ('local_' + newLessonContentKey(n)),
-        isLocalNew: true
-      })));
-    } catch (_) {}
+    const newLessons = (Array.isArray(wb.newLessons) ? wb.newLessons : [])
+      .filter(x => x && (normText(x.word) || normText(x.title)))
+      .map((x, i) => {
+        const n = Object.assign({}, x);
+        n.appIndex = lessons.length + i;
+        n.lessonNumber = n.appIndex + 1;
+        n.order = n.appIndex + 1;
+        delete n._localId; delete n.isLocalNew; delete n.updatedAtLocal;
+        if (!n.stepOverrides || typeof n.stepOverrides !== 'object' || Array.isArray(n.stepOverrides) || !Object.keys(n.stepOverrides).length) delete n.stepOverrides;
+        if (n.isActive == null) n.isActive = true;
+        return n;
+      });
 
     return normalizeBundleForPublish({
       version: 1,
@@ -3164,10 +3085,6 @@ function getPreviewLessonNavItems() {
     all.sort((a, b) => (a.seedIdx || 0) - (b.seedIdx || 0));
     base = all;
   }
-  const localNew = getLocalNewLessons().filter(x => !currentCategoryName || (x.category || '') === currentCategoryName);
-  localNew.forEach(l => {
-    base.push(Object.assign({}, l, { seedIdx: 'local:' + l._localId, isLocalNew: true }));
-  });
   return base;
 }
 
@@ -3192,19 +3109,6 @@ function refreshLessonQuickJump() {
       });
       sel.appendChild(og);
     });
-  }
-  const localNew = getLocalNewLessons();
-  if (localNew.length) {
-    const og = document.createElement('optgroup');
-    og.label = 'دروس جديدة (محلية)';
-    localNew.forEach(l => {
-      const o = document.createElement('option');
-      o.value = 'local:' + l._localId;
-      o.textContent = 'جديد • ' + (l.title || l.word || '');
-      if (currentLessonData && currentLessonData._localId === l._localId) o.selected = true;
-      og.appendChild(o);
-    });
-    sel.appendChild(og);
   }
 }
 
