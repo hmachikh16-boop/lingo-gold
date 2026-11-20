@@ -129,7 +129,9 @@ class LessonsScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                lesson.word,
+                                lesson.title.trim().isNotEmpty
+                                    ? lesson.title
+                                    : lesson.word,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: kInk,
@@ -152,6 +154,24 @@ class LessonsScreen extends StatelessWidget {
                                       color: kSecondary),
                                 ),
                               ),
+                            if (lesson.level > 0) ...[
+                              const SizedBox(width: 5),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: kSoftGreen,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'المستوى ${lesson.level}',
+                                  style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: kPrimaryDark),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                         subtitle: Text(

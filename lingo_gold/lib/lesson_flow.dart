@@ -885,6 +885,8 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
               ? inheritedImageUrl
               : base.imageUrl),
       zoom: zoom,
+      title: s('title', base.title),
+      level: base.level,
     );
   }
 
@@ -947,6 +949,7 @@ class _LessonFlowScreenState extends State<LessonFlowScreen> {
                       _step == 5 &&
                       (_isSpecialLesson(_lessonIndex) || _hasChoiceOverride),
                   lessonNumber: _localLessonNumber,
+                  level: _lesson.level,
                   groupName: group.name,
                   onBack: () => Navigator.of(context).pop(),
                   onHome: _exitToHome,
@@ -1241,6 +1244,7 @@ class _LessonTopBar extends StatelessWidget {
   final bool intro;
   final bool coloring;
   final int lessonNumber;
+  final int level;
   final String groupName;
   final VoidCallback onBack;
   final VoidCallback onHome;
@@ -1251,6 +1255,7 @@ class _LessonTopBar extends StatelessWidget {
     this.intro = false,
     this.coloring = false,
     required this.lessonNumber,
+    this.level = 0,
     required this.groupName,
     required this.onBack,
     required this.onHome,
@@ -1331,7 +1336,8 @@ class _LessonTopBar extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'الدرس $lessonNumber • $groupName',
+                  'الدرس $lessonNumber • $groupName' +
+                      (level > 0 ? ' • المستوى $level' : ''),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

@@ -312,6 +312,8 @@ class LessonContentService {
           imageUrl: _asNullableString(m['imageUrl']),
           spoken: _asNullableString(m['spoken']),
           zoom: _asDouble(m['zoom'], 1.0),
+          title: _asString(m['title']),
+          level: _asInt(m['level'], 0),
         ));
         changed = true;
       }
@@ -420,6 +422,8 @@ class LessonContentService {
       // للصورة القديمة. بدون ذلك يستحيل حذف صورة سبق نشرها.
       imageUrl: imageUrlProvided ? (imageUrlStr ?? '') : base.imageUrl,
       zoom: m.containsKey('zoom') ? _asDouble(m['zoom'], 1.0) : base.zoom,
+      title: m.containsKey('title') ? _asString(m['title']) : base.title,
+      level: m.containsKey('level') ? _asInt(m['level'], base.level) : base.level,
     );
   }
 
@@ -433,6 +437,8 @@ class LessonContentService {
         a.isPack == b.isPack &&
         a.indexInPack == b.indexInPack &&
         a.category == b.category &&
+        a.title == b.title &&
+        a.level == b.level &&
         a.zoom == b.zoom &&
         _listEquals(a.options, b.options);
   }

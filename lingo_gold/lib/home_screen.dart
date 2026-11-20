@@ -170,7 +170,9 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     allDone
                         ? 'أتممت كل الدروس! 🎉'
-                        : 'الدرس رقم $currentLessonId',
+                        : (lesson.title.trim().isNotEmpty
+                            ? lesson.title
+                            : 'الدرس رقم $currentLessonId'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 30,
@@ -178,6 +180,25 @@ class HomeScreen extends StatelessWidget {
                       color: kHomeInk,
                     ),
                   ),
+                  if (lesson.level > 0) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: kHomeBlue,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        'المستوى ${lesson.level} • $groupName',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   Directionality(
                     textDirection: TextDirection.ltr,
