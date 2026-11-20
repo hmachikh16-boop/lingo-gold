@@ -26,6 +26,10 @@ class LessonColoringTask {
   /// target when the learner completes the instruction.
   final List<Offset> extraPoints;
 
+  /// تعليمات مخصصة من لوحة التحكم (إن وُجدت).
+  final String? instructionEn;
+  final String? instructionAr;
+
   const LessonColoringTask({
     required this.label,
     required this.color,
@@ -33,9 +37,14 @@ class LessonColoringTask {
     required this.x,
     required this.y,
     this.extraPoints = const [],
+    this.instructionEn,
+    this.instructionAr,
   });
 
-  String get instruction => 'Color the $label ${colorName.toLowerCase()}.';
+  String get instruction =>
+      (instructionEn ?? '').trim().isNotEmpty
+          ? instructionEn!.trim()
+          : 'Color the $label ${colorName.toLowerCase()}.';
   Offset get target => Offset(x, y);
 }
 
@@ -46,11 +55,34 @@ class LessonColoringData {
   final List<LessonColoringTask> tasks;
   final String titleEn;
 
+  /// صورة مرفوعة من لوحة التحكم (تُستخدم بدل الأصل المحلي).
+  final String? imageUrl;
+
   const LessonColoringData({
     required this.asset,
     required this.tasks,
     required this.titleEn,
+    this.imageUrl,
   });
+}
+
+Color coloringColorFromName(String name) {
+  switch (name.trim().toLowerCase()) {
+    case 'red':
+      return kColoringRed;
+    case 'blue':
+      return kColoringBlue;
+    case 'green':
+      return kColoringGreen;
+    case 'yellow':
+      return kColoringYellow;
+    case 'orange':
+      return kColoringOrange;
+    case 'pink':
+      return kColoringPink;
+    default:
+      return kColoringRed;
+  }
 }
 
 // The first ten lessons use the same professional line-art pages that are

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'coloring_screen.dart';
 import 'data.dart';
+import 'lesson_coloring_pages.dart';
+import 'lesson_coloring_step.dart';
 
 /// 5 black-line coloring pages per lesson.
 ///
@@ -200,6 +202,90 @@ String coloringPromptAr(Lesson lesson, int page) {
   }
 }
 
+Color _colorFromHexOrName(dynamic hex, dynamic name) {
+  final h = (hex ?? '').toString().trim().replaceAll('#', '');
+  if (h.length == 6) {
+    final v = int.tryParse(h, radix: 16);
+    if (v != null) return Color(0xFF000000 | v);
+  }
+  return coloringColorFromName((name ?? '').toString());
+}
+
+List<Offset> _parseExtraPoints(dynamic raw) {
+  final out = <Offset>[];
+  if (raw is! List) return out;
+  for (final p in raw) {
+    if (p is! Map) continue;
+    final px = p['x'];
+    final py = p['y'];
+    final dx = px is num ? px.toDouble() : double.tryParse('${px ?? ''}');
+    final dy = py is num ? py.toDouble() : double.tryParse('${py ?? ''}');
+    if (dx != null && dy != null) out.add(Offset(dx, dy));
+  }
+  return out;
+}
+
+/// تعديلات لوحة التحكم: مهام تلوين موجّهة لصفحة عادية.
+LessonColoringData? _customColoringData(
+  Map<String, dynamic>? pageOverride,
+  String asset,
+  String imageUrl,
+  String titleEn,
+) {
+  if (pageOverride == null) return null;
+  final rawTasks = pageOverride['tasks'];
+  final tasks = <LessonColoringTask>[];
+  if (rawTasks is List) {
+    for (final raw in rawTasks) {
+      if (raw is! Map) continue;
+      final rx = raw['x'];
+      final ry = raw['y'];
+      final x = rx is num ? rx.toDouble() : double.tryParse('${rx ?? ''}');
+      final y = ry is num ? ry.toDouble() : double.tryParse('${ry ?? ''}');
+      if (x == null || y == null) continue;
+      final name = (raw['colorName'] ?? '').toString().trim();
+      final color = _colorFromHexOrName(raw['color'], name.isEmpty ? 'red' : name);
+      tasks.add(LessonColoringTask(
+        label: (raw['label'] ?? 'part').toString().trim().isEmpty
+            ? 'part'
+            : (raw['label'] ?? 'part').toString().trim(),
+        color: color,
+        colorName: name.isEmpty ? 'Red' : name,
+        x: x.clamp(0.0, 1.0),
+        y: y.clamp(0.0, 1.0),
+        extraPoints: _parseExtraPoints(raw['extraPoints']),
+        instructionEn: raw['instructionEn']?.toString(),
+        instructionAr: raw['instructionAr']?.toString(),
+      ));
+    }
+  }
+  // توافق مع التعديلات القديمة: هدف واحد بدل المهام.
+  if (tasks.isEmpty) {
+    final rx = pageOverride['targetX'];
+    final ry = pageOverride['targetY'];
+    final x = rx is num ? rx.toDouble() : double.tryParse('${rx ?? ''}');
+    final y = ry is num ? ry.toDouble() : double.tryParse('${ry ?? ''}');
+    final hex = (pageOverride['targetColor'] ?? '').toString().trim();
+    if (x != null && y != null && hex.isNotEmpty) {
+      tasks.add(LessonColoringTask(
+        label: 'part',
+        color: _colorFromHexOrName(hex, 'red'),
+        colorName: 'Red',
+        x: x.clamp(0.0, 1.0),
+        y: y.clamp(0.0, 1.0),
+        extraPoints: _parseExtraPoints(pageOverride['extraPoints']),
+      ));
+    }
+  }
+  if (tasks.isEmpty) return null;
+  return LessonColoringData(
+    asset: asset,
+    tasks: tasks,
+    titleEn: titleEn.isEmpty ? 'Coloring' : titleEn,
+    imageUrl: imageUrl.isEmpty ? null : imageUrl,
+  );
+}
+
 class ColoringStep extends StatelessWidget {
   final Lesson lesson;
   final int lessonIndex;
@@ -261,6 +347,20 @@ class ColoringStep extends StatelessWidget {
           if (dx != null && dy != null) extraPoints.add(Offset(dx, dy));
         }
       }
+    }
+
+    final customData = _customColoringData(
+      pageOverride,
+      asset,
+      imageUrl,
+      promptEn.isEmpty ? 'Coloring' : promptEn,
+    );
+    if (customData != null) {
+      return LessonColoringStep(
+        lessonIndex: lessonIndex,
+        onComplete: onPageDone,
+        customData: customData,
+      );
     }
 
     return ColoringCanvas(

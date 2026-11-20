@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 
 import 'lesson_coloring_pages.dart';
 import 'services/sound_service.dart';
@@ -23,10 +24,14 @@ class LessonColoringStep extends StatefulWidget {
   final int lessonIndex;
   final VoidCallback onComplete;
 
+  /// بيانات صفحة تلوين مخصصة من لوحة التحكم (صورة + مهام تلوين).
+  final LessonColoringData? customData;
+
   const LessonColoringStep({
     super.key,
     required this.lessonIndex,
     required this.onComplete,
+    this.customData,
   });
 
   @override
@@ -76,7 +81,7 @@ class _LessonColoringStepState extends State<LessonColoringStep> {
   @override
   void initState() {
     super.initState();
-    _data = lessonColoringDataFor(widget.lessonIndex);
+    _data = widget.customData ?? lessonColoringDataFor(widget.lessonIndex);
     _loadImage();
     WidgetsBinding.instance.addPostFrameCallback((_) => _speakInstruction());
   }
@@ -90,9 +95,20 @@ class _LessonColoringStepState extends State<LessonColoringStep> {
 
   Future<void> _loadImage() async {
     try {
-      final data = await rootBundle.load(_data.asset);
+      final url = (_data.imageUrl ?? '').trim();
+      Uint8List bytes;
+      if (url.isNotEmpty) {
+        final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 20));
+        if (res.statusCode != 200) {
+          throw StateError('HTTP ${res.statusCode}');
+        }
+        bytes = res.bodyBytes;
+      } else {
+        final data = await rootBundle.load(_data.asset);
+        bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      }
       final codec = await ui.instantiateImageCodec(
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+        bytes,
         targetWidth: 800,
       );
       final frame = await codec.getNextFrame();
@@ -351,6 +367,38 @@ class _LessonColoringStepState extends State<LessonColoringStep> {
   }
 
   Widget _instruction(LessonColoringTask task) {
+    final custom = (task.instructionEn ?? '').trim();
+    if (custom.isNotEmpty) {
+      return Column(
+        children: [
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Text(
+              custom,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                height: 1.25,
+                fontWeight: FontWeight.w800,
+                color: kInk,
+              ),
+            ),
+          ),
+          if ((task.instructionAr ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              task.instructionAr!.trim(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: kMuted,
+              ),
+            ),
+          ],
+        ],
+      );
+    }
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Text.rich(

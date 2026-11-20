@@ -10,7 +10,7 @@ class UpdateService {
   // Public GitHub release assets. نستخدم رابط الإصدار الصريح بدل latest/download
   // لأن إعادة التوجيه في latest/download تحفظ نسخة قديمة من version.json في الكاش.
   static const String _releaseBase =
-      'https://github.com/hmachikh16-boop/englishtok/releases/download/gold-v1.1.113';
+      'https://github.com/hmachikh16-boop/englishtok/releases/download/gold-v1.1.114';
 
   static String get versionUrl =>
       '$_releaseBase/version.json?t=${DateTime.now().millisecondsSinceEpoch}';
@@ -18,7 +18,7 @@ class UpdateService {
   static String get apkUrl =>
       '$_releaseBase/app-release.apk?t=${DateTime.now().millisecondsSinceEpoch}';
 
-  static const int currentVersionCode = 60;
+  static const int currentVersionCode = 61;
 
   /// Last error message from check/download/install, for user feedback.
   static String? lastError;
