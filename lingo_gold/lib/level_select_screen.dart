@@ -20,11 +20,11 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   int _selected = 1;
 
   final _levels = const [
-    {'n': 1, 'title': 'التأسيس البصري', 'desc': 'أتعرف على الأشياء والصور والكلمات الأولى', 'icon': Icons.emoji_objects_outlined},
-    {'n': 2, 'title': 'الناس والأفعال', 'desc': 'أتعرف على الأسرة والتحيات والأفعال اليومية', 'icon': Icons.people_outline},
-    {'n': 3, 'title': 'الطعام والحيوانات', 'desc': 'أميّز الطعام والحيوانات والأشياء المكتشفة', 'icon': Icons.restaurant_menu_outlined},
-    {'n': 4, 'title': 'المنزل والمدرسة', 'desc': 'أبني مفردات المكان والوظائف والأرقام', 'icon': Icons.school_outlined},
-    {'n': 5, 'title': 'الدمج والتطبيق', 'desc': 'أستخدم الجمل في مواقف جديدة وأراجع ما تعلمته', 'icon': Icons.auto_awesome_outlined},
+    {'n': 1, 'title': 'التأسيس البصري', 'desc': 'الأشخاص والحيوانات والفواكه والمنزل والمدرسة', 'icon': Icons.emoji_objects_outlined},
+    {'n': 2, 'title': 'الطعام والوجبات', 'desc': 'الإفطار والحلويات والخضار والفواكه وأدوات الطعام', 'icon': Icons.restaurant_menu_outlined},
+    {'n': 3, 'title': 'الحيوانات والطبيعة', 'desc': 'حيوانات المزرعة والبرية والكائنات الصغيرة والطبيعة', 'icon': Icons.pets_outlined},
+    {'n': 4, 'title': 'الناس والأماكن', 'desc': 'المهن والأماكن ووسائل النقل وأدوات السفر', 'icon': Icons.account_balance_outlined},
+    {'n': 5, 'title': 'الدمج والتطبيق', 'desc': 'قصص قصيرة تجمع الموسيقى والألوان والملابس والطبيعة', 'icon': Icons.auto_awesome_outlined},
   ];
 
   int _countFor(int level) => lessons.where((l) => l.level == level).length;

@@ -14,6 +14,7 @@ import 'lesson_content_service.dart';
 import 'profile_screen.dart';
 import 'review_screen.dart';
 import 'training_screen.dart';
+import 'stories_screen.dart';
 import 'progress_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
@@ -302,6 +303,10 @@ class _MainShellState extends State<MainShell> {
                           ),
                           LessonsScreen(
                             onStartLesson: (id) => _openLessonAt(id),
+                          ),
+                          StoriesScreen(
+                            completedLessons: completed,
+                            onOpenLesson: (id) => _openLessonAt(id),
                           ),
                           TrainingScreen(
                             currentLessonId: currentLesson,

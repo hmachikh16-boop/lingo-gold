@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'data.dart' as legacy;
 
-const Color kHomeBlue = Color(0xFF111111);
+const Color kHomeBlue = Color(0xFF2E9E5B);
+const Color kHomeGold = Color(0xFFF5B301);
 const Color kHomeInk = Color(0xFF111827);
 const Color kHomeMuted = Color(0xFF9CA3AF);
 
@@ -108,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 8,
-                        backgroundColor: const Color(0xFFDBEAFE),
+                        backgroundColor: const Color(0xFFE9F7EF),
                         valueColor:
                             const AlwaysStoppedAnimation<Color>(kHomeBlue),
                       ),
@@ -118,7 +119,11 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Text('⭐', style: TextStyle(fontSize: 15)),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 16,
+                              color: kHomeGold,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '$stars نجمة',

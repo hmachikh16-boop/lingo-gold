@@ -469,8 +469,9 @@ class BottomNavBar extends StatelessWidget {
           children: [
             _navTab(index == 0, 'الرئيسية', () => onTap(0)),
             _navTab(index == 1, 'الدروس', () => onTap(1)),
-            _navTab(index == 2, 'تدريب', () => onTap(2)),
-            _navTab(index == 3, 'ملفي', () => onTap(3)),
+            _navTab(index == 2, 'القصص', () => onTap(2)),
+            _navTab(index == 3, 'تدريب', () => onTap(3)),
+            _navTab(index == 4, 'ملفي', () => onTap(4)),
           ],
         ),
       ),
@@ -484,7 +485,7 @@ class BottomNavBar extends StatelessWidget {
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF111111) : const Color(0xFFE5E7EB),
+            color: selected ? kPrimary : const Color(0xFFEFF1F4),
             borderRadius: BorderRadius.circular(30),
           ),
           child: FittedBox(
