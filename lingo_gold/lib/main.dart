@@ -15,6 +15,7 @@ import 'review_screen.dart';
 import 'training_screen.dart';
 import 'stories_screen.dart';
 import 'immersion_flow_screen.dart';
+import 'academy_screens.dart';
 import 'progress_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
@@ -257,6 +258,18 @@ class _MainShellState extends State<MainShell> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _openAcademy() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AcademyScreen(
+          onLessonComplete: _onLessonComplete,
+          onExit: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
   Future<void> _openStory(String storyId) async {
     final group = app_data.lessons
         .where((l) => l.storyId.trim() == storyId)
@@ -276,12 +289,17 @@ class _MainShellState extends State<MainShell> {
     final newStars = up.stars.value + 5;
     final newXp = up.totalXP.value + 20;
     final next = (id + 1).clamp(1, _totalLessons);
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final newStreak = up.lastStudyDate.value == today
+        ? up.streak.value
+        : up.streak.value + 1;
     up.saveCourseProgress(
       lessonId: next,
       completed: newCompleted,
       newStars: newStars,
       xp: newXp,
     );
+    up.saveStats(streakVal: newStreak, lastStudy: today);
     if (mounted) setState(() {});
   }
 
@@ -332,6 +350,7 @@ class _MainShellState extends State<MainShell> {
                             onOpenLesson: (id) => _openLessonAt(id),
                             onOpenStory: _openStory,
                             onReview: _openReview,
+                            onOpenAcademy: _openAcademy,
                           ),
                           ProfileScreen(
                             completedCount: completed,

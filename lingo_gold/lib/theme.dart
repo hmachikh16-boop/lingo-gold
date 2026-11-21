@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 // Brand palette from the reference design: white canvas, green primary, blue secondary.
 const Color kPrimary = Color(0xFF2E9E5B);
 const Color kPrimaryDark = Color(0xFF1F7A44);
-const Color kSecondary = Color(0xFF1E6FDB);
+const Color kSecondary = kPrimary;
 const Color kInk = Color(0xFF14213D);
 const Color kMuted = Color(0xFF6B7280);
 const Color kCard = Color(0xFFF5F6F8);
 const Color kLine = Color(0xFFE6E8EC);
 const Color kSoftGreen = Color(0xFFE9F7EF);
-const Color kSoftBlue = Color(0xFFEAF2FF);
-const Color kSoftOrange = Color(0xFFFFF3E3);
-const Color kSoftRed = Color(0xFFFDECEC);
-const Color kGold = Color(0xFFF5B301);
-const Color kDanger = Color(0xFFE5484D);
+const Color kSoftBlue = kSoftGreen;
+const Color kSoftOrange = kCard;
+const Color kSoftRed = kCard;
+const Color kGold = kPrimary;
+const Color kDanger = Color(0xFF374151);
 
 const double kRadius = 16;
 const double kPageMaxWidth = 640;

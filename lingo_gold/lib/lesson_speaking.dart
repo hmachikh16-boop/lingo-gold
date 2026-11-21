@@ -391,14 +391,12 @@ class _SpeakingStepState extends State<SpeakingStep> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: _listening
-                          ? const [kDanger, Color(0xFFB4232A)]
-                          : const [kSecondary, Color(0xFF1457B8)],
+                      colors: const [kPrimaryDark, kPrimary],
                     ),
                     border: Border.all(color: Colors.white, width: 4),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x331E6FDB),
+                        color: Color(0x332E9E5B),
                         blurRadius: 20,
                         offset: Offset(0, 8),
                       ),
@@ -490,7 +488,7 @@ class _ScorePanel extends StatelessWidget {
       border: Border.all(
         color: passed
             ? kPrimary.withValues(alpha: 0.35)
-            : const Color(0xFFF5B301).withValues(alpha: 0.5),
+            : kMuted.withValues(alpha: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,7 +497,7 @@ class _ScorePanel extends StatelessWidget {
             children: [
               CircleIcon(
                 icon: passed ? Icons.check_rounded : Icons.info_outline_rounded,
-                background: passed ? kPrimary : const Color(0xFFF5B301),
+                background: passed ? kPrimary : kMuted,
                 foreground: Colors.white,
                 size: 38,
               ),

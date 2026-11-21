@@ -67,12 +67,41 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
     super.dispose();
   }
 
+  List<Lesson> _distractorsFor(Lesson l) {
+    final idx = (_lessonId - 1).clamp(0, lessons.length - 1);
+    final out = <Lesson>[];
+    final intro =
+        LessonContentService.instance.getStepOverrides(idx)?['intro'];
+    if (intro is Map && intro['items'] is List) {
+      for (final it in intro['items'] as List) {
+        if (it is! Map) continue;
+        final id = (it['id'] ?? '').toString();
+        if (id.isEmpty || id.endsWith('-t') || id == 't') continue;
+        final lesson = LessonContentService.instance.lessonForItemId(id);
+        if (lesson == null || lesson.word == l.word) continue;
+        if (out.any((x) => x.word == lesson.word)) continue;
+        out.add(lesson);
+        if (out.length >= 3) break;
+      }
+    }
+    if (out.isEmpty) {
+      for (var d = 1; d <= 8 && out.length < 3; d++) {
+        for (final j in [idx - d, idx + d]) {
+          if (j < 0 || j >= lessons.length) continue;
+          final cand = lessons[j];
+          if (cand.word == l.word) continue;
+          if (out.any((x) => x.word == cand.word)) continue;
+          out.add(cand);
+          if (out.length >= 3) break;
+        }
+      }
+    }
+    return out;
+  }
+
   void _prepareLesson() {
     final l = _lesson;
-    final sibs = LessonContentService.instance.siblingsForItemId(
-      l.id.isNotEmpty ? l.id : 'L$_lessonId',
-      3,
-    );
+    final sibs = _distractorsFor(l);
     _choices = [l, ...sibs].take(4).toList();
     final r = Random(l.word.hashCode + _lessonId * 17);
     _choices.shuffle(r);
@@ -566,7 +595,7 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [kGold, Color(0xFFE09E00)],
+                  colors: [kPrimaryDark, kPrimary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

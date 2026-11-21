@@ -13,6 +13,7 @@ class TrainingScreen extends StatefulWidget {
   final ValueChanged<int> onOpenLesson;
   final ValueChanged<String> onOpenStory;
   final VoidCallback onReview;
+  final VoidCallback onOpenAcademy;
 
   const TrainingScreen({
     super.key,
@@ -20,6 +21,7 @@ class TrainingScreen extends StatefulWidget {
     required this.onOpenLesson,
     required this.onOpenStory,
     required this.onReview,
+    required this.onOpenAcademy,
   });
 
   @override
@@ -183,6 +185,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
               style: TextStyle(fontSize: 12, color: kMuted),
             ),
             const SizedBox(height: 18),
+            _card(
+              icon: Icons.auto_stories_rounded,
+              color: kPrimary,
+              title: 'منهج Rosetta Stone',
+              subtitle: '25 واجهة تعلم ومتابعة مترابطة',
+              onTap: widget.onOpenAcademy,
+            ),
             _card(
               icon: Icons.replay_rounded,
               color: kPrimary,
