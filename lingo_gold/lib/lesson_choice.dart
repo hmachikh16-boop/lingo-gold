@@ -474,7 +474,7 @@ class _ListeningStepState extends State<ListeningStep> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          if (widget.showTranslation) ...[
+          if (widget.showTranslation && isCorrect) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

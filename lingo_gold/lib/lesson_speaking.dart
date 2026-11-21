@@ -332,7 +332,7 @@ class _SpeakingStepState extends State<SpeakingStep> {
               ],
             ),
           ),
-          if (widget.showTranslation) ...[
+          if (widget.showTranslation && _scored) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
