@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'data.dart' as app_data;
+import 'story_progress.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -9,12 +10,14 @@ import 'widgets.dart';
 /// ولا تحتاج أي تغيير في محتوى الدروس.
 class StoriesScreen extends StatefulWidget {
   final int completedLessons;
-  final ValueChanged<int> onOpenLesson;
+  final ValueChanged<String> onOpenStory;
+  final ValueChanged<int> onBoss;
 
   const StoriesScreen({
     super.key,
     required this.completedLessons,
-    required this.onOpenLesson,
+    required this.onOpenStory,
+    required this.onBoss,
   });
 
   @override
@@ -166,6 +169,8 @@ class _StoriesScreenState extends State<StoriesScreen> {
                   itemBuilder: (context, i) =>
                       _storyCard(byLevel[level]![i]),
                 ),
+                const SizedBox(height: 10),
+                _bossCard(level),
                 const SizedBox(height: 18),
               ],
           ],
@@ -202,17 +207,56 @@ class _StoriesScreenState extends State<StoriesScreen> {
     );
   }
 
+  Widget _bossCard(int level) {
+    return GestureDetector(
+      onTap: () => widget.onBoss(level),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: kSoftOrange,
+          borderRadius: BorderRadius.circular(kRadius),
+          border: Border.all(color: kGold.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.sports_esports_rounded, color: Color(0xFFB45309)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'معركة المستوى $level',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: kInk,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'تحدٍّ سريع في مفردات هذا المستوى',
+                    style: TextStyle(fontSize: 11, color: kMuted),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 16, color: Color(0xFFB45309)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _storyCard(List<app_data.Lesson> group) {
     final first = group.first;
     final done = _doneIn(group);
     final complete = done == group.length;
-    final next = group.firstWhere(
-      (l) => l.order > widget.completedLessons,
-      orElse: () => first,
-    );
+    final stars = StoryProgressService.instance.starsFor(first.storyId);
 
     return GestureDetector(
-      onTap: () => widget.onOpenLesson(next.order),
+      onTap: () => widget.onOpenStory(first.storyId),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -283,17 +327,25 @@ class _StoriesScreenState extends State<StoriesScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 7),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: group.isEmpty
-                            ? 0
-                            : (done / group.length).clamp(0.0, 1.0),
-                        minHeight: 5,
-                        backgroundColor: kCard,
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(kPrimary),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: group.isEmpty
+                                  ? 0
+                                  : (done / group.length).clamp(0.0, 1.0),
+                              minHeight: 5,
+                              backgroundColor: kCard,
+                              valueColor:
+                                  const AlwaysStoppedAnimation<Color>(kPrimary),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        StarRow(filled: stars, size: 12),
+                      ],
                     ),
                   ],
                 ),

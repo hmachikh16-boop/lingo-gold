@@ -15,6 +15,8 @@ import 'profile_screen.dart';
 import 'review_screen.dart';
 import 'training_screen.dart';
 import 'stories_screen.dart';
+import 'story_flow_screen.dart';
+import 'story_progress.dart';
 import 'progress_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
@@ -33,6 +35,7 @@ void main() async {
     // The app still runs; Firestore features are disabled until configured.
   }
   await ProgressService.instance.init();
+  await StoryProgressService.instance.init();
   // Start listening for admin edits (sentences/images) from Firestore.
   LessonContentService.instance.start();
   runApp(const LingoGoldApp());
@@ -252,6 +255,57 @@ class _MainShellState extends State<MainShell> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _openStory(String storyId) async {
+    final group = app_data.lessons
+        .where((l) => l.storyId.trim() == storyId)
+        .toList()
+      ..sort((a, b) => a.storyOrder.compareTo(b.storyOrder));
+    if (group.length < 4) {
+      await _openLessonAt(group.isEmpty ? 1 : group.first.order);
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => StoryFlowScreen(
+          storyId: storyId,
+          storyTitle: group.first.storyTitle.isNotEmpty
+              ? group.first.storyTitle
+              : storyId,
+          level: group.first.level,
+          lessons: group,
+          savedStars: StoryProgressService.instance.starsFor(storyId),
+          onComplete: (stars) =>
+              StoryProgressService.instance.saveStars(storyId, stars),
+          onExit: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openBoss(int level) async {
+    final ids = app_data.lessons
+        .where((l) => l.level == level && l.id.trim().isNotEmpty)
+        .map((l) => l.id.trim())
+        .toList();
+    if (ids.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لا توجد مفردات في هذا المستوى بعد.')),
+        );
+      }
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReviewScreen(
+          itemIds: ids,
+          onExit: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
+  }
+
   void _onLessonComplete(int id) {
     final up = UserProfile.instance;
     final newCompleted =
@@ -306,11 +360,13 @@ class _MainShellState extends State<MainShell> {
                           ),
                           StoriesScreen(
                             completedLessons: completed,
-                            onOpenLesson: (id) => _openLessonAt(id),
+                            onOpenStory: _openStory,
+                            onBoss: _openBoss,
                           ),
                           TrainingScreen(
                             currentLessonId: currentLesson,
                             onOpenLesson: (id) => _openLessonAt(id),
+                            onOpenStory: _openStory,
                             onReview: _openReview,
                           ),
                           ProfileScreen(

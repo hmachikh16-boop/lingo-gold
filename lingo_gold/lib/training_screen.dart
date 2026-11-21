@@ -11,12 +11,14 @@ import 'widgets.dart';
 class TrainingScreen extends StatefulWidget {
   final int currentLessonId;
   final ValueChanged<int> onOpenLesson;
+  final ValueChanged<String> onOpenStory;
   final VoidCallback onReview;
 
   const TrainingScreen({
     super.key,
     required this.currentLessonId,
     required this.onOpenLesson,
+    required this.onOpenStory,
     required this.onReview,
   });
 
@@ -229,7 +231,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     final g = stories[i];
                     final first = g.first;
                     return GestureDetector(
-                      onTap: () => widget.onOpenLesson(lessons.indexOf(first) + 1),
+                      onTap: () => widget.onOpenStory(first.storyId),
                       child: Container(
                         width: 168,
                         padding: const EdgeInsets.all(10),
