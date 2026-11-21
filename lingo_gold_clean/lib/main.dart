@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'lessons_data.dart';
+
 // ===== Palette: green / white / dark / light gray only =====
 const kGreen = Color(0xFF2E9E5B);
 const kGreenDark = Color(0xFF1F7A44);
@@ -14,40 +16,7 @@ const kCard = Color(0xFFF5F6F8);
 const kLine = Color(0xFFE6E8EC);
 const kSoft = Color(0xFFE9F7EF);
 
-// ===== Data =====
-class LearnItem {
-  final String word;
-  final String sentence;
-  final String image;
-  const LearnItem(this.word, this.sentence, this.image);
-}
-
-const items = <LearnItem>[
-  LearnItem('A boy', 'The boy smiles.', 'q0.jpg'),
-  LearnItem('A girl', 'The girl smiles.', 'img_girl_child.jpg'),
-  LearnItem('A dog', 'The dog sits.', 'q2.jpg'),
-  LearnItem('A cat', 'The cat sits.', 'q6.jpg'),
-  LearnItem('An apple', 'The apple is red.', 'q4.jpg'),
-  LearnItem('A car', 'The car is blue.', 'q5.jpg'),
-  LearnItem('A house', 'This is a house.', 'q7.jpg'),
-  LearnItem('A man', 'The man eats.', 'q8.jpg'),
-  LearnItem('The sun', 'The sun is bright.', 'q9.jpg'),
-  LearnItem('A baker', 'He is a baker.', 'job_baker.jpg'),
-  LearnItem('A chef', 'He is a chef.', 'job_chef.jpg'),
-  LearnItem('A teacher', 'She is a teacher.', 'job_teacher.jpg'),
-  LearnItem('An artist', 'He is an artist.', 'job_artist.jpg'),
-  LearnItem('A doctor', 'He is a doctor.', 'job_doctor.jpg'),
-  LearnItem('A nurse', 'She is a nurse.', 'job_nurse.jpg'),
-  LearnItem('A police officer', 'He is a police officer.', 'job_police.jpg'),
-  LearnItem('A student', 'She is a student.', 'job_student.jpg'),
-  LearnItem('A firefighter', 'He is a firefighter.', 'job_firefighter.jpg'),
-  LearnItem('A farmer', 'He is a farmer.', 'job_farmer.jpg'),
-  LearnItem('A pilot', 'He is a pilot.', 'job_pilot.jpg'),
-  LearnItem('Flowers', 'These are flowers.', 'nat_flower.jpg'),
-  LearnItem('A leaf', 'This is a leaf.', 'nat_leaf.jpg'),
-  LearnItem('Snow', 'The snow is white.', 'nat_snow.jpg'),
-  LearnItem('A wave', 'This is a wave.', 'nat_wave.jpg'),
-];
+// ===== Data is in lessons_data.dart (253 lessons from project images) =====
 
 class Tts {
   Tts._();
@@ -525,12 +494,31 @@ class TrainingScreen extends StatelessWidget {
                   icon: const Icon(Icons.replay_rounded),
                   label: const Text('مراجعة سريعة'),
                 ),
+                const SizedBox(height: 10),
+                _navButton(context, 'Core Lesson', Icons.school_outlined, LearningScreen(index: p.current % items.length)),
+                _navButton(context, 'Choose an Image', Icons.image_outlined, LearningScreen(index: p.current % items.length)),
+                _navButton(context, 'Review • Adaptive Recall', Icons.replay_rounded, const AdaptiveRecallScreen()),
+                _navButton(context, 'Milestone Conversation', Icons.chat_bubble_outline, const MilestoneConversationScreen()),
+                _navButton(context, 'Achievements & Badges', Icons.emoji_events_outlined, const AchievementsScreen()),
+                _navButton(context, 'Weekly Progress Report', Icons.bar_chart_rounded, const WeeklyReportScreen()),
+                _navButton(context, 'Parent Dashboard', Icons.family_restroom_rounded, const ParentDashboardScreen()),
               ],
             ),
           );
         },
       );
 }
+
+Widget _navButton(BuildContext context, String title, IconData icon, Widget page) => Card(
+      elevation: 0,
+      color: kCard,
+      child: ListTile(
+        leading: Icon(icon, color: kGreen),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, color: kInk)),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: kMuted),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page)),
+      ),
+    );
 
 Widget _stat(String value, String label) => Card(
       elevation: 0,
@@ -564,4 +552,356 @@ class ProfileScreen extends StatelessWidget {
           );
         },
       );
+}
+
+// ===== Extra interfaces (green palette only) =====
+class AchievementsScreen extends StatelessWidget {
+  const AchievementsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Progress.instance,
+        builder: (context, _) {
+          final p = Progress.instance;
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(title: const Text('Achievements & Badges'), centerTitle: true),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+              children: [
+                Card(
+                  elevation: 0,
+                  color: kCard,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: ListTile(
+                    leading: ClipRRect(borderRadius: BorderRadius.circular(28), child: SizedBox(width: 56, height: 56, child: Photo('q0.jpg'))),
+                    title: Text('Alex • Level ${p.xp ~/ 200 + 1}', style: const TextStyle(fontWeight: FontWeight.w900, color: kInk)),
+                    subtitle: Text('${p.xp} XP • ${p.completed} lessons'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Your Badges', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+                const SizedBox(height: 8),
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  children: [
+                    _badge(Icons.chat_bubble_outline, 'First Conversation', p.completed > 0),
+                    _badge(Icons.local_fire_department_rounded, '7 Day Streak', p.streak >= 7),
+                    _badge(Icons.book_outlined, 'Vocabulary Master', p.completed >= 50),
+                    _badge(Icons.rule_rounded, 'Grammar Guru', p.stars >= 100),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text('Trophies & Medals', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _trophy(Icons.mic_rounded, 'Speaking Star')),
+                    Expanded(child: _trophy(Icons.hearing_rounded, 'Listening Pro')),
+                    Expanded(child: _trophy(Icons.edit_rounded, 'Writing Champ')),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+  Widget _badge(IconData icon, String label, bool earned) => Card(
+        elevation: 0,
+        color: earned ? kSoft : kCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: kLine)),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon, size: 38, color: earned ? kGreen : kMuted),
+          const SizedBox(height: 8),
+          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w800, color: kInk)),
+        ]),
+      );
+
+  Widget _trophy(IconData icon, String label) => Card(
+        elevation: 0,
+        color: kCard,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(children: [
+            Icon(icon, color: kGreen, size: 28),
+            const SizedBox(height: 6),
+            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
+          ]),
+        ),
+      );
+}
+
+class WeeklyReportScreen extends StatelessWidget {
+  const WeeklyReportScreen({super.key});
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Progress.instance,
+        builder: (context, _) {
+          final p = Progress.instance;
+          final bars = [0.4, 0.7, 0.5, 0.9, 0.65, 0.8, 0.55];
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(title: const Text('Weekly Progress Report'), centerTitle: true),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: kSoft, borderRadius: BorderRadius.circular(14)),
+                  child: Text('${p.streak}-Day Streak! Keep it going.', style: const TextStyle(fontWeight: FontWeight.w900, color: kGreenDark)),
+                ),
+                const SizedBox(height: 12),
+                Row(children: [
+                  Expanded(child: _card('Words Learned', '${p.completed * 6}')),
+                  const SizedBox(width: 10),
+                  Expanded(child: _card('Lessons', '${p.completed}')),
+                ]),
+                const SizedBox(height: 14),
+                Card(
+                  elevation: 0,
+                  color: kCard,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 16, 14, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text("This Week's Activity", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kInk)),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          height: 120,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              for (var i = 0; i < 7; i++)
+                                Column(children: [
+                                  Container(width: 20, height: 20 + bars[i] * 80, decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.55 + i * 0.05), borderRadius: BorderRadius.circular(6))),
+                                  const SizedBox(height: 5),
+                                  Text(['M','T','W','T','F','S','S'][i], style: const TextStyle(fontSize: 10)),
+                                ]),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: kSoft, borderRadius: BorderRadius.circular(14)),
+                  child: const Text('Insight: You are learning consistently. Keep your streak alive!', style: TextStyle(color: kInk)),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+  Widget _card(String label, String value) => Card(
+        elevation: 0,
+        color: kCard,
+        child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: kGreen)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: kMuted)),
+        ])),
+      );
+}
+
+class ParentDashboardScreen extends StatelessWidget {
+  const ParentDashboardScreen({super.key});
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Progress.instance,
+        builder: (context, _) {
+          final p = Progress.instance;
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(title: const Text('Parent Dashboard'), centerTitle: true),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+              children: [
+                Row(children: [
+                  ClipRRect(borderRadius: BorderRadius.circular(40), child: SizedBox(width: 80, height: 80, child: Photo('img_girl_child.jpg'))),
+                  const SizedBox(width: 12),
+                  const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Emma • Age 6', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: kInk)),
+                    Text('Active Learner', style: TextStyle(color: kMuted)),
+                  ])),
+                ]),
+                const SizedBox(height: 14),
+                Row(children: [
+                  Expanded(child: _stat('${p.completed}/${items.length}', 'Lessons Completed')),
+                  Expanded(child: _stat('${p.stars}', 'Stars')),
+                  Expanded(child: _stat('${p.xp}', 'XP')),
+                ]),
+                const SizedBox(height: 14),
+                const Text('Progress Overview', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: kInk)),
+                const SizedBox(height: 8),
+                ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: p.completed / items.length, color: kGreen, backgroundColor: kCard, minHeight: 10)),
+                const SizedBox(height: 18),
+                const Text('Recent Lessons', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: kInk)),
+                const SizedBox(height: 8),
+                for (var i = 0; i < 3; i++)
+                  Card(
+                    elevation: 0,
+                    color: kSoft,
+                    child: ListTile(
+                      leading: const Icon(Icons.check_circle_rounded, color: kGreen),
+                      title: Text(items[(p.current + i) % items.length].word, style: const TextStyle(fontWeight: FontWeight.w900)),
+                      subtitle: const Text('Completed • Today'),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      );
+
+  Widget _stat(String v, String l) => Card(
+        elevation: 0,
+        color: kCard,
+        child: Padding(padding: const EdgeInsets.all(12), child: Column(children: [
+          Text(v, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kGreen)),
+          const SizedBox(height: 4),
+          Text(l, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: kMuted)),
+        ])),
+      );
+}
+
+class MilestoneConversationScreen extends StatefulWidget {
+  const MilestoneConversationScreen({super.key});
+  @override
+  State<MilestoneConversationScreen> createState() => _MilestoneConversationScreenState();
+}
+class _MilestoneConversationScreenState extends State<MilestoneConversationScreen> {
+  final _ctrl = TextEditingController();
+  final _msgs = <Map<String, String>>[
+    {'who': 'them', 'text': '¡Hola! Welcome. What would you like today?'},
+  ];
+  void _send() {
+    final t = _ctrl.text.trim();
+    if (t.isEmpty) return;
+    setState(() {
+      _msgs.add({'who': 'me', 'text': t});
+      _msgs.add({'who': 'them', 'text': 'Great! Continue please.'});
+      _ctrl.clear();
+    });
+  }
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(title: const Text('Milestone 3 • Conversation'), centerTitle: true),
+        body: Column(children: [
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(children: [
+              ClipRRect(borderRadius: BorderRadius.circular(28), child: SizedBox(width: 56, height: 56, child: Photo('native_speaker_woman.jpg'))),
+              const SizedBox(width: 12),
+              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('Ana • Native Speaker', style: TextStyle(fontWeight: FontWeight.w900, color: kInk)),
+                Text('Online • Speaks from Madrid', style: TextStyle(color: kMuted, fontSize: 11)),
+              ])),
+            ]),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              itemCount: _msgs.length,
+              itemBuilder: (_, i) {
+                final m = _msgs[i];
+                final me = m['who'] == 'me';
+                return Align(
+                  alignment: me ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: me ? kGreen : kCard, borderRadius: BorderRadius.circular(14)),
+                    child: Text(m['text']!, style: TextStyle(color: me ? Colors.white : kInk)),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(children: [
+              Expanded(child: TextField(controller: _ctrl, decoration: const InputDecoration(hintText: 'Type your response...'))),
+              const SizedBox(width: 8),
+              SizedBox(width: 52, height: 52, child: FilledButton(onPressed: _send, style: FilledButton.styleFrom(shape: const CircleBorder()), child: const Icon(Icons.send_rounded))),
+            ]),
+          ),
+        ]),
+      );
+}
+
+class AdaptiveRecallScreen extends StatefulWidget {
+  const AdaptiveRecallScreen({super.key});
+  @override
+  State<AdaptiveRecallScreen> createState() => _AdaptiveRecallScreenState();
+}
+class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
+  int _q = 0;
+  int _correct = 0;
+  static const total = 10;
+  LearnItem get item => items[(_q * 7 + 3) % items.length];
+  List<String> get options {
+    final r = Random(_q + 11);
+    final pool = items.where((x) => x.image != item.image).map((x) => x.image).toList()..shuffle(r);
+    return [item.image, ...pool.take(3)];
+  }
+  @override
+  Widget build(BuildContext context) {
+    if (_q >= total) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(title: const Text('Review • Adaptive Recall'), centerTitle: true),
+        body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Icon(Icons.check_circle_rounded, size: 76, color: kGreen),
+          const SizedBox(height: 14),
+          Text('$_correct / $total', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: kInk)),
+          const SizedBox(height: 18),
+          FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Continue')),
+        ])),
+      );
+    }
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text('Review • Adaptive Recall'), centerTitle: true),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+        children: [
+          Text('Question ${_q + 1} of $total', style: const TextStyle(fontWeight: FontWeight.w900, color: kInk)),
+          const SizedBox(height: 6),
+          ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: (_q + 1) / total, color: kGreen, backgroundColor: kCard, minHeight: 8)),
+          const SizedBox(height: 16),
+          Text('Which photo shows "${item.word}"?', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: kInk)),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: options.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.05),
+            itemBuilder: (context, i) {
+              return GestureDetector(
+                onTap: () {
+                  if (options[i] == item.image) _correct++;
+                  setState(() => _q++);
+                },
+                child: ClipRRect(borderRadius: BorderRadius.circular(14), child: Photo(options[i])),
+              );
+            },
+          ),
+          const SizedBox(height: 14),
+          const Text('Adaptive Recall • Streak: 4 days', textAlign: TextAlign.center, style: TextStyle(color: kMuted)),
+        ],
+      ),
+    );
+  }
 }
