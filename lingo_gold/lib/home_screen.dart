@@ -236,16 +236,6 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    lesson.translation,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: kHomeMuted,
-                    ),
-                  ),
                   const SizedBox(height: 36),
                   SizedBox(
                     width: 280,
@@ -268,7 +258,7 @@ class HomeScreen extends StatelessWidget {
                                 color: Colors.white, size: 32),
                             const SizedBox(width: 8),
                             Text(
-                              allDone ? 'إعادة من البداية' : 'ابدأ الدرس',
+                              allDone ? 'إعادة الجلسة' : 'ابدأ الجلسة',
                               style: const TextStyle(
                                 fontSize: 23,
                                 fontWeight: FontWeight.w900,

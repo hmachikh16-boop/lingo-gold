@@ -211,7 +211,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 14, 4, 8),
               child: Text(
-                'مكتبة القصص',
+                'المراحل',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kInk),
               ),
             ),

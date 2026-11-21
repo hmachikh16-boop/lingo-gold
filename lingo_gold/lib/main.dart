@@ -8,15 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen.dart';
 import 'lessons_screen.dart';
-import 'lesson_flow.dart';
 import 'level_select_screen.dart';
 import 'lesson_content_service.dart';
 import 'profile_screen.dart';
 import 'review_screen.dart';
 import 'training_screen.dart';
 import 'stories_screen.dart';
-import 'story_flow_screen.dart';
-import 'story_progress.dart';
+import 'immersion_flow_screen.dart';
 import 'progress_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
@@ -35,7 +33,6 @@ void main() async {
     // The app still runs; Firestore features are disabled until configured.
   }
   await ProgressService.instance.init();
-  await StoryProgressService.instance.init();
   // Start listening for admin edits (sentences/images) from Firestore.
   LessonContentService.instance.start();
   runApp(const LingoGoldApp());
@@ -166,13 +163,12 @@ class _MainShellState extends State<MainShell> {
       );
       if (openAnyway != true) return;
     }
-    await _launchLesson(start);
+    await _launchSession(start);
   }
 
-  Future<void> _launchLesson(int start) async {
+  Future<void> _launchImmersion(int start, int end) async {
     final up = UserProfile.instance;
-    final restart = up.lessonsCompleted.value >= _totalLessons;
-    if (restart) {
+    if (up.lessonsCompleted.value >= _totalLessons) {
       await up.saveCourseProgress(
         lessonId: 1,
         completed: 0,
@@ -183,9 +179,9 @@ class _MainShellState extends State<MainShell> {
     if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => LessonFlowScreen(
-          startLessonId: start,
-          totalLessons: _totalLessons,
+        builder: (_) => ImmersionFlowScreen(
+          startId: start,
+          endId: end.clamp(start, _totalLessons),
           onLessonComplete: _onLessonComplete,
           onExit: () => setState(() => _tab = 0),
         ),
@@ -193,6 +189,12 @@ class _MainShellState extends State<MainShell> {
     );
     if (mounted) setState(() {});
   }
+
+  Future<void> _launchLesson(int start) =>
+      _launchImmersion(start, start);
+
+  Future<void> _launchSession(int start) =>
+      _launchImmersion(start, start + 3);
 
   Future<void> _openLevelSelect() async {
     final prefs = await SharedPreferences.getInstance();
@@ -260,49 +262,10 @@ class _MainShellState extends State<MainShell> {
         .where((l) => l.storyId.trim() == storyId)
         .toList()
       ..sort((a, b) => a.storyOrder.compareTo(b.storyOrder));
-    if (group.length < 4) {
-      await _openLessonAt(group.isEmpty ? 1 : group.first.order);
-      return;
-    }
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => StoryFlowScreen(
-          storyId: storyId,
-          storyTitle: group.first.storyTitle.isNotEmpty
-              ? group.first.storyTitle
-              : storyId,
-          level: group.first.level,
-          lessons: group,
-          savedStars: StoryProgressService.instance.starsFor(storyId),
-          onComplete: (stars) =>
-              StoryProgressService.instance.saveStars(storyId, stars),
-          onExit: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _openBoss(int level) async {
-    final ids = app_data.lessons
-        .where((l) => l.level == level && l.id.trim().isNotEmpty)
-        .map((l) => l.id.trim())
-        .toList();
-    if (ids.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('لا توجد مفردات في هذا المستوى بعد.')),
-        );
-      }
-      return;
-    }
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ReviewScreen(
-          itemIds: ids,
-          onExit: () => Navigator.of(context).pop(),
-        ),
-      ),
+    if (group.isEmpty) return;
+    await _launchImmersion(
+      group.first.order,
+      group.last.order,
     );
   }
 
@@ -361,7 +324,6 @@ class _MainShellState extends State<MainShell> {
                           StoriesScreen(
                             completedLessons: completed,
                             onOpenStory: _openStory,
-                            onBoss: _openBoss,
                           ),
                           TrainingScreen(
                             currentLessonId: currentLesson,

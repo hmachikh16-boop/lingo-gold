@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'data.dart' as app_data;
-import 'story_progress.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -11,13 +10,11 @@ import 'widgets.dart';
 class StoriesScreen extends StatefulWidget {
   final int completedLessons;
   final ValueChanged<String> onOpenStory;
-  final ValueChanged<int> onBoss;
 
   const StoriesScreen({
     super.key,
     required this.completedLessons,
     required this.onOpenStory,
-    required this.onBoss,
   });
 
   @override
@@ -75,7 +72,7 @@ class _StoriesScreenState extends State<StoriesScreen> {
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
           children: [
             const Text(
-              'خريطة القصص',
+              'المراحل',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
@@ -84,7 +81,7 @@ class _StoriesScreenState extends State<StoriesScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              '$doneStories من ${allStories.length} قصة مكتملة',
+              '$doneStories من ${allStories.length} مرحلة مكتملة',
               style: const TextStyle(fontSize: 12, color: kMuted),
             ),
             const SizedBox(height: 14),
@@ -169,8 +166,6 @@ class _StoriesScreenState extends State<StoriesScreen> {
                   itemBuilder: (context, i) =>
                       _storyCard(byLevel[level]![i]),
                 ),
-                const SizedBox(height: 10),
-                _bossCard(level),
                 const SizedBox(height: 18),
               ],
           ],
@@ -207,53 +202,10 @@ class _StoriesScreenState extends State<StoriesScreen> {
     );
   }
 
-  Widget _bossCard(int level) {
-    return GestureDetector(
-      onTap: () => widget.onBoss(level),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        decoration: BoxDecoration(
-          color: kSoftOrange,
-          borderRadius: BorderRadius.circular(kRadius),
-          border: Border.all(color: kGold.withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.sports_esports_rounded, color: Color(0xFFB45309)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'معركة المستوى $level',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: kInk,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'تحدٍّ سريع في مفردات هذا المستوى',
-                    style: TextStyle(fontSize: 11, color: kMuted),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 16, color: Color(0xFFB45309)),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _storyCard(List<app_data.Lesson> group) {
     final first = group.first;
     final done = _doneIn(group);
     final complete = done == group.length;
-    final stars = StoryProgressService.instance.starsFor(first.storyId);
 
     return GestureDetector(
       onTap: () => widget.onOpenStory(first.storyId),
@@ -343,8 +295,6 @@ class _StoriesScreenState extends State<StoriesScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        StarRow(filled: stars, size: 12),
                       ],
                     ),
                   ],
