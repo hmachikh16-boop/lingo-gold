@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data.dart';
+import 'daily_activity_service.dart';
 import 'immersion_flow_screen.dart';
 import 'lesson_choice.dart';
 import 'lesson_content_service.dart';
 import 'lesson_speaking.dart';
 import 'lesson_writing.dart';
 import 'progress_service.dart';
+import 'services/sound_service.dart';
 import 'services/speech_service.dart';
 import 'stories_screen.dart';
 import 'theme.dart';
@@ -655,22 +657,33 @@ class AchievementsScreen extends StatelessWidget {
 class WeeklyReportScreen extends StatelessWidget {
   const WeeklyReportScreen({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
-    appBar: AppBar(title: const Text('Weekly Report'), centerTitle: true),
-    body: Padding(padding: const EdgeInsets.all(20), child: Column(children: [
-      const Text('This Week', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kInk)),
-      const SizedBox(height: 20),
-      Expanded(child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.end, children: [
-        for (var i = 0; i < 7; i++)
-          Column(children: [
-            Container(width: 22, height: 40.0 + (i * 18 % 120), decoration: BoxDecoration(color: kPrimary.withValues(alpha: 0.5 + i * 0.06), borderRadius: BorderRadius.circular(6))),
-            const SizedBox(height: 6),
-            Text(['S','M','T','W','T','F','S'][i]),
-          ]),
+  Widget build(BuildContext context) {
+    final days = DailyActivityService.instance.last7();
+    final max = days.fold<int>(0, (a, b) => a > b ? a : b);
+    final labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    final total = days.fold<int>(0, (a, b) => a + b);
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text('Weekly Report'), centerTitle: true),
+      body: Padding(padding: const EdgeInsets.all(20), child: Column(children: [
+        Text('This week: $total lessons', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kInk)),
+        const SizedBox(height: 20),
+        Expanded(child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.end, children: [
+          for (var i = 0; i < 7; i++)
+            Column(children: [
+              Container(
+                width: 24,
+                height: max == 0 ? 8.0 : 16.0 + (days[i] / max) * 130,
+                decoration: BoxDecoration(color: kPrimary.withValues(alpha: 0.55 + i * 0.05), borderRadius: BorderRadius.circular(6)),
+              ),
+              const SizedBox(height: 6),
+              Text(labels[i]),
+              Text('${days[i]}', style: const TextStyle(fontSize: 10, color: kMuted)),
+            ]),
+        ])),
       ])),
-    ])),
-  );
+    );
+  }
 }
 
 class LeaderboardScreen extends StatelessWidget {
@@ -679,13 +692,27 @@ class LeaderboardScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.white,
     appBar: AppBar(title: const Text('Leaderboard'), centerTitle: true),
-    body: ListView(padding: const EdgeInsets.all(16), children: [
-      for (var i = 0; i < 6; i++) ListTile(
-        leading: CircleAvatar(child: Text('${i + 1}')),
-        title: Text(i == 0 ? 'You' : 'Learner ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w800, color: kInk)),
-        trailing: Text('${1500 - i * 120} XP', style: const TextStyle(color: kPrimary, fontWeight: FontWeight.w900)),
-      ),
-    ]),
+    body: ValueListenableBuilder<int>(
+      valueListenable: UserProfile.instance.totalXP,
+      builder: (_, myXp, __) {
+        final rows = <Map<String, dynamic>>[
+          {'name': 'You', 'xp': myXp, 'me': true},
+          {'name': 'Learner 2', 'xp': (myXp * 0.9).round(), 'me': false},
+          {'name': 'Learner 3', 'xp': (myXp * 0.8).round(), 'me': false},
+          {'name': 'Learner 4', 'xp': (myXp * 0.7).round(), 'me': false},
+          {'name': 'Learner 5', 'xp': (myXp * 0.6).round(), 'me': false},
+        ];
+        rows.sort((a, b) => (b['xp'] as int).compareTo(a['xp'] as int));
+        return ListView(padding: const EdgeInsets.all(16), children: [
+          for (var i = 0; i < rows.length; i++) ListTile(
+            leading: CircleAvatar(child: Text('${i + 1}')),
+            title: Text(rows[i]['name'], style: TextStyle(fontWeight: FontWeight.w800, color: rows[i]['me'] ? kPrimary : kInk)),
+            trailing: Text('${rows[i]['xp']} XP', style: const TextStyle(color: kPrimary, fontWeight: FontWeight.w900)),
+          ),
+          const Padding(padding: EdgeInsets.all(12), child: Text('Local leaderboard — based on your real XP', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: kMuted))),
+        ]);
+      },
+    ),
   );
 }
 
@@ -799,13 +826,52 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _sound = true;
   bool _notifications = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final p = await SharedPreferences.getInstance();
+    final sound = p.getBool('lingo_sound_on') ?? true;
+    final notes = p.getBool('lingo_reminder_on') ?? true;
+    SoundService.instance.muted = !sound;
+    if (mounted) setState(() {
+      _sound = sound;
+      _notifications = notes;
+    });
+  }
+
+  Future<void> _saveSound(bool v) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool('lingo_sound_on', v);
+    SoundService.instance.muted = !v;
+  }
+
+  Future<void> _saveReminder(bool v) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool('lingo_reminder_on', v);
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.white,
     appBar: AppBar(title: const Text('Settings'), centerTitle: true),
     body: ListView(children: [
-      SwitchListTile(title: const Text('Sound effects'), value: _sound, activeColor: kPrimary, onChanged: (v) => setState(() => _sound = v)),
-      SwitchListTile(title: const Text('Daily reminder'), value: _notifications, activeColor: kPrimary, onChanged: (v) => setState(() => _notifications = v)),
+      SwitchListTile(
+        title: const Text('Sound effects'),
+        value: _sound,
+        activeColor: kPrimary,
+        onChanged: (v) { setState(() => _sound = v); _saveSound(v); },
+      ),
+      SwitchListTile(
+        title: const Text('Daily reminder'),
+        value: _notifications,
+        activeColor: kPrimary,
+        onChanged: (v) { setState(() => _notifications = v); _saveReminder(v); },
+      ),
       const ListTile(title: Text('Language: English'), subtitle: Text('Immersion mode')),
     ]),
   );

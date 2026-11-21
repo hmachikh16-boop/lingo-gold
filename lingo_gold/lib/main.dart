@@ -17,6 +17,7 @@ import 'stories_screen.dart';
 import 'immersion_flow_screen.dart';
 import 'academy_screens.dart';
 import 'progress_service.dart';
+import 'daily_activity_service.dart';
 import 'user_profile.dart';
 import 'update_service.dart';
 import 'widgets.dart';
@@ -34,6 +35,7 @@ void main() async {
     // The app still runs; Firestore features are disabled until configured.
   }
   await ProgressService.instance.init();
+  await DailyActivityService.instance.init();
   // Start listening for admin edits (sentences/images) from Firestore.
   LessonContentService.instance.start();
   runApp(const LingoGoldApp());
@@ -300,6 +302,7 @@ class _MainShellState extends State<MainShell> {
       xp: newXp,
     );
     up.saveStats(streakVal: newStreak, lastStudy: today);
+    DailyActivityService.instance.recordLesson();
     if (mounted) setState(() {});
   }
 
