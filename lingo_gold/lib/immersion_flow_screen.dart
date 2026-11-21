@@ -43,6 +43,7 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
   int _score = 0;
   bool _speechDone = false;
   int _speakAttempts = 0;
+  int _mistakes = 0;
   Timer? _speechTimer;
   String _typed = '';
 
@@ -117,6 +118,7 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
       Timer(const Duration(milliseconds: 420), _toSpeak);
     } else {
       SoundService.instance.playError();
+      _mistakes += 1;
       Timer(const Duration(milliseconds: 650), () {
         if (mounted) setState(() => _selected = null);
       });
@@ -159,6 +161,7 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
         Timer(const Duration(milliseconds: 650), _toWrite);
       } else {
         SoundService.instance.playError();
+        _mistakes += 1;
         _speakAttempts += 1;
         if (_speakAttempts >= 2) {
           Timer(const Duration(milliseconds: 700), _toWrite);
@@ -232,7 +235,7 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
     if (!mounted) return;
     widget.onLessonComplete(_lessonId);
     if (_lessonId >= widget.endId) {
-      widget.onExit();
+      setState(() => _phase = 4);
       return;
     }
     setState(() => _lessonId += 1);
@@ -314,24 +317,68 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
         return _identifyPhase();
       case 2:
         return _speakPhase();
-      default:
+      case 3:
         return _writePhase();
+      default:
+        return _buildComplete();
     }
   }
 
   Widget _listenPhase() {
-    return Center(
-      child: GestureDetector(
-        onTap: _busy ? null : _playAndAdvance,
-        child: Container(
-          width: 96,
-          height: 96,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.94),
-            shape: BoxShape.circle,
-            boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 18)],
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Positioned(
+          top: MediaQuery.of(context).size.height * 0.28,
+          child: _pulseRing(190, 0.07),
+        ),
+        Positioned(
+          top: MediaQuery.of(context).size.height * 0.30,
+          child: _pulseRing(150, 0.12),
+        ),
+        GestureDetector(
+          onTap: _busy ? null : _playAndAdvance,
+          child: Container(
+            width: 104,
+            height: 104,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.96),
+              shape: BoxShape.circle,
+              boxShadow: const [
+                BoxShadow(color: Color(0x33000000), blurRadius: 26, spreadRadius: 2),
+              ],
+            ),
+            child: const Icon(Icons.volume_up_rounded, size: 46, color: kPrimary),
           ),
-          child: const Icon(Icons.volume_up_rounded, size: 44, color: kPrimary),
+        ),
+        Positioned(
+          bottom: 78,
+          left: 24,
+          right: 24,
+          child: Text(
+            _lesson.spokenText,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              shadows: [Shadow(color: Color(0x99000000), blurRadius: 8)],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _pulseRing(double size, double opacity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: opacity),
+          width: 1.5,
         ),
       ),
     );
@@ -365,10 +412,43 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: border, width: sel ? 4 : 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: sel
+                            ? Colors.black.withValues(alpha: 0.18)
+                            : Colors.black.withValues(alpha: 0.08),
+                        blurRadius: sel ? 18 : 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(14),
-                    child: LessonImage(lesson: _choices[i], fit: BoxFit.cover),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        LessonImage(lesson: _choices[i], fit: BoxFit.cover),
+                        if (sel && !_wrong)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              decoration: BoxDecoration(
+                                color: kPrimary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(
+                                Icons.check_rounded,
+                                size: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -462,6 +542,104 @@ class _ImmersionFlowScreenState extends State<ImmersionFlowScreen> {
         const Spacer(),
         _keyboard(),
       ],
+    );
+  }
+
+  Widget _buildComplete() {
+    final start = (_lessonId - 3).clamp(1, lessons.length);
+    final strip = <Lesson>[];
+    for (var id = start; id <= _lessonId && id <= lessons.length; id++) {
+      strip.add(lessons[id - 1]);
+    }
+    final stars = (3 - _mistakes).clamp(1, 3);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 26, 20, 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 12),
+          Center(
+            child: Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [kGold, Color(0xFFE09E00)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: kGold.withValues(alpha: 0.34),
+                    blurRadius: 28,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.check_rounded, size: 46, color: Colors.white),
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'COMPLETE',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 3,
+              color: kPrimaryDark,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              3,
+              (i) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Icon(
+                  Icons.star_rounded,
+                  size: 34,
+                  color: i < stars ? kGold : const Color(0xFFD9DCE1),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          SizedBox(
+            height: 88,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: strip.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, i) => ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 88,
+                  height: 88,
+                  child: LessonImage(lesson: strip[i], fit: BoxFit.cover),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          FilledButton(
+            onPressed: widget.onExit,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+            ),
+            child: const Text(
+              'CONTINUE',
+              style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

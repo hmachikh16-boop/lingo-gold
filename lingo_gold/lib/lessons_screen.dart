@@ -9,8 +9,13 @@ import 'theme.dart';
 /// this screen rebuilds whenever LessonContentService.revision changes.
 class LessonsScreen extends StatelessWidget {
   final void Function(int lessonId) onStartLesson;
+  final VoidCallback onStartCourse;
 
-  const LessonsScreen({super.key, required this.onStartLesson});
+  const LessonsScreen({
+    super.key,
+    required this.onStartLesson,
+    required this.onStartCourse,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,44 +41,65 @@ class LessonsScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index == 0) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Expanded(
-                        child: Text(
-                          'الدروس',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: kInk,
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'الدروس',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: kInk,
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () async {
+                              final before =
+                                  LessonContentService.instance.revision.value;
+                              final ok = await LessonContentService
+                                  .instance
+                                  .fetchRemoteBundle();
+                              if (!context.mounted) return;
+                              final after =
+                                  LessonContentService.instance.revision.value;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    !ok
+                                        ? 'تعذر الاتصال بمصدر الدروس'
+                                        : (after > before
+                                            ? 'تم تحديث الدروس'
+                                            : 'الدروس محدثة بالفعل'),
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.sync_rounded, size: 18),
+                            label: const Text('تحديث'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      FilledButton.icon(
+                        onPressed: onStartCourse,
+                        icon: const Icon(Icons.play_arrow_rounded),
+                        label: const Text('ابدأ الدرس'),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () async {
-                          final before =
-                              LessonContentService.instance.revision.value;
-                          final ok = await LessonContentService
-                              .instance
-                              .fetchRemoteBundle();
-                          if (!context.mounted) return;
-                          final after =
-                              LessonContentService.instance.revision.value;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                !ok
-                                    ? 'تعذر الاتصال بمصدر الدروس'
-                                    : (after > before
-                                        ? 'تم تحديث الدروس'
-                                        : 'الدروس محدثة بالفعل'),
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.sync_rounded, size: 18),
-                        label: const Text('تحديث'),
                       ),
                     ],
                   ),

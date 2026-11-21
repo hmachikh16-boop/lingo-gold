@@ -320,6 +320,8 @@ class _MainShellState extends State<MainShell> {
                           ),
                           LessonsScreen(
                             onStartLesson: (id) => _openLessonAt(id),
+                            onStartCourse: () =>
+                                _launchImmersion(1, _totalLessons),
                           ),
                           StoriesScreen(
                             completedLessons: completed,
