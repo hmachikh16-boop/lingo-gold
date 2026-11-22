@@ -85,6 +85,19 @@ body {
   font-size: 12px;
 }
 
+/* رابط العودة للوحة التحكم */
+.dash-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+.dash-link:hover {
+  color: var(--green);
+}
+
 /* ================= شريط الحالة (النقاط) ================= */
 .status-bar {
   background: #444;
