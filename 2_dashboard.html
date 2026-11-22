@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosetta Stone - Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #dcdad1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* الشريط العلوي (الوحدات) */
+        .top-nav { display: flex; background: #5c5045; height: 60px; color: #b3a898; }
+        .nav-item { flex: 1; display: flex; justify-content: center; align-items: center; border-right: 1px solid #4a4036; font-size: 13px; cursor: pointer; }
+        .nav-item.active { background: #3d352d; color: #fff; border-bottom: 3px solid #00bcd4; }
+
+        /* المحتوى الرئيسي */
+        .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        
+        /* بطاقة الدرس */
+        .core-card { background: #b3a898; border-radius: 8px; padding: 10px 20px; display: flex; align-items: center; width: 600px; margin-bottom: 40px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .core-icon { background: #a83928; color: #fff; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; border-radius: 4px; }
+        .core-text { flex: 1; margin-left: 15px; }
+        .core-text h2 { font-size: 18px; color: #fff; font-weight: normal; margin-bottom: 3px; }
+        .core-text p { font-size: 12px; color: #eee; }
+        .start-btn { background: transparent; border: none; color: #fff; font-size: 16px; cursor: pointer; }
+        
+        /* شريط التقدم */
+        .progress-bar { display: flex; align-items: center; width: 85%; max-width: 1000px; position: relative; margin-bottom: 50px; }
+        .progress-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #a09a8f; z-index: 1; }
+        .node { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #999; z-index: 2; margin: 0 auto; display: flex; justify-content: center; align-items: center; font-size: 10px; color: #999; }
+        .node.done { border-color: #8bc34a; color: #8bc34a; }
+        .node.current { border-color: #f1c40f; color: #f1c40f; box-shadow: 0 0 8px rgba(241, 196, 15, 0.6); }
+
+        /* الصور المائلة */
+        .polaroids { display: flex; justify-content: center; gap: 30px; margin-top: 20px; height: 180px; }
+        .polaroid { background: #fff; padding: 8px 8px 25px 8px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .polaroid:nth-child(1) { transform: rotate(-7deg); }
+        .polaroid:nth-child(2) { transform: rotate(4deg); }
+        .polaroid:nth-child(3) { transform: rotate(-2deg); }
+        .polaroid:nth-child(4) { transform: rotate(6deg); }
+        .polaroid:nth-child(5) { transform: rotate(-5deg); }
+        .polaroid:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
+        .polaroid img { width: 130px; height: 130px; object-fit: cover; background: #eee; }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-item">Unit 1: Travel</div>
+        <div class="nav-item">Unit 2: Past and future</div>
+        <div class="nav-item active">Unit 3: Friends and Social Life</div>
+        <div class="nav-item">Unit 4: Dining and Vacation</div>
+    </div>
+
+    <div class="main">
+        <div class="core-card">
+            <div class="core-icon">!</div>
+            <div class="core-text">
+                <h2>Core Lesson</h2>
+                <p>About 30 minutes</p>
+            </div>
+            <button class="start-btn">Start ▶</button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-line"></div>
+            <div class="node done">✓</div>
+            <div class="node done">✓</div>
+            <div class="node done">✓</div>
+            <div class="node current">★</div>
+            <div class="node"></div>
+            <div class="node"></div>
+            <div class="node"></div>
+            <div class="node"></div>
+        </div>
+
+        <div class="polaroids">
+            <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="dog"></div>
+            <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="kids"></div>
+            <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="soup"></div>
+            <div class="polaroid"><img src="https://images.unsplash.com/photo-1508704019882-f9cf40e475b4?w=300" alt="dance"></div>
+            <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="friends"></div>
+        </div>
+    </div>
+</body>
+</html>
