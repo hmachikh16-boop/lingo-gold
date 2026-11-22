@@ -1,88 +1,224 @@
 <!DOCTYPE html>
-<html lang="ar" dir="ltr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lingo Gold — Rosetta Style</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingo Gold - Engine</title>
+    <style>
+        /* ================= CSS (التصميم) ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f7f9f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* الشريط العلوي */
+        .top-bar { background-color: #2c3e50; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .logo { color: #f1c40f; font-weight: bold; font-size: 18px; }
+        
+        /* منطقة العرض الرئيسية */
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        .screen { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; flex-direction: column; }
+        .screen.active { display: flex; }
 
-  <!-- ملف التصميم الخارجي -->
-  <link rel="stylesheet" href="style.css" />
+        /* --- واجهة المسار (Dashboard) --- */
+        .path-container { display: flex; gap: 15px; margin-top: 20px; }
+        .node { width: 40px; height: 40px; border-radius: 50%; background: #ddd; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; }
+        .node.active { background: #f1c40f; color: white; }
+        .node.completed { background: #2ecc71; color: white; }
+
+        /* --- واجهة التمارين (Grid) --- */
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; width: 100%; }
+        .card { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; border: 2px solid transparent; }
+        
+        /* التمرين: ملء الفراغات */
+        .fill-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; min-height: 80px; font-size: 18px; }
+        .blank-input { border: 1px solid #ccc; padding: 5px 10px; border-radius: 4px; font-size: 16px; width: 100px; text-align: center; }
+        
+        /* التمرين: اختيار صورة */
+        .choice-header { padding: 20px; display: flex; align-items: center; gap: 10px; font-size: 18px; }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .choice-img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; }
+        .choice-img:hover { transform: scale(1.05); }
+        .choice-img.selected { border-color: #3498db; }
+
+        /* التمرين: اختيار نص */
+        .text-options { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .text-option { padding: 15px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .text-option:hover { background: #f0f0f0; border-color: #3498db; }
+
+        /* الصورة الكبيرة */
+        .card-image { width: 100%; height: 200px; object-fit: cover; }
+        
+        /* حالات الإجابة */
+        .card.correct { border-color: #2ecc71; }
+        .card.wrong { border-color: #e74c3c; animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        
+        /* زر الانتقال */
+        .next-btn { margin-top: 20px; padding: 10px 30px; background: #2ecc71; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; display: none; }
+        .next-btn.show { display: block; }
+    </style>
 </head>
 <body>
 
-  <!-- ================= الشريط العلوي ================= -->
-  <header class="header">
-    <div class="header-left">
-      <!-- الشعار الأخضر -->
-      <div class="logo">Lingo Gold</div>
-
-      <!-- التنقل: اللغة + مكان الدرس -->
-      <div class="header-nav">
-        <span id="languageLabel">English (American)</span>
-        <span class="divider">|</span>
-        <span id="breadcrumb">Unit 1 - Lesson 2 &gt; Grammar</span>
-      </div>
+    <!-- الشريط العلوي -->
+    <div class="top-bar">
+        <div class="logo">Lingo Gold</div>
+        <div id="headerInfo">Loading...</div>
+        <div>Sign Out</div>
     </div>
 
-    <!-- أيقونات الجانب الأيمن -->
-    <div class="header-right">
-      <a class="dash-link" href="dashboard.html">Dashboard</a>
-      <a class="dash-link" href="curriculum.html">Curriculum</a>
-      <span class="icon">🔊</span>
-      <span class="icon">🔒</span>
-      <span class="signout">Sign Out</span>
+    <!-- منطقة العرض -->
+    <div class="main-content">
+        
+        <!-- 1. واجهة المسار (Dashboard) -->
+        <div id="dashboardScreen" class="screen active">
+            <h2>Select a Lesson to begin</h2>
+            <div class="path-container" id="pathContainer">
+                <!-- سيتم بناء النقاط هنا -->
+            </div>
+        </div>
+
+        <!-- 2. واجهة التمارين (Exercises) -->
+        <div id="exerciseScreen" class="screen">
+            <div class="grid-container" id="exerciseContainer">
+                <!-- سيتم بناء التمارين هنا -->
+            </div>
+            <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➔</button>
+        </div>
+
     </div>
-  </header>
 
-  <!-- ================= شريط حالة الخطوات (نقاط) ================= -->
-  <div class="status-bar" id="statusBar" aria-label="Lesson progress">
-    <!-- تُنشأ النقاط تلقائياً من app.js حسب عدد الأسئلة -->
-  </div>
+    <script>
+        /* ================= JavaScript (البرمجة) ================= */
+        
+        let appData = null;
+        let currentExerciseIndex = 0;
+        let currentLesson = null;
 
-  <!-- ================= منطقة البطاقات ================= -->
-  <main class="main-container">
-    <!-- تُبنى البطاقات الأربع تلقائياً بواسطة app.js من ملف data.rsd -->
-    <div class="cards-grid" id="cardsGrid"></div>
-  </main>
+        // 1. تحميل البيانات
+        fetch('data.rsd')
+            .then(res => res.json())
+            .then(data => {
+                appData = data;
+                currentLesson = data.units[0].lessons[0];
+                buildDashboard();
+            })
+            .catch(err => alert("خطأ في قراءة ملف data.rsd. تأكد من استخدام Live Server."));
 
-  <!-- ================= الشريط السفلي ================= -->
-  <footer class="footer">
-    <div class="footer-dots" id="footerDots"></div>
-    <button class="reset-btn" id="resetBtn" type="button">Reset</button>
-  </footer>
+        // 2. بناء لوحة التحكم (المسار)
+        function buildDashboard() {
+            const container = document.getElementById('pathContainer');
+            container.innerHTML = '';
+            document.getElementById('headerInfo').innerText = 'English (American) - Level 1';
+            
+            // إنشاء 5 نقاط للدروس
+            for(let i = 1; i <= 5; i++) {
+                const node = document.createElement('div');
+                node.className = i === 1 ? 'node active' : 'node';
+                node.innerText = i;
+                node.onclick = () => startLesson();
+                container.appendChild(node);
+            }
+        }
 
-  <!-- سكربت التطبيق (defer يضمن تنفيذها بعد بناء الـ DOM) -->
-  <script src="app.js" defer></script>
+        // 3. بدء الدرس وتحميل التمارين
+        function startLesson() {
+            document.getElementById('dashboardScreen').classList.remove('active');
+            document.getElementById('exerciseScreen').classList.add('active');
+            document.getElementById('headerInfo').innerText = currentLesson.title;
+            
+            currentExerciseIndex = 0;
+            renderExercise();
+        }
 
-  <script>
-    /* ============================================================
-       الخطوة 1: تحديث ملف التمارين
-       يتأكد هذا الكود من إكمال الدرس، يحفظ الحالة في المتصفح،
-       ثم يعيد التوجيه إلى لوحة التحكم بعد ثانية واحدة.
-       ============================================================ */
+        // 4. عرض التمرين الحالي
+        function renderExercise() {
+            const container = document.getElementById('exerciseContainer');
+            container.innerHTML = '';
+            document.getElementById('nextBtn').classList.remove('show');
 
-    // رقم الدرس الحالي (النقطة الرابعة في المسار)
-    const currentLessonId = 4;
+            const ex = currentLesson.exercises[currentExerciseIndex];
 
-    function completeLesson() {
-      // حفظ حالة الإكمال في ذاكرة المتصفح (تبقى بعد إغلاق الصفحة)
-      localStorage.setItem('lesson_' + currentLessonId, 'completed');
+            // إذا كان التمرين "ملء فراغات"
+            if (ex.type === 'fill_blank') {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="fill-header">
+                        <div>${ex.sentence.replace('___', `<input type="text" class="blank-input" oninput="checkFill(this, '${ex.answer}')">`)}</div>
+                        <button class="audio-btn">▶</button>
+                    </div>
+                    <img src="${ex.image}" class="card-image" alt="Image">
+                `;
+                container.appendChild(card);
+            } 
+            // إذا كان التمرين "اختيار صورة"
+            else if (ex.type === 'choose_image') {
+                const card = document.createElement('div');
+                card.className = 'card';
+                let optionsHtml = '';
+                ex.options.forEach(img => {
+                    optionsHtml += `<img src="${img}" class="choice-img" onclick="checkChoice(this, '${img}', '${ex.answer}')">`;
+                });
+                card.innerHTML = `
+                    <div class="choice-header">
+                        <span>🔊 Listen and choose:</span> <strong>${ex.question}</strong>
+                    </div>
+                    <div class="choice-grid">${optionsHtml}</div>
+                `;
+                container.appendChild(card);
+            }
+            // إذا كان التمرين "اختيار نص"
+            else if (ex.type === 'choose_text') {
+                const card = document.createElement('div');
+                card.className = 'card';
+                let optionsHtml = '';
+                ex.options.forEach(text => {
+                    optionsHtml += `<div class="text-option" onclick="checkChoice(this, '${text}', '${ex.answer}')">${text}</div>`;
+                });
+                card.innerHTML = `
+                    <img src="${ex.image}" class="card-image" alt="Image">
+                    <div class="text-options">${optionsHtml}</div>
+                `;
+                container.appendChild(card);
+            }
+        }
 
-      // انتقال تلقائي إلى لوحة التحكم بعد ثانية
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1000);
-    }
+        // 5. التحقق من إجابة "ملء الفراغات"
+        function checkFill(input, correctAnswer) {
+            const card = input.closest('.card');
+            if (input.value.trim().toLowerCase() === correctAnswer.toLowerCase()) {
+                card.classList.add('correct');
+                card.classList.remove('wrong');
+                document.getElementById('nextBtn').classList.add('show');
+            } else {
+                card.classList.remove('correct', 'wrong');
+            }
+        }
 
-    // إنشاء زر الإنهاء في أسفل الصفحة
-    const finishBtn = document.createElement('button');
-    finishBtn.innerText = 'إنهاء الدرس والعودة للمسار';
-    finishBtn.style =
-      'position: fixed; bottom: 20px; right: 20px; padding: 15px; ' +
-      'background: #1DB954; color: white; border: none; border-radius: 5px; ' +
-      'cursor: pointer; font-size: 16px; z-index: 100;';
-    finishBtn.onclick = completeLesson;
-    document.body.appendChild(finishBtn);
-  </script>
+        // 6. التحقق من إجابة "الاختيار"
+        function checkChoice(element, selected, correct) {
+            const card = element.closest('.card');
+            if (selected === correct) {
+                card.classList.add('correct');
+                card.classList.remove('wrong');
+                document.getElementById('nextBtn').classList.add('show');
+            } else {
+                card.classList.add('wrong');
+                setTimeout(() => card.classList.remove('wrong'), 500);
+            }
+        }
+
+        // 7. الانتقال للتمرين التالي
+        function nextExercise() {
+            currentExerciseIndex++;
+            if (currentExerciseIndex < currentLesson.exercises.length) {
+                renderExercise();
+            } else {
+                alert("أكملت الدرس بنجاح!");
+                document.getElementById('exerciseScreen').classList.remove('active');
+                document.getElementById('dashboardScreen').classList.add('active');
+            }
+        }
+    </script>
 </body>
 </html>
