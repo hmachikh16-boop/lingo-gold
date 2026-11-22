@@ -1,114 +1,145 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lingo Gold - Dashboard</title>
     <style>
         /* ============================================================
-           لوحة تحكم Lingo Gold — الخطوة 2
-           مبنية على كود التصميم المرفق مع تعديلات:
-           - هوية خضراء بدل الأصفر
-           - صور محلية من media/images
-           - توليد نقاط المسار من localStorage
+           لوحة التحكم — نسخة مطابقة للصورة
+           التعديلات على مشروعنا:
+           - صور محلية من media/images بدل الروابط الخارجية
+           - قراءة حالة الدرس من localStorage
+           - إضافة تجاوب للشاشات الصغيرة
            ============================================================ */
-
-        :root {
-            --green: #1DB954;
-            --green-dark: #168A3E;
-            --dark: #333333;
-            --dark-2: #2c3e50;
-            --gray: #666666;
-            --light: #e5e5e5;
-        }
 
         /* إعدادات عامة */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: var(--light); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* الشريط العلوي (الوحدات) */
-        .top-nav { background: var(--dark); display: flex; height: 80px; overflow-x: auto; }
+        body {
+            /* خلفية رمادية فاتحة بتأثير دائري مثل الصورة */
+            background: radial-gradient(circle at center, #f0efe9 0%, #dcdad1 100%);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 1. الشريط العلوي (الوحدات) */
+        .top-nav { background-color: #5c5045; display: flex; height: 60px; border-bottom: 2px solid #3d352d; }
         .nav-item {
-            flex: 1; min-width: 180px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: #ccc; cursor: pointer; border-right: 1px solid #444; transition: 0.3s; position: relative;
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #b3a898; cursor: pointer; border-right: 1px solid #6b5f53; font-size: 13px; transition: 0.3s;
         }
-        .nav-item:hover { background: #444; color: white; }
-        .nav-item.active { background: #555; color: white; border-bottom: 4px solid var(--green); }
-        .nav-item h3 { font-size: 14px; font-weight: normal; margin-bottom: 5px; }
+        .nav-item:hover { background-color: #4a4036; color: #fff; }
+        .nav-item.active { background-color: #3d352d; color: #fff; border-bottom: 3px solid #00bcd4; }
 
-        /* شريط الحالة */
+        /* شريط الحالة الأسود */
         .status-bar {
-            background: var(--dark-2); padding: 8px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            color: white; font-size: 12px;
+            background-color: #222; padding: 5px 20px;
+            display: flex; justify-content: space-between; color: #ccc;
+            font-size: 12px; align-items: center;
         }
-        .logo { color: var(--green); font-weight: bold; font-size: 16px; }
+        .logo { color: #f1c40f; font-weight: bold; font-size: 16px; display: flex; align-items: center; gap: 5px; }
+        .logo span { color: #e74c3c; font-size: 18px; }
 
-        /* الحاوية الرئيسية */
-        .main-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px; overflow-y: auto; }
+        /* 2. المنطقة الرئيسية */
+        .main-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; position: relative; overflow-y: auto; }
 
-        /* بطاقة الدرس الأساسي */
+        /* بطاقة الدرس */
         .core-lesson-card {
-            background: #d1c7b7; border-radius: 10px; padding: 15px 30px;
-            display: flex; align-items: center; gap: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; width: 600px; max-width: 100%;
+            background-color: #b3a898;
+            border-radius: 8px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 500px;
+            max-width: 100%;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 5px rgba(0,0,0,0.2);
         }
         .core-icon {
-            background: var(--green); color: white; width: 40px; height: 40px;
+            background-color: #a83928; color: white; width: 35px; height: 35px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 24px; font-weight: bold; border-radius: 5px;
+            font-size: 22px; font-weight: bold; border-radius: 4px;
+            border: 1px solid #802a1c;
         }
-        .core-text h2 { font-size: 18px; color: #333; }
-        .core-text p { font-size: 12px; color: var(--gray); margin-top: 4px; }
-        .start-btn {
-            margin-left: auto; background: #e0e0e0; border: none;
-            padding: 10px 20px; border-radius: 20px; cursor: pointer;
-            display: flex; align-items: center; gap: 10px; font-weight: bold; transition: 0.2s;
-        }
-        .start-btn:hover { background: var(--green); color: white; }
+        .core-text { flex: 1; }
+        .core-text h2 { font-size: 16px; color: #fff; font-weight: normal; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); }
+        .core-text p { font-size: 11px; color: #e0e0e0; margin-top: 2px; }
 
-        /* المسار (Progress Path) */
+        .start-btn {
+            background: transparent; border: none; color: white;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            font-size: 14px; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+        .start-btn:hover { color: #f1c40f; }
+
+        /* 3. المسار */
         .progress-path {
-            display: flex; align-items: center; gap: 5px;
-            margin-bottom: 50px; position: relative; width: 80%; max-width: 700px; justify-content: center;
+            display: flex; align-items: center; justify-content: space-between;
+            width: 90%; max-width: 1000px; position: relative;
+            margin-bottom: 50px; padding: 6px 0;
+            overflow-x: auto; /* يسمح بتمرير النقاط على الشاشات الضيقة */
         }
-        .path-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #ccc; z-index: 1; }
+        .path-line { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #a09a8f; z-index: 1; }
+
         .node {
-            width: 30px; height: 30px; border-radius: 50%; border: 2px solid #999; background: #fff;
+            width: 18px; height: 18px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 2; font-size: 14px; color: #999; cursor: pointer; transition: 0.3s;
+            z-index: 2; font-size: 10px; flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        .node.completed { background: var(--green); border-color: var(--green); color: white; }
-        .node.current {
-            background: var(--green-dark); border-color: var(--green-dark); color: white;
-            box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
-        }
-        .node.locked { background: #fff; border-color: #ccc; color: #ccc; pointer-events: none; }
+        .node.completed { background: #fff; border: 2px solid #8bc34a; color: #8bc34a; }
+        .node.current { background: #fff; border: 2px solid #f1c40f; color: #f1c40f; }
+        .node.locked { background: #dcdad1; border: 2px solid #a09a8f; color: #a09a8f; }
+        .node.special { background: #fff; border: 2px solid #e74c3c; color: #e74c3c; }
 
         /* النص الإرشادي */
-        .instruction-text { color: var(--gray); font-size: 18px; margin-bottom: 40px; font-style: italic; }
-
-        /* شريط الصور المائلة */
-        .polaroid-container { display: flex; justify-content: center; gap: 20px; width: 100%; padding: 20px; flex-wrap: wrap; }
-        .polaroid {
-            background: white; padding: 10px 10px 30px 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: transform 0.3s; cursor: pointer;
+        .instruction-text {
+            color: #888; font-size: 14px; margin-bottom: 30px;
+            font-weight: bold; text-shadow: 1px 1px 0px #fff;
         }
-        .polaroid:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
-        .polaroid img { width: 150px; height: 150px; object-fit: cover; background: #ddd; display: block; }
 
-        /* الشريط السفلي */
-        .bottom-bar { background: var(--dark); color: #ccc; padding: 10px; text-align: center; font-size: 12px; }
+        /* 4. شريط الصور المائلة */
+        .polaroid-container {
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            width: 100%; padding: 10px; position: relative; height: 200px;
+            flex-wrap: wrap;
+        }
+        .polaroid {
+            background: white; padding: 8px 8px 25px 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s, z-index 0.3s;
+            position: relative;
+            border: 1px solid #ddd;
+        }
+        .polaroid:nth-child(1) { transform: rotate(-8deg) translateY(10px); }
+        .polaroid:nth-child(2) { transform: rotate(4deg) translateY(-5px); }
+        .polaroid:nth-child(3) { transform: rotate(-3deg) translateY(15px); }
+        .polaroid:nth-child(4) { transform: rotate(7deg) translateY(-10px); }
+        .polaroid:nth-child(5) { transform: rotate(-5deg) translateY(5px); }
+        .polaroid:hover { transform: scale(1.15) rotate(0deg) !important; z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .polaroid img { width: 130px; height: 130px; object-fit: cover; background: #eee; display: block; }
 
-        /* تجاوب الشاشة */
+        /* 5. الشريط السفلي */
+        .bottom-bar {
+            background: linear-gradient(to bottom, #5c5045, #3d352d);
+            color: #ccc; padding: 8px; text-align: center; font-size: 12px;
+            position: absolute; bottom: 0; width: 100%;
+        }
+        .bottom-bar span { color: #8bc34a; margin-right: 5px; }
+
+        /* تحسين التجاوب */
         @media (max-width: 760px) {
-            .top-nav { height: auto; }
-            .nav-item { min-width: 150px; padding: 12px; }
-            .core-lesson-card { flex-direction: column; text-align: center; }
-            .start-btn { margin-left: 0; }
-            .polaroid img { width: 110px; height: 110px; }
-            .instruction-text { text-align: center; }
+            .top-nav { height: auto; flex-wrap: wrap; }
+            .nav-item { min-width: 120px; padding: 10px; font-size: 11px; }
+            .core-lesson-card { width: 100%; }
+            .polaroid img { width: 95px; height: 95px; }
+            .polaroid-container { height: auto; gap: 12px; }
+            .progress-path { width: 100%; }
         }
     </style>
 </head>
@@ -116,17 +147,17 @@
 
     <!-- شريط الحالة العلوي -->
     <div class="status-bar">
-        <div class="logo">Lingo Gold</div>
-        <div>English (American) - Level 1</div>
-        <div>🔊 🔒 Sign Out</div>
+        <div class="logo"><span>●</span> Lingo Gold</div>
+        <div>English (American) Level 1</div>
+        <div>🔊 &nbsp; 🔒 Sign Out</div>
     </div>
 
-    <!-- قائمة الوحدات العلوية -->
+    <!-- قائمة الوحدات -->
     <div class="top-nav">
-        <div class="nav-item"><h3>الوحدة 1: السفر</h3></div>
-        <div class="nav-item"><h3>الوحدة 2: الماضي والمستقبل</h3></div>
-        <div class="nav-item active"><h3>الوحدة 3: الأصدقاء والحياة الاجتماعية</h3></div>
-        <div class="nav-item"><h3>الوحدة 4: الطعام والسفر</h3></div>
+        <div class="nav-item"><h3>Unit 1: Travel</h3></div>
+        <div class="nav-item"><h3>Unit 2: Past and future</h3></div>
+        <div class="nav-item active"><h3>Unit 3: Friends and Social Life</h3></div>
+        <div class="nav-item"><h3>Unit 4: Dining and Vacation</h3></div>
     </div>
 
     <!-- المنطقة الرئيسية -->
@@ -136,82 +167,119 @@
         <div class="core-lesson-card">
             <div class="core-icon">!</div>
             <div class="core-text">
-                <h2>الدرس الأساسي</h2>
-                <p>حوالي 30 دقيقة</p>
+                <h2>Core Lesson</h2>
+                <p>About 30 minutes</p>
             </div>
-            <!-- زر البدء ينقل إلى ملف التمارين -->
-            <button class="start-btn" onclick="window.location.href='index.html'">ابدأ ▶</button>
+            <button class="start-btn" onclick="window.location.href='index.html'">Start ▶</button>
         </div>
 
-        <!-- المسار: تُولَّد النقاط عبر الجافاسكريبت -->
+        <!-- المسار: 30 نقطة تُولَّد بالجافاسكريبت -->
         <div class="progress-path" id="progressPath">
             <div class="path-line"></div>
         </div>
 
-        <div class="instruction-text">المقرر الدراسي الذي اخترته للوحدة 3</div>
+        <div class="instruction-text">Your selected course for Unit 3</div>
 
-        <!-- الصور المائلة: صور محلية بدل روابط الإنترنت -->
-        <div class="polaroid-container">
-            <div class="polaroid" style="transform: rotate(-5deg);"><img src="media/images/img_one_dog.jpg" alt="Dog"></div>
-            <div class="polaroid" style="transform: rotate(3deg);"><img src="media/images/img_four_boys.jpg" alt="Kids"></div>
-            <div class="polaroid" style="transform: rotate(-2deg);"><img src="media/images/img_five_newspapers.jpg" alt="Newspapers"></div>
-            <div class="polaroid" style="transform: rotate(6deg);"><img src="media/images/img_house.jpg" alt="House"></div>
-            <div class="polaroid" style="transform: rotate(-4deg);"><img src="media/images/img_market.jpg" alt="Market"></div>
-        </div>
+        <!-- الصور المائلة: صور محلية من مجلد media -->
+        <div class="polaroid-container" id="polaroidContainer"></div>
 
     </div>
 
     <!-- الشريط السفلي -->
-    <div class="bottom-bar">استكشف جميع أنشطة الوحدة 3</div>
+    <div class="bottom-bar">Explore all activities for Unit 3 <span>▶</span></div>
 
-    <!-- كود إدارة المسار -->
     <script>
-        // عدد الدروس في هذه الوحدة
-        const totalLessons = 8;
+        /* ============================================================
+           1) بناء مسار التقدم (30 نقطة كما في الصورة)
+           ============================================================ */
+        const totalNodes = 30;
         const progressPath = document.getElementById('progressPath');
 
-        // دالة لإنشاء النقاط بناءً على حالة التقدم في localStorage
         function buildProgressPath() {
-            // نزيل النقاط القديمة إن وُجدت (نتجنب التكرار عند إعادة البناء)
+            // نزيل النقاط القديمة عند إعادة البناء
             progressPath.querySelectorAll('.node').forEach((node) => node.remove());
 
-            // نحدد أعلى درس مكتمل لضمان تقدّم متسلسل
+            // قراءة أعلى درس مكتمل من الذاكرة (من صفحة التمرين)
             let maxCompleted = 0;
-            for (let i = 1; i <= totalLessons; i++) {
+            for (let i = 1; i <= totalNodes; i++) {
                 if (localStorage.getItem('lesson_' + i) === 'completed') maxCompleted = i;
             }
 
-            for (let i = 1; i <= totalLessons; i++) {
+            for (let i = 1; i <= totalNodes; i++) {
                 const node = document.createElement('div');
 
-                if (i <= maxCompleted) {
-                    // دروس مكتملة
+                // الشكل الافتراضي المطابق للصورة
+                if (i <= 3) {
                     node.className = 'node completed';
                     node.innerHTML = '✓';
-                } else if (i === maxCompleted + 1) {
-                    // أول درس غير مكتمل هو الحالي
+                } else if (i === 4) {
                     node.className = 'node current';
                     node.innerHTML = '★';
-                    node.title = 'الدرس الحالي';
-                    // الضغط على النقطة الحالية يفتح التمرين
-                    node.onclick = () => { window.location.href = 'index.html'; };
+                } else if (i === 15) {
+                    node.className = 'node special';
+                    node.innerHTML = '!';
                 } else {
-                    // الباقي مقفل
                     node.className = 'node locked';
-                    node.innerHTML = '🔒';
+                    node.innerHTML = '';
+                }
+
+                // تحديث من localStorage: ما قبل/حتى أعلى درس مكتمل يصبح أخضر
+                if (i <= maxCompleted) {
+                    node.className = 'node completed';
+                    node.innerHTML = '✓';
+                } else if (i === maxCompleted + 1 && maxCompleted > 0) {
+                    node.className = 'node current';
+                    node.innerHTML = '★';
+                    node.onclick = () => { window.location.href = 'index.html'; };
                 }
 
                 progressPath.appendChild(node);
             }
 
-            // تحديث النص الإرشادي عند إكمال الدرس الأساسي
+            // تحديث النص عند إكمال الدرس الرابع
             if (maxCompleted >= 4) {
-                document.querySelector('.instruction-text').textContent = 'أكملت الدرس الأساسي — أحسنت!';
+                document.querySelector('.instruction-text').textContent = 'Core Lesson completed — great job!';
             }
         }
 
-        // بناء المسار عند فتح الصفحة
+        /* ============================================================
+           2) جلب الصور المحلية من مجلد media/images
+           ============================================================ */
+        // أسماء صور موجودة فعلياً داخل media/images
+        const myImages = [
+            "media/images/img_one_dog.jpg",
+            "media/images/img_four_boys.jpg",
+            "media/images/img_five_newspapers.jpg",
+            "media/images/img_house.jpg",
+            "media/images/img_market.jpg"
+        ];
+        const fallbackImage = "media/images/img_boy.jpg"; // صورة بديلة محلية
+
+        function loadPolaroids() {
+            const container = document.getElementById('polaroidContainer');
+            container.innerHTML = '';
+
+            myImages.forEach((imgSrc) => {
+                const div = document.createElement('div');
+                div.className = 'polaroid';
+
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = 'Course image';
+
+                // بديل محلي بدل رابط إنترنت خارجي
+                img.onerror = function () {
+                    if (this.src.indexOf(fallbackImage) === -1) this.src = fallbackImage;
+                };
+
+                div.appendChild(img);
+                container.appendChild(div);
+            });
+        }
+
+        // تشغيل الدوال عند فتح الصفحة
         buildProgressPath();
+        loadPolaroids();
     </script>
 
 </body>
