@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosetta Stone - Curriculum</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #ffffff; }
+        
+        /* الشريط العلوي */
+        .header { display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #ddd; gap: 30px; }
+        .logo { color: #e74c3c; font-size: 22px; font-weight: bold; }
+        .nav { display: flex; gap: 20px; }
+        .nav span { color: #666; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .nav span.active { color: #333; border-bottom: 2px solid #333; padding-bottom: 5px; }
+
+        /* شبكة الوحدات */
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .unit { border-radius: 6px; padding: 15px; height: 120px; color: white; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
+        .unit:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .unit-num { font-size: 12px; opacity: 0.9; text-transform: uppercase; }
+        .unit-title { font-size: 18px; font-weight: bold; line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+
+        /* الألوان */
+        .bg-yellow { background-color: #f1c40f; }
+        .bg-orange { background-color: #f39c12; }
+        .bg-red { background-color: #e74c3c; }
+        .bg-darkred { background-color: #c0392b; }
+        .bg-blue { background-color: #3498db; }
+        .bg-green { background-color: #2ecc71; }
+        .bg-darkorange { background-color: #e67e22; }
+        .bg-olive { background-color: #d4ac0d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">RosettaStone</div>
+        <div class="nav"><span class="active">Home</span><span>Extended Learning</span></div>
+    </div>
+
+    <div class="grid">
+        <div class="unit bg-yellow"><div class="unit-num">Unit 1</div><div class="unit-title">Language Basics</div></div>
+        <div class="unit bg-orange"><div class="unit-num">Unit 2</div><div class="unit-title">Greetings and Introductions</div></div>
+        <div class="unit bg-red"><div class="unit-num">Unit 3</div><div class="unit-title">Work and School</div></div>
+        <div class="unit bg-darkred"><div class="unit-num">Unit 4</div><div class="unit-title">Shopping</div></div>
+        <div class="unit bg-blue"><div class="unit-num">Unit 5</div><div class="unit-title">Travel</div></div>
+        <div class="unit bg-green"><div class="unit-num">Unit 6</div><div class="unit-title">Past and Future</div></div>
+        <div class="unit bg-darkorange"><div class="unit-num">Unit 7</div><div class="unit-title">Friends and Social Life</div></div>
+        <div class="unit bg-olive"><div class="unit-num">Unit 8</div><div class="unit-title">Dining and Vacation</div></div>
+    </div>
+</body>
+</html>
