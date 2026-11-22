@@ -32,10 +32,14 @@ class App extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, child) =>
-          Directionality(textDirection: TextDirection.rtl, child: child ?? const SizedBox()),
+          Directionality(textDirection: TextDirection.ltr, child: child ?? const SizedBox()),
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'Roboto',
+        fontFamily: 'Nunito',
+        textTheme: ThemeData(useMaterial3: true).textTheme.apply(
+              fontFamily: 'Nunito',
+              fontFamilyFallback: const ['Cairo'],
+            ),
         scaffoldBackgroundColor: Colors.white,
         colorScheme: ColorScheme.fromSeed(seedColor: kGreen, primary: kGreen),
         splashFactory: InkSparkle.splashFactory,
@@ -47,7 +51,7 @@ class App extends StatelessWidget {
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            backgroundColor: kGreen,
+            backgroundColor: kGreenDark,
             foregroundColor: Colors.white,
             minimumSize: const Size(0, 52),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
@@ -89,16 +93,37 @@ class _ShellState extends State<Shell> {
       body: IndexedStack(
         index: _tab,
         children: const [
-          HomeScreen(),
-          LessonsScreen(),
-          StoriesScreen(),
-          TrainingScreen(),
-          ProfileScreen(),
+          _RtlTab(child: HomeScreen()),
+          _RtlTab(child: LessonsScreen()),
+          _RtlTab(child: StoriesScreen()),
+          _RtlTab(child: TrainingScreen()),
+          _RtlTab(child: ProfileScreen()),
         ],
       ),
-      bottomNavigationBar: BottomNav(index: _tab, onTap: (i) => setState(() => _tab = i)),
+      bottomNavigationBar: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: BottomNav(index: _tab, onTap: (i) => setState(() => _tab = i)),
+          ),
+        ),
+      ),
     );
   }
+}
+
+class _RtlTab extends StatelessWidget {
+  final Widget child;
+  const _RtlTab({required this.child});
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: Directionality(textDirection: TextDirection.rtl, child: child),
+        ),
+      );
 }
 
 class BottomNav extends StatelessWidget {

@@ -39,4 +39,21 @@ void main() {
     expect(speechScore('the cat is sleeping', 'the cat is sleeping'), 100);
     expect(speechScore('cat', 'dog') < 100, isTrue);
   });
+
+  test('spaced repetition follows 1, 3, 7, 14 day intervals', () async {
+    final p = Progress.instance;
+    for (final expected in [1, 3, 7, 14]) {
+      await p.recordReview(3, true);
+      expect(p.reviewIntervalOf(3), expected);
+    }
+    await p.recordReview(3, false);
+    expect(p.reviewLapsesOf(3), 1);
+    expect(p.weakItems(), contains(3));
+  });
+
+  test('daily goal uses real minutes spent in lessons', () async {
+    final p = Progress.instance;
+    await p.addLearningSeconds(150);
+    expect(p.todayMinutes, 2);
+  });
 }

@@ -263,3 +263,61 @@ const items = <LearnItem>[
   LearnItem("A market", "The market is full of fresh vegetables.", "market_morning.jpg"),
   LearnItem("The doctor", "He is a doctor.", "L208_the_doctor.jpg"),
 ];
+
+const Map<String, List<String>> _topicKeywords = {
+  'الناس والعائلة': [
+    'schoolboy', 'schoolgirl', 'man', 'woman', 'kid', 'boy', 'girl', 'baby', 'mother', 'father',
+    'doctor', 'nurse', 'firefighter', 'police', 'chef', 'farmer', 'teacher', 'student', 'family',
+  ],
+  'الحيوانات': [
+    'cat', 'dog', 'fish', 'bird', 'cow', 'chicken', 'horse', 'duck', 'lion', 'elephant', 'monkey',
+    'snake', 'bee', 'ant', 'butterfly', 'mouse', 'fox', 'sheep', 'goat', 'rabbit', 'bear', 'tiger',
+    'zebra', 'giraffe', 'animal',
+  ],
+  'الطعام والفواكه': [
+    'apple', 'banana', 'orange', 'pear', 'bread', 'egg', 'milk', 'cheese', 'ice cream', 'chocolate',
+    'candy', 'cake', 'potato', 'carrot', 'tomato', 'onion', 'fruit', 'watermelon', 'strawberry',
+    'grapes', 'lemon', 'mango', 'food', 'vegetable',
+  ],
+  'المنزل والأشياء': [
+    'cottage', 'house', 'door', 'window', 'book', 'pen', 'chair', 'table', 'plate', 'cup', 'spoon',
+    'fork', 'bed', 'lamp', 'key', 'phone', 'camera', 'bag', 'clock', 'room', 'kitchen',
+  ],
+  'الطبيعة': [
+    'wave', 'river', 'cloud', 'moon', 'mountain', 'star', 'snow', 'sun', 'sea', 'tree', 'flower',
+    'garden', 'sky', 'rain', 'beach', 'forest',
+  ],
+  'الأماكن والمواصلات': [
+    'zoo', 'building', 'library', 'bench', 'boat', 'car', 'bus', 'train', 'bicycle', 'airplane',
+    'road', 'street', 'park', 'market', 'school', 'hospital', 'shop',
+  ],
+  'الأفعال': [
+    'run', 'jump', 'play', 'wave', 'sit', 'stand', 'eat', 'drink', 'read', 'write', 'sleep', 'walk',
+    'swim', 'sing', 'buy', 'act_', 'step_',
+  ],
+  'الألوان والأعداد': [
+    'red', 'blue', 'green', 'yellow', 'black', 'white', 'purple', 'brown', 'color_', 'one', 'two',
+    'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'num_',
+  ],
+};
+
+String topicOf(LearnItem item) {
+  final text = '${item.word} ${item.sentence} ${item.image}'.toLowerCase();
+  for (final entry in _topicKeywords.entries) {
+    if (entry.value.any((keyword) => text.contains(keyword))) return entry.key;
+  }
+  return 'مفردات عامة';
+}
+
+String unitTopic(int unit) {
+  final start = unit * 4;
+  final count = items.length - start < 4 ? items.length - start : 4;
+  if (count <= 0) return 'مفردات عامة';
+  final counts = <String, int>{};
+  for (var i = 0; i < count; i++) {
+    final topic = topicOf(items[start + i]);
+    counts[topic] = (counts[topic] ?? 0) + 1;
+  }
+  final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+  return sorted.first.key;
+}

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'core.dart';
 import 'lessons_data.dart';
@@ -1716,10 +1717,16 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
   @override
   void initState() {
     super.initState();
-    final first = widget.startIndex == null ? findItem('baker') : itemAt(widget.startIndex!);
-    _questions = [first];
-    for (var i = 1; i < 10; i++) {
-      _questions.add(items[(items.indexOf(first) + i * 17) % items.length]);
+    final p = Progress.instance;
+    final due = p.dueItems(limit: 10);
+    if (due.isNotEmpty) {
+      _questions = due.map((index) => items[index]).toList();
+    } else {
+      final first = widget.startIndex == null ? itemAt(p.current) : itemAt(widget.startIndex!);
+      _questions = List<LearnItem>.generate(
+        10,
+        (i) => items[(items.indexOf(first) + i * 17) % items.length],
+      );
     }
   }
 
@@ -1738,7 +1745,7 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
               children: [
                 const CircleIcon(Icons.psychology_alt_rounded, size: 92, background: kGreenSoft, foreground: kGreen),
                 const SizedBox(height: 16),
-                Text('$_score / 10', style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: kInk)),
+                Text('$_score / ${_questions.length}', style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: kInk)),
                 const Text('Adaptive review complete', style: TextStyle(color: kMuted)),
                 const SizedBox(height: 14),
                 const StarRow(count: 3, size: 30),
@@ -1755,7 +1762,7 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
 
     final q = _questions[_q];
     final options = choicesFor(q, q.word.hashCode + _q, count: 3);
-    final percent = ((_q + 1) / 10 * 100).round();
+    final percent = ((_q + 1) / _questions.length * 100).round();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: topBar(context, green: true, title: 'Review • Adaptive Recall', subtitle: 'Reinforce what you learned with adaptive review'),
@@ -1768,13 +1775,29 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
                 children: [
                   Row(
                     children: [
-                      Text('Question ${_q + 1} of 10', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kInk)),
+                      Text('Question ${_q + 1} of ${_questions.length}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kInk)),
                       const Spacer(),
                       Text('$percent%', style: const TextStyle(fontWeight: FontWeight.w900, color: kGreenDark)),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  ProgressBar((_q + 1) / 10, height: 9),
+                  ProgressBar((_q + 1) / _questions.length, height: 9),
+                  const SizedBox(height: 12),
+                  CardBox(
+                    color: kGreenSoft,
+                    child: Row(
+                      children: [
+                        const CircleIcon(Icons.schedule_rounded, size: 36, background: Colors.white, foreground: kGreen),
+                        const SizedBox(width: 9),
+                        Expanded(
+                          child: Text(
+                            '${Progress.instance.dueCount} due • ${Progress.instance.weakItems().length} weak words • intervals 1/3/7/14 days',
+                            style: const TextStyle(fontSize: 10.5, color: kInk, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 18),
                   Text('Which photo shows “${q.word}”?', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: kInk)),
                   const SizedBox(height: 12),
@@ -1868,13 +1891,15 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
                   primaryButton('Continue', _selected == null ? null : () {
                     final correct = options[_selected!].image == q.image;
                     if (correct) _score++;
+                    final qIndex = items.indexWhere((e) => e.image == q.image);
                     Progress.instance.recordAnswer(correct);
+                    if (qIndex >= 0) Progress.instance.recordReview(qIndex, correct);
                     setState(() {
                       _checked = true;
                     });
                     Future<void>.delayed(const Duration(milliseconds: 350), () {
                       if (!mounted) return;
-                      if (_q == 9) {
+                      if (_q == _questions.length - 1) {
                         setState(() => _done = true);
                       } else {
                         setState(() {
@@ -2188,7 +2213,7 @@ class PhrasebookScreen extends StatelessWidget {
         green: true,
         title: 'Phrasebook',
         subtitle: 'Restaurant • Travel',
-        actions: [IconButton(icon: const Icon(Icons.search_rounded), onPressed: () => showToast(context, 'Search phrases'))],
+        actions: [IconButton(icon: const Icon(Icons.volume_up_rounded), onPressed: () => Tts.instance.speak('Practice these phrases out loud'))],
       ),
       body: SafeArea(
         child: ListView(
@@ -2282,7 +2307,7 @@ class FlashcardsScreen extends StatefulWidget {
 
 class _FlashcardsScreenState extends State<FlashcardsScreen> {
   int _tab = 0;
-  int _known = 12;
+  int _known = 0;
   int _i = 0;
   late final List<LearnItem> _cards;
 
@@ -2295,7 +2320,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
 
   void _advance(bool known) {
     setState(() {
-      if (known) _known = (_known + 1).clamp(0, 50);
+      if (known) _known = (_known + 1).clamp(0, _cards.length);
       _i = (_i + 1) % _cards.length;
     });
   }
@@ -2310,8 +2335,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
         title: 'Lingo Gold',
         back: false,
         actions: [
-          IconButton(icon: const Icon(Icons.search_rounded), onPressed: () => showToast(context, 'Search cards')),
-          IconButton(icon: const Icon(Icons.person_outline_rounded), onPressed: () => showToast(context, 'Profile')),
+          IconButton(icon: const Icon(Icons.replay_rounded), onPressed: () => setState(() => _i = 0)),
         ],
       ),
       body: SafeArea(
@@ -2548,11 +2572,14 @@ class _LessonSessionScreenState extends State<LessonSessionScreen> {
   bool? _lastCorrect;
   bool _recording = false;
   int? _speakScore;
+  final _started = DateTime.now();
   final _controller = TextEditingController();
   final _answers = <bool>[];
 
   late final LearnItem item;
   late final LearnItem previous;
+  late final LearnItem reviewItem;
+  late final int reviewIndex;
   late final List<LearnItem> imageOptions;
   late final List<LearnItem> listenOptions;
   late final List<LearnItem> reviewOptions;
@@ -2562,9 +2589,11 @@ class _LessonSessionScreenState extends State<LessonSessionScreen> {
     super.initState();
     item = itemAt(widget.index);
     previous = itemAt((widget.index - 1 + items.length) % items.length);
+    reviewItem = widget.index % 4 == 3 ? unitItems(widget.index).first : previous;
+    reviewIndex = items.indexWhere((e) => e.image == reviewItem.image);
     imageOptions = choicesFor(item, widget.index + 101);
     listenOptions = choicesFor(item, widget.index + 103);
-    reviewOptions = choicesFor(previous, widget.index + 107);
+    reviewOptions = choicesFor(reviewItem, widget.index + 107);
   }
 
   @override
@@ -2611,7 +2640,14 @@ class _LessonSessionScreenState extends State<LessonSessionScreen> {
         correct = reviewOptions[_selected!].image == previous.image;
     }
     _answers.add(correct);
+    if (correct) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
+    final reviewedIndex = _step == 5 && reviewIndex >= 0 ? reviewIndex : widget.index;
     Progress.instance.recordAnswer(correct);
+    Progress.instance.recordReview(reviewedIndex, correct);
     setState(() {
       _lastCorrect = correct;
       _checked = true;
@@ -2623,6 +2659,7 @@ class _LessonSessionScreenState extends State<LessonSessionScreen> {
       final correct = _answers.where((e) => e).length;
       final passed = correct >= 4;
       if (!_awarded) {
+        Progress.instance.addLearningSeconds(DateTime.now().difference(_started).inSeconds);
         Progress.instance.complete(widget.index, passed);
         _awarded = true;
       }
@@ -2819,10 +2856,10 @@ class _LessonSessionScreenState extends State<LessonSessionScreen> {
 
       default:
         return _imageGrid(
-          title: 'Review: choose “${previous.word}”',
+          title: 'Review: choose “${reviewItem.word}”',
           options: reviewOptions,
-          correct: reviewOptions.firstWhere((e) => e.image == previous.image),
-          speak: previous.word,
+          correct: reviewOptions.firstWhere((e) => e.image == reviewItem.image),
+          speak: reviewItem.word,
         );
     }
   }

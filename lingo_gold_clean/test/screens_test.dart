@@ -26,7 +26,7 @@ Widget host(Widget child) => MaterialApp(
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, page) =>
-          Directionality(textDirection: TextDirection.rtl, child: page ?? const SizedBox()),
+          Directionality(textDirection: TextDirection.ltr, child: page ?? const SizedBox()),
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Roboto',
@@ -34,7 +34,7 @@ Widget host(Widget child) => MaterialApp(
         colorScheme: ColorScheme.fromSeed(seedColor: kGreen, primary: kGreen),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            backgroundColor: kGreen,
+            backgroundColor: kGreenDark,
             foregroundColor: Colors.white,
             minimumSize: const Size(0, 52),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),

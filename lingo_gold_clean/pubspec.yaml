@@ -1,7 +1,7 @@
 name: lingo_gold
 description: Lingo Gold - clean Rosetta-style learning app
 publish_to: 'none'
-version: 1.3.0+79
+version: 1.4.0+80
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -24,3 +24,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito.ttf

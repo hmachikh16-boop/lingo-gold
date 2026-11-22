@@ -57,6 +57,29 @@ class DashboardScreen extends StatelessWidget {
                       _todaysProgress(p),
                       const SizedBox(height: 16),
                       _learningFocus(p, context),
+                      if (p.dueCount > 0) ...[
+                        const SizedBox(height: 10),
+                        CardBox(
+                          color: kGreenSoft,
+                          onTap: () => openPage(context, const AdaptiveRecallScreen()),
+                          child: Row(
+                            children: [
+                              const CircleIcon(Icons.psychology_alt_rounded, size: 38, background: Colors.white, foreground: kGreen),
+                              const SizedBox(width: 9),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Review is due', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: kInk)),
+                                    Text('${p.dueCount} words ready • spaced 1/3/7/14 days', style: const TextStyle(fontSize: 10, color: kMuted)),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: kGreen),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       const SectionTitle('Quick Access'),
                       GridView.count(
@@ -354,7 +377,7 @@ class LessonJourneyScreen extends StatelessWidget {
               context,
               green: true,
               title: 'Lesson ${index + 1}',
-              subtitle: 'Unit ${unit + 1} • Lesson $lessonInUnit of 4',
+              subtitle: 'Unit ${unit + 1} • ${unitTopic(unit)} • Lesson $lessonInUnit of 4',
             ),
             body: SafeArea(
               child: ListView(
@@ -414,6 +437,47 @@ class LessonJourneyScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (lessonInUnit == 4) ...[
+                    const SizedBox(height: 10),
+                    CardBox(
+                      color: kGreenSoft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const CircleIcon(Icons.psychology_alt_rounded, size: 38, background: Colors.white, foreground: kGreen),
+                              const SizedBox(width: 9),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Unit review', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: kInk)),
+                                    Text('${p.dueCount} words due • ${p.weakItems().length} need practice', style: const TextStyle(fontSize: 10, color: kMuted)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            children: [
+                              for (final w in unitItems(index).take(3))
+                                ActionChip(
+                                  backgroundColor: Colors.white,
+                                  side: const BorderSide(color: kLine),
+                                  label: Text(w.word, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800)),
+                                  onPressed: () => Tts.instance.speak(w.word),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          outlineButton('Practice due words', () => openPage(context, AdaptiveRecallScreen(startIndex: index)), icon: Icons.replay_rounded),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   SectionTitle('Lesson plan', trailing: lessonDone ? 'Completed' : '55 minutes'),
                   CardBox(
@@ -526,10 +590,6 @@ class LessonsScreen extends StatefulWidget {
 
 class _LessonsScreenState extends State<LessonsScreen> {
   int _filter = 0;
-  static const themes = [
-    'الأساسيات', 'الأشخاص', 'الطعام', 'المنزل', 'الحيوانات', 'الطبيعة',
-    'المدينة', 'الأفعال', 'الألوان', 'الأرقام', 'السفر', 'المراجعة',
-  ];
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
@@ -616,7 +676,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
     final end = min(start + 4, items.length);
     final unitItems = items.sublist(start, end);
     final done = List<int>.generate(end - start, (i) => start + i).where((i) => p.isCompleted(i)).length;
-    final theme = themes[unit % themes.length];
+    final theme = unitTopic(unit);
     return CardBox(
       padding: const EdgeInsets.all(12),
       child: Column(

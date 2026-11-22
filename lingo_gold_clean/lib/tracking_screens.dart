@@ -96,8 +96,8 @@ class AchievementsScreen extends StatelessWidget {
                         icon: Icons.rule_rounded,
                         title: 'Grammar Guru',
                         description: 'Perfect quiz 10/10',
-                        status: p.accuracy >= 90 ? 'Earned' : '${p.accuracy}% accuracy',
-                        earned: p.accuracy >= 90,
+                        status: !p.hasAnswers ? 'Not tested yet' : (p.accuracy >= 90 ? 'Earned' : '${p.accuracy}% accuracy'),
+                        earned: p.hasAnswers && p.accuracy >= 90,
                       ),
                     ],
                   ),
@@ -105,7 +105,7 @@ class AchievementsScreen extends StatelessWidget {
                   const SectionTitle('Trophies & Medals'),
                   Row(
                     children: [
-                      Expanded(child: _Trophy(icon: Icons.mic_rounded, title: 'Speaking Star', subtitle: '${p.pronunciation}% score', unlocked: p.pronunciation >= 85)),
+                      Expanded(child: _Trophy(icon: Icons.mic_rounded, title: 'Speaking Star', subtitle: p.pronunciation == 0 ? 'Not practiced yet' : '${p.pronunciation}% score', unlocked: p.pronunciation >= 85)),
                       const SizedBox(width: 8),
                       Expanded(child: _Trophy(icon: Icons.hearing_rounded, title: 'Listening Pro', subtitle: '${p.completed} lessons', unlocked: p.completed >= 5)),
                       const SizedBox(width: 8),
@@ -337,7 +337,7 @@ class WeeklyReportScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Full Report'),
         content: Text(
-          'Lessons this week: ${Progress.instance.weekTotal}\nWords learned: ${Progress.instance.words}\nCurrent streak: ${Progress.instance.streak} days\nAccuracy: ${Progress.instance.accuracy}%',
+          'Lessons this week: ${Progress.instance.weekTotal}\nWords learned: ${Progress.instance.words}\nCurrent streak: ${Progress.instance.streak} days\nAccuracy: ${Progress.instance.hasAnswers ? '${Progress.instance.accuracy}%' : '—'}',
           style: const TextStyle(height: 1.6),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
@@ -661,11 +661,36 @@ class ParentDashboardScreen extends StatelessWidget {
           final p = Progress.instance;
           final percent = (p.completed / items.length * 100).round();
           final remaining = max(0, items.length - p.completed);
-          final recent = [
-            {'title': 'Reading: Animals & Habitats', 'sub': 'Completed • Today, 10:32 AM • 100% accuracy', 'badge': 'Perfect Score', 'icon': Icons.menu_book_rounded, 'img': findItem('lion').image},
-            {'title': 'Speaking: Animal Sounds', 'sub': 'Completed • Today, 10:20 AM • Pronunciation', 'badge': 'Improved +5%', 'icon': Icons.mic_rounded, 'img': findItem('bird').image},
-            {'title': 'Vocabulary: Forest Words', 'sub': 'Completed • Yesterday • 9/10 words', 'badge': 'Good', 'icon': Icons.abc_rounded, 'img': findItem('fox').image},
-          ];
+          final recent = <Map<String, dynamic>>[];
+          if (p.completed > 0) {
+            final lastIndex = p.completed - 1;
+            final it = itemAt(lastIndex);
+            recent.add({
+              'title': 'Lesson ${lastIndex + 1}: ${it.word}',
+              'sub': 'Completed • ${p.todayMinutes} min today',
+              'badge': p.hasAnswers ? '${p.accuracy}% accuracy' : 'Practice saved',
+              'icon': Icons.menu_book_rounded,
+              'img': it.image,
+            });
+          }
+          if (p.dueCount > 0) {
+            recent.add({
+              'title': '${p.dueCount} reviews due',
+              'sub': 'Spaced repetition • 1/3/7/14 days',
+              'badge': 'Due now',
+              'icon': Icons.psychology_alt_rounded,
+              'img': itemAt(p.dueItems().first).image,
+            });
+          }
+          if (recent.isEmpty) {
+            recent.add({
+              'title': 'No activity yet',
+              'sub': 'Complete a lesson to see real activity here',
+              'badge': 'New',
+              'icon': Icons.school_rounded,
+              'img': itemAt(0).image,
+            });
+          }
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: topBar(
@@ -704,7 +729,7 @@ class ParentDashboardScreen extends StatelessWidget {
                         Container(width: 1, height: 58, color: kGreen.withValues(alpha: .2)),
                         Expanded(child: _ParentStat(icon: Icons.bar_chart_rounded, label: 'This Week', value: '+${p.weekTotal}')),
                         Container(width: 1, height: 58, color: kGreen.withValues(alpha: .2)),
-                        Expanded(child: _ParentStat(icon: Icons.mic_rounded, label: 'Pronunciation', value: '${p.pronunciation}%')),
+                        Expanded(child: _ParentStat(icon: Icons.mic_rounded, label: 'Pronunciation', value: p.pronunciation == 0 ? '—' : '${p.pronunciation}%')),
                       ],
                     ),
                   ),
@@ -846,7 +871,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         builder: (context, _) {
           final p = Progress.instance;
           final goal = p.dailyGoalMinutes;
-          final ratio = (p.todayLessons / max(1, goal ~/ 5)).clamp(0.0, 1.0);
+          final ratio = (p.todayMinutes / max(1, goal)).clamp(0.0, 1.0);
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: topBar(
@@ -884,7 +909,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
                         const SizedBox(height: 8),
                         const Text('Daily Goal • Completed today', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: kInk)),
                         const SizedBox(height: 5),
-                        const Pill('Goal met! Great work', icon: Icons.check_circle_rounded, background: Colors.white),
+                        Text('${p.todayMinutes} of $goal minutes today', style: const TextStyle(fontSize: 11, color: kMuted)),
+                        const SizedBox(height: 5),
+                        Pill(
+                          ratio >= 1 ? 'Goal met! Great work' : '${(ratio * 100).round()}% of today’s goal',
+                          icon: ratio >= 1 ? Icons.check_circle_rounded : Icons.schedule_rounded,
+                          background: Colors.white,
+                        ),
                       ],
                     ),
                   ),
@@ -1018,7 +1049,8 @@ class QuizResultScreen extends StatelessWidget {
         builder: (context, _) {
           final p = Progress.instance;
           final score = p.accuracy;
-          final stars = (score / 20).round().clamp(1, 5);
+          final scoreLabel = p.hasAnswers ? '$score%' : '—';
+          final stars = p.hasAnswers ? (score / 20).round().clamp(1, 5) : 0;
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: topBar(context, title: 'Quiz Result'),
@@ -1043,8 +1075,11 @@ class QuizResultScreen extends StatelessWidget {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('$score%', style: const TextStyle(fontSize: 45, fontWeight: FontWeight.w900, color: kInk)),
-                                    Text('$score/100 • Excellent!', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: kMuted)),
+                                    Text(scoreLabel, style: const TextStyle(fontSize: 45, fontWeight: FontWeight.w900, color: kInk)),
+                                    Text(
+                                      p.hasAnswers ? '$score/100 • ${score >= 90 ? 'Excellent!' : 'Keep practicing'}' : 'Answer some exercises to see your score',
+                                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: kMuted),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -1070,12 +1105,17 @@ class QuizResultScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Clear and natural pronunciation. Your stress on syllables is accurate.\nTip: Keep a steady pace and connect the words smoothly.',
-                              style: TextStyle(fontSize: 11, color: kInk, height: 1.5),
+                            Text(
+                              p.pronunciation == 0
+                                  ? 'No speech has been recognized yet. Use the microphone in Pronunciation or Speaking Practice to get a real score.'
+                                  : 'Your latest recognized score is ${p.pronunciation}%. Slow, clear speech with correct word stress scores better.',
+                              style: const TextStyle(fontSize: 11, color: kInk, height: 1.5),
                             ),
                             const SizedBox(height: 7),
-                            const Text('+10 pronunciation points', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: kGreenDark)),
+                            Text(
+                              p.pronunciation == 0 ? 'Practice speaking to unlock' : 'Saved from your own voice',
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: kGreenDark),
+                            ),
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.all(8),
@@ -1085,7 +1125,7 @@ class QuizResultScreen extends StatelessWidget {
                                   const Icon(Icons.check_circle_rounded, color: kGreen, size: 16),
                                   const SizedBox(width: 5),
                                   Expanded(
-                                    child: Text('Fluency: Confident • Clarity: $score% • Pace: Just right', style: const TextStyle(fontSize: 9.5, color: kInk, fontWeight: FontWeight.w600)),
+                                    child: Text('Clarity: ${p.hasAnswers ? '$score%' : '—'} • Pace: within your own time', style: const TextStyle(fontSize: 9.5, color: kInk, fontWeight: FontWeight.w600)),
                                   ),
                                 ],
                               ),

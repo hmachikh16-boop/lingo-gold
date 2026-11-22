@@ -140,6 +140,31 @@ int speechScore(String expected, String heard) {
   return (total / want.length * 100).round().clamp(0, 100);
 }
 
+/// One item's spaced-repetition memory. Intervals: 1 → 3 → 7 → 14 days.
+class ItemMemory {
+  int reps = 0;
+  int intervalDays = 0;
+  int lapses = 0;
+  DateTime due = DateTime.fromMillisecondsSinceEpoch(0);
+
+  String encode() => '$reps,$intervalDays,${due.millisecondsSinceEpoch},$lapses';
+
+  static ItemMemory? decode(String raw) {
+    final parts = raw.split(',');
+    if (parts.length != 4) return null;
+    final reps = int.tryParse(parts[0]);
+    final interval = int.tryParse(parts[1]);
+    final dueMs = int.tryParse(parts[2]);
+    final lapses = int.tryParse(parts[3]);
+    if (reps == null || interval == null || dueMs == null || lapses == null) return null;
+    return ItemMemory()
+      ..reps = reps
+      ..intervalDays = interval
+      ..lapses = lapses
+      ..due = DateTime.fromMillisecondsSinceEpoch(dueMs);
+  }
+}
+
 /// Real, persisted learning progress. Everything on the tracking screens
 /// reads from this single source of truth.
 class Progress extends ChangeNotifier {
@@ -147,6 +172,7 @@ class Progress extends ChangeNotifier {
   static final Progress instance = Progress._();
 
   final Set<int> _completedIds = <int>{};
+  final Map<int, ItemMemory> _memory = <int, ItemMemory>{};
   int completed = 0;
   int stars = 0;
   int xp = 0;
@@ -154,6 +180,7 @@ class Progress extends ChangeNotifier {
   int current = 0;
   int words = 0;
   int todayLessons = 0;
+  int todaySeconds = 0;
   int quizCorrect = 0;
   int quizTotal = 0;
   int pronunciation = 0;
@@ -169,12 +196,78 @@ class Progress extends ChangeNotifier {
   bool get hasAnswers => quizTotal > 0;
   int get wordsLearned => words;
   int get weekTotal => week.fold<int>(0, (a, b) => a + b);
+  int get todayMinutes => todaySeconds ~/ 60;
+  int get dueCount => dueItems().length;
 
   bool isCompleted(int index) => _completedIds.contains(index);
+
+  int reviewIntervalOf(int index) => _memory[index]?.intervalDays ?? 0;
+  int reviewLapsesOf(int index) => _memory[index]?.lapses ?? 0;
+
+  DateTime _dueOf(int index, DateTime now) =>
+      _memory[index]?.due ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+  bool isDue(int index, {DateTime? now}) {
+    final time = now ?? DateTime.now();
+    return !_dueOf(index, time).isAfter(time);
+  }
+
+  /// Lessons with a learned memory whose review date has arrived.
+  List<int> dueItems({int limit = 20}) {
+    final now = DateTime.now();
+    final ids = <int>[];
+    for (var i = 0; i < items.length; i++) {
+      if ((_completedIds.contains(i) || _memory.containsKey(i)) && isDue(i, now: now)) {
+        ids.add(i);
+      }
+    }
+    ids.sort((a, b) => _dueOf(a, now).compareTo(_dueOf(b, now)));
+    return ids.take(limit).toList();
+  }
+
+  /// Items that needed extra attempts or are still on a short interval.
+  List<int> weakItems({int limit = 10}) {
+    final entries = _memory.entries
+        .where((e) => e.value.lapses > 0 || e.value.intervalDays <= 1)
+        .toList()
+      ..sort((a, b) => b.value.lapses.compareTo(a.value.lapses));
+    return entries.take(limit).map((e) => e.key).toList();
+  }
+
+  Future<void> recordReview(int index, bool correct, {bool save = true}) async {
+    final memory = _memory.putIfAbsent(index, () => ItemMemory());
+    final now = DateTime.now();
+    if (correct) {
+      memory.reps += 1;
+      memory.intervalDays = memory.reps == 1
+          ? 1
+          : memory.reps == 2
+              ? 3
+              : memory.reps == 3
+                  ? 7
+                  : 14;
+      memory.due = now.add(Duration(days: memory.intervalDays));
+    } else {
+      memory.lapses += 1;
+      memory.reps = 1;
+      memory.intervalDays = 0;
+      memory.due = now.add(const Duration(minutes: 2));
+    }
+    if (save) await _save();
+    notifyListeners();
+  }
+
+  Future<void> addLearningSeconds(int seconds) async {
+    if (seconds <= 0) return;
+    todaySeconds += seconds;
+    await _save();
+    notifyListeners();
+  }
 
   /// Used only by tests to get a clean singleton between cases.
   void resetForTests() {
     _completedIds.clear();
+    _memory.clear();
     completed = 0;
     words = 0;
     current = 0;
@@ -184,6 +277,7 @@ class Progress extends ChangeNotifier {
     quizCorrect = 0;
     pronunciation = 0;
     todayLessons = 0;
+    todaySeconds = 0;
     streak = 0;
     lastDay = '';
   }
@@ -214,6 +308,7 @@ class Progress extends ChangeNotifier {
     current = (p.getInt('current') ?? 0) % items.length;
     words = p.getInt('words') ?? legacyCompleted * 4;
     todayLessons = p.getInt('today_lessons') ?? 0;
+    todaySeconds = p.getInt('today_seconds') ?? 0;
     quizCorrect = p.getInt('quiz_correct') ?? 0;
     quizTotal = p.getInt('quiz_total') ?? 0;
     pronunciation = p.getInt('pronunciation') ?? 0;
@@ -236,6 +331,18 @@ class Progress extends ChangeNotifier {
     completed = _completedIds.length;
     current = firstIncomplete;
 
+    final rawMemory = p.getString('srs_items') ?? '';
+    for (final entry in rawMemory.split(';')) {
+      if (entry.isEmpty) continue;
+      final parts = entry.split(':');
+      if (parts.length != 2) continue;
+      final id = int.tryParse(parts[0]);
+      final memory = ItemMemory.decode(parts[1]);
+      if (id != null && memory != null && id >= 0 && id < items.length) {
+        _memory[id] = memory;
+      }
+    }
+
     final rawWeek = p.getString('week_activity') ?? '';
     if (rawWeek.isNotEmpty) {
       final parsed = rawWeek.split(',').map(int.tryParse).toList();
@@ -243,7 +350,10 @@ class Progress extends ChangeNotifier {
         week = parsed.cast<int>();
       }
     }
-    if (lastDay != dayKey()) todayLessons = 0;
+    if (lastDay != dayKey()) {
+      todayLessons = 0;
+      todaySeconds = 0;
+    }
     final yesterday = dayKey(DateTime.now().subtract(const Duration(days: 1)));
     if (lastDay != dayKey() && lastDay != yesterday) streak = 0;
     if (weekStart.isNotEmpty && weekStart != weekKey()) {
@@ -262,6 +372,7 @@ class Progress extends ChangeNotifier {
       streak = lastDay == yesterday ? streak + 1 : 1;
       lastDay = today;
       todayLessons = 0;
+      todaySeconds = 0;
     }
     if (streak == 0) streak = 1;
     if (weekStart != weekKey()) {
@@ -279,6 +390,7 @@ class Progress extends ChangeNotifier {
     }
     quizTotal += 1;
     if (correct) quizCorrect += 1;
+    await recordReview(index, correct, save: false);
     current = firstIncomplete;
     await _save();
     notifyListeners();
@@ -317,6 +429,11 @@ class Progress extends ChangeNotifier {
     await p.setInt('current', current);
     await p.setInt('words', words);
     await p.setInt('today_lessons', todayLessons);
+    await p.setInt('today_seconds', todaySeconds);
+    await p.setString(
+      'srs_items',
+      _memory.entries.map((e) => '${e.key}:${e.value.encode()}').join(';'),
+    );
     await p.setInt('quiz_correct', quizCorrect);
     await p.setInt('quiz_total', quizTotal);
     await p.setInt('pronunciation', pronunciation);
@@ -368,7 +485,7 @@ PreferredSizeWidget topBar(
 }) {
   final fg = green ? Colors.white : kInk;
   return AppBar(
-    backgroundColor: green ? kGreen : Colors.white,
+    backgroundColor: green ? kGreenDark : Colors.white,
     foregroundColor: fg,
     surfaceTintColor: Colors.transparent,
     scrolledUnderElevation: 0,
