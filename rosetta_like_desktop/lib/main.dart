@@ -1,8 +1,18 @@
+import 'dart:js_interop';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import 'assets_manifest.dart';
+
+@JS('lingoSpeak')
+external bool _lingoSpeak(String text);
+
+void speak(String text) {
+  try {
+    _lingoSpeak(text);
+  } catch (_) {}
+}
 
 void main() => runApp(const ReplicaApp());
 
@@ -213,7 +223,7 @@ class _Header extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.volume_up_rounded, color: Colors.white, size: 20),
-            onPressed: () {},
+            onPressed: () => speak('English American'),
           ),
           IconButton(
             icon: const Icon(Icons.home_rounded, color: Colors.white, size: 20),
@@ -276,11 +286,14 @@ class LessonScreen extends StatelessWidget {
                     style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: kInk),
                   ),
                 ),
-                Container(
-                  width: 27,
-                  height: 27,
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 3)]),
-                  child: const Icon(Icons.volume_up_rounded, color: kGreen, size: 19),
+                GestureDetector(
+                  onTap: () => speak(prompt.phrase),
+                  child: Container(
+                    width: 27,
+                    height: 27,
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 3)]),
+                    child: const Icon(Icons.volume_up_rounded, color: kGreen, size: 19),
+                  ),
                 ),
                 const SizedBox(width: 18),
               ],
@@ -745,7 +758,10 @@ class _ContextCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(child: Text(phrase, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: kInk))),
-                    const Icon(Icons.volume_up_rounded, color: kGreen, size: 24),
+                    GestureDetector(
+                      onTap: () => speak(phrase),
+                      child: const Icon(Icons.volume_up_rounded, color: kGreen, size: 24),
+                    ),
                   ],
                 ),
               ),
