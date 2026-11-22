@@ -3,508 +3,390 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classic Course Path - Inspired UI</title>
+  <title>Immersion 100-Lesson Engine (Multi-Window & SRS)</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
-      --bar-bg: #1c1f24;
-      --canvas-bg: #dcdad2;
-      --panel-bg: #ebe8e0;
-      --card-bg: #ffffff;
-      --ink: #22262b;
-      --muted: #666c75;
-      --green: #28a745;
-      --red: #dc3545;
+      --bar: #1c1f24;
+      --bg: #e8e5dc;
+      --card: #ffffff;
+      --ink: #202429;
+      --muted: #656c75;
+      --ok: #28a745;
+      --err: #dc3545;
+      --info: #2563eb;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
-    body { background: var(--canvas-bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+    body { background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Top Course Bar */
-    .course-bar {
-      background: var(--bar-bg);
+    /* Top Navigation Bar */
+    .topbar {
+      background: var(--bar);
       color: #fff;
       padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .badge { background: var(--gold); color: #111; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 800; }
 
-    .course-left { display: flex; align-items: center; gap: 14px; }
-    .course-badge {
-      background: var(--gold);
-      color: #111;
-      font-weight: 800;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
-    }
-    .course-lang { font-weight: 700; font-size: 16px; }
-
-    .levels-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .level-pill {
+    .win-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .win-tab {
       background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.16);
       color: #ddd;
-      padding: 5px 10px;
-      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 6px 12px;
+      border-radius: 5px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
-    .level-pill.active {
-      background: var(--gold);
-      color: #111;
-      border-color: var(--gold);
-    }
+    .win-tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
 
-    /* Main Stage */
-    .stage {
-      flex: 1;
-      max-width: 1120px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 24px 20px 36px;
+    .container { max-width: 1120px; width: 100%; margin: 20px auto; padding: 0 18px; flex: 1; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Filter & Stats Bar */
+    .toolbar {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    select.filter-sel {
+      padding: 7px 12px;
+      border-radius: 6px;
+      border: 1.5px solid #c5cbd3;
+      font-weight: 700;
+      background: #fff;
+    }
+    .stats-row { display: flex; gap: 14px; font-size: 13px; font-weight: 700; color: var(--muted); }
+    .stats-row span strong { color: var(--ink); }
+
+    /* 100 Lessons Grid */
+    .lessons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+    }
+    .lesson-tile {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      border-left: 5px solid #9aa3ae;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 24px;
+      gap: 10px;
+      transition: 0.15s;
+    }
+    .lesson-tile:hover { transform: translateY(-2px); }
+    .lesson-tile.due { border-left-color: var(--gold-dark); background: #fffdf5; }
+    .lesson-tile.mastered { border-left-color: var(--ok); }
+
+    .tile-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; color: var(--muted); }
+    .srs-pill {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      background: #eef1f4;
+      color: #333;
+    }
+    .srs-pill.due { background: #fff0b3; color: #7a5800; }
+    .srs-pill.mastered { background: #dcfce7; color: #166534; }
+
+    .lesson-tile h3 { font-size: 15px; line-height: 1.3; }
+    .lesson-tile p { font-size: 12px; color: var(--muted); }
+
+    .btn {
+      background: var(--gold); color: #111; border: none;
+      padding: 9px 14px; border-radius: 6px; font-weight: 800;
+      cursor: pointer; font-size: 13px;
+    }
+    .btn:hover { background: var(--gold-dark); }
+    .btn-ghost {
+      background: #fff; color: var(--ink); border: 1px solid #c5cbd3;
+      padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px;
+    }
+    .btn-popout {
+      background: #2563eb; color: #fff; border: none;
+      padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px;
     }
 
-    .view { display: none; }
-    .view.active { display: flex; flex-direction: column; gap: 22px; flex: 1; }
-
-    .unit-banner {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+    /* Activity & Review Stage */
+    .stage-head {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
     }
-    .unit-banner h1 { font-size: 28px; font-weight: 700; color: var(--ink); }
-    .explore-link {
-      background: none;
-      border: none;
-      color: #3b4958;
-      font-weight: 700;
-      font-size: 14px;
-      text-decoration: underline;
-      cursor: pointer;
+    .prompt-card {
+      background: var(--card); border-left: 6px solid var(--gold);
+      border-radius: 8px; padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-
-    /* Linear Track with Nodes & Sub-steps */
-    .track-wrap {
-      position: relative;
-      padding: 18px 10px;
-      overflow-x: auto;
-    }
-    .track-line {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-width: 760px;
-    }
-    .track-line::before {
-      content: "";
-      position: absolute;
-      left: 22px;
-      right: 22px;
-      top: 50%;
-      height: 3px;
-      background: #9aa0a8;
-      transform: translateY(-50%);
-      z-index: 1;
-    }
-
-    .lesson-node {
-      position: relative;
-      z-index: 2;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: #fff;
-      border: 3px solid #6b7280;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 16px;
-      color: #222;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .lesson-node.active {
-      border-color: #b42318;
-      background: #b42318;
-      color: #fff;
-      box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.2);
-    }
-    .lesson-node.done {
-      border-color: var(--green);
-      background: var(--green);
-      color: #fff;
-    }
-
-    .sub-ticks {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--canvas-bg);
-      padding: 0 6px;
-    }
-    .tick {
-      width: 12px;
-      height: 16px;
-      border: 2px solid #7d8590;
-      background: #f4f3ef;
-      border-radius: 2px;
-    }
-    .tick.done { background: var(--gold); border-color: var(--gold-dark); }
-
-    /* Center Core Lesson Card */
-    .core-panel {
-      background: var(--panel-bg);
-      border: 1px solid #c9c4b8;
-      border-radius: 8px;
-      padding: 18px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      max-width: 680px;
-      width: 100%;
-      margin: 0 auto;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-    }
-    .core-left { display: flex; align-items: center; gap: 16px; }
-    .core-diamond {
-      width: 48px;
-      height: 48px;
-      background: #b42318;
-      color: #fff;
-      font-weight: 800;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      flex-shrink: 0;
-    }
-    .core-meta h2 { font-size: 20px; margin-bottom: 4px; }
-    .core-meta p { font-size: 13px; color: var(--muted); }
-    .core-status {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .status-text { text-align: right; font-size: 12px; color: var(--muted); line-height: 1.4; }
-    .status-text strong { display: block; color: var(--ink); font-size: 13px; }
-    .play-green {
-      width: 48px;
-      height: 48px;
-      border-radius: 6px;
-      border: none;
-      background: var(--green);
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: 0.2s;
-    }
-    .play-green:hover { filter: brightness(1.06); }
-
-    /* Bottom Polaroids */
-    .polaroid-strip {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
-      padding-top: 6px;
-    }
-    .polaroid {
-      background: var(--card-bg);
-      padding: 8px 8px 22px;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.16);
-      border-radius: 2px;
-      transition: transform 0.25s;
-    }
-    .polaroid:nth-child(1) { transform: rotate(-4deg); }
-    .polaroid:nth-child(2) { transform: rotate(3deg); }
-    .polaroid:nth-child(3) { transform: rotate(-2deg); }
-    .polaroid:nth-child(4) { transform: rotate(4deg); }
-    .polaroid:nth-child(5) { transform: rotate(-3deg); }
-    .polaroid:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 5; }
-    .polaroid img { width: 130px; height: 110px; object-fit: cover; display: block; }
-
-    /* Multi-Screen Activity Styles */
-    .activity-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .back-btn {
-      background: #fff;
-      border: 1px solid #c5cbd3;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .mode-switch { display: flex; gap: 8px; flex-wrap: wrap; }
-    .mode-btn {
-      background: #fff;
-      border: 1px solid #c5cbd3;
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .mode-btn.active { background: var(--gold); border-color: var(--gold-dark); color: #111; }
-
-    .prompt-bar {
-      background: var(--card-bg);
-      border-left: 6px solid var(--gold);
-      border-radius: 8px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    .prompt-main { display: flex; align-items: center; gap: 12px; font-size: 21px; font-weight: 700; flex-wrap: wrap; }
-    .audio-circle {
-      width: 42px; height: 42px; border-radius: 50%;
-      border: 2px solid var(--gold-dark); background: #fff8dc;
-      font-weight: 800; cursor: pointer;
-    }
-    .prompt-main input {
+    .prompt-text { font-size: 21px; font-weight: 700; }
+    .prompt-text input {
       font-size: 19px; padding: 6px 12px; width: 160px;
       border: 2px solid #bcc3cc; border-radius: 6px; text-align: center;
     }
+    .audio-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid var(--gold-dark); background: #fff8dc;
+      font-weight: 800; cursor: pointer; flex-shrink: 0;
+    }
 
-    .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .photo-tile {
-      background: var(--card-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      border: 4px solid transparent;
+    .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .photo-card {
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      border: 4px solid transparent; cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      cursor: pointer;
     }
-    .photo-tile img { width: 100%; height: 210px; object-fit: cover; display: block; }
-    .photo-tile.ok { border-color: var(--green); }
-    .photo-tile.err { border-color: var(--red); opacity: 0.75; }
+    .photo-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+    .photo-card.ok { border-color: var(--ok); }
+    .photo-card.err { border-color: var(--err); opacity: 0.75; }
 
-    .single-photo-box {
-      background: var(--card-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      max-width: 700px;
-      margin: 0 auto;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    .single-card {
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      max-width: 680px; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
-    .single-photo-box img { width: 100%; height: 300px; object-fit: cover; display: block; }
+    .single-card img { width: 100%; height: 290px; object-fit: cover; display: block; }
 
-    .footer-action {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      min-height: 44px;
+    .stage-foot {
+      margin-top: 16px; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px; min-height: 44px;
     }
-    .feedback { font-weight: 700; font-size: 15px; }
-    .feedback.ok { color: var(--green); }
-    .feedback.err { color: var(--red); }
-    .btn-gold {
-      background: var(--gold); color: #111; border: none;
-      padding: 11px 24px; border-radius: 6px; font-weight: 800;
-      cursor: pointer; display: none;
-    }
-    .btn-gold.show { display: inline-block; }
+    .msg { font-weight: 700; font-size: 14px; }
+    .msg.ok { color: var(--ok); }
+    .msg.err { color: var(--err); }
 
     @media (max-width: 680px) {
-      .grid-4, .grid-2 { grid-template-columns: 1fr; }
-      .core-panel { flex-direction: column; align-items: flex-start; }
+      .grid-4 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header class="course-bar">
-    <div class="course-left">
-      <span class="course-badge">COURSE</span>
-      <span class="course-lang">English (American)</span>
+  <header class="topbar">
+    <div class="brand">
+      <span class="badge">100+ LESSONS</span>
+      <span>Multi-Window &amp; SRS Studio</span>
     </div>
-    <div class="levels-row" id="levelsRow"></div>
+    <div class="win-tabs">
+      <button class="win-tab active" id="tabCatalog" onclick="switchWindow('catalogWin')">1. Course (100 Lessons)</button>
+      <button class="win-tab" id="tabActivity" onclick="switchWindow('activityWin')">2. Lesson Window</button>
+      <button class="win-tab" id="tabSrs" onclick="switchWindow('srsWin')">3. Spaced Review (<span id="dueCountBadge">0</span>)</button>
+    </div>
   </header>
 
-  <main class="stage">
-    <!-- واجهة المسار المستوحاة -->
-    <section id="pathView" class="view active">
-      <div class="unit-banner">
-        <h1 id="unitHeading">Language Basics</h1>
-        <button class="explore-link" onclick="openActivity(0, 'match')">Explore all activities for Unit 1</button>
-      </div>
-
-      <div class="track-wrap">
-        <div class="track-line" id="trackLine"></div>
-      </div>
-
-      <div class="core-panel">
-        <div class="core-left">
-          <div class="core-diamond" id="coreNum">4</div>
-          <div class="core-meta">
-            <h2 id="coreTitle">Core Lesson</h2>
-            <p id="coreSub">Unit 1, Lesson 4</p>
-          </div>
+  <main class="container">
+    <!-- Window 1: 100 Lessons Catalog -->
+    <section id="catalogWin" class="screen active">
+      <div class="toolbar">
+        <div class="filters">
+          <select class="filter-sel" id="unitFilter" onchange="renderCatalog()">
+            <option value="all">All Units (100 Lessons)</option>
+          </select>
+          <select class="filter-sel" id="statusFilter" onchange="renderCatalog()">
+            <option value="all">All Status</option>
+            <option value="due">Due for Review</option>
+            <option value="mastered">Mastered</option>
+          </select>
+          <button class="btn-ghost" onclick="resetProgress()">Reset SRS</button>
         </div>
-        <div class="core-status">
-          <div class="status-text">
-            <strong>In Progress</strong>
-            <span>November 22, 2026</span><br />
-            <span>About 30 minutes</span>
-          </div>
-          <button class="play-green" onclick="openActivity(selectedLesson, 'match')" title="Start">▶</button>
+        <div class="stats-row">
+          <span>Total: <strong id="statTotal">100</strong></span>
+          <span>Due Now: <strong id="statDue">0</strong></span>
+          <span>Mastered: <strong id="statMastered">0</strong></span>
         </div>
       </div>
 
-      <div class="polaroid-strip">
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="p1"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="p2"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="p3"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300" alt="p4"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="p5"></div>
+      <div class="lessons-grid" id="lessonsGrid"></div>
+    </section>
+
+    <!-- Window 2: Active Lesson Window -->
+    <section id="activityWin" class="screen">
+      <div class="stage-head">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-ghost" onclick="switchWindow('catalogWin')">← Course</button>
+          <button class="btn-popout" onclick="popOutLessonWindow()">↗ Pop-out Separate Window</button>
+        </div>
+        <strong id="lessonHeaderInfo" style="color:var(--muted);"></strong>
+      </div>
+
+      <div class="prompt-card">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <button class="audio-btn" id="speakBtn" title="Listen">▶</button>
+          <div class="prompt-text" id="promptDisplay"></div>
+        </div>
+        <span id="stepCounter" style="font-weight:700; color:var(--muted);"></span>
+      </div>
+
+      <div id="exerciseBody"></div>
+
+      <div class="stage-foot">
+        <div class="msg" id="feedbackLabel"></div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-ghost" onclick="rateCurrentLesson(1)">Hard (Retry Soon)</button>
+          <button class="btn" id="nextExBtn" onclick="nextExercise()">Next Step ➔</button>
+        </div>
       </div>
     </section>
 
-    <!-- ثانياً: واجهات المنهج المتعددة -->
-    <section id="activityView" class="view">
-      <div class="activity-top">
-        <button class="back-btn" onclick="backToPath()">← Back to Course</button>
-        <div class="mode-switch">
-          <button class="mode-btn active" id="modeMatch" onclick="setMode('match')">1. 4-Photo Match</button>
-          <button class="mode-btn" id="modeFill" onclick="setMode('fill')">2. Fill Blank</button>
-          <button class="mode-btn" id="modeContrast" onclick="setMode('contrast')">3. 2-Photo Contrast</button>
-          <button class="mode-btn" id="modePhrase" onclick="setMode('phrase_choice')">4. Phrase Choice</button>
+    <!-- Window 3: Spaced Repetition Queue -->
+    <section id="srsWin" class="screen">
+      <div class="toolbar">
+        <div>
+          <h2 style="font-size:18px;">Spaced Repetition Queue (SRS)</h2>
+          <p style="font-size:13px; color:var(--muted);">Lessons whose review interval has arrived appear first.</p>
         </div>
+        <button class="btn" onclick="startNextDueLesson()">Practice Next Due Lesson ▶</button>
       </div>
-
-      <div class="prompt-bar">
-        <div class="prompt-main" id="promptBox"></div>
-        <button class="audio-circle" id="audioTrigger" title="Listen">▶</button>
-      </div>
-
-      <div id="activityBody"></div>
-
-      <div class="footer-action">
-        <div class="feedback" id="feedbackBox"></div>
-        <button class="btn-gold" id="nextActionBtn" onclick="advanceActivity()">Continue ➔</button>
-      </div>
+      <div class="lessons-grid" id="srsQueueGrid"></div>
     </section>
   </main>
 
   <script>
     const FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="#dcdad1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="20">Image Unavailable</text></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="220"><rect width="500" height="220" fill="#dcdad2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="18">Image</text></svg>`
     );
 
-    const levels = [
-      { id: 1, label: "Level 1", unit: "Language Basics", lessons: 4 },
-      { id: 2, label: "Level 2", unit: "Everyday Life", lessons: 4 },
-      { id: 3, label: "Level 3", unit: "Around Town", lessons: 4 }
+    const bank = [
+      { word: "water", sentence: "The boy is drinking ___.", full: "The boy is drinking water.", img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=500" },
+      { word: "reading", sentence: "She is ___ a book.", full: "She is reading a book.", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500" },
+      { word: "coffee", sentence: "A cup of hot ___.", full: "A cup of hot coffee.", img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500" },
+      { word: "dog", sentence: "The ___ is smiling.", full: "The dog is smiling.", img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500" },
+      { word: "cat", sentence: "The ___ is resting.", full: "The cat is resting.", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500" },
+      { word: "mountain", sentence: "We see a tall ___.", full: "We see a tall mountain.", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500" },
+      { word: "friends", sentence: "The ___ are together.", full: "The friends are together.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500" },
+      { word: "bread", sentence: "Fresh ___ on the table.", full: "Fresh bread on the table.", img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" }
     ];
 
-    const DEFAULT_DATA = {
-      courseTitle: "English (American)",
-      levels: levels // يستخدم مصفوفة levels المعرفة مسبقاً
-    };
+    // توليد 100 درس موزعة على 10 وحدات (كل وحدة 10 دروس)
+    const lessons = Array.from({ length: 100 }, (_, i) => {
+      const unitNum = Math.floor(i / 10) + 1;
+      const lessonInUnit = (i % 10) + 1;
+      const itemA = bank[i % bank.length];
+      const itemB = bank[(i + 1) % bank.length];
+      const opts = [
+        itemA.img,
+        bank[(i + 2) % bank.length].img,
+        bank[(i + 3) % bank.length].img,
+        bank[(i + 4) % bank.length].img
+      ];
 
-    const multiScreensData = {
-      match: [
-        {
-          phrase: "A bottle of water.",
-          speak: "A bottle of water.",
-          correct: 1, // الصورة الثانية هي قارورة الماء الظاهرة في الشاشة
-          images: [
-            "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600",
-            "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
-            "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600",
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600"
-          ]
-        },
-        {
-          phrase: "She is reading a book.",
-          speak: "She is reading a book.",
-          correct: 1,
-          images: [
-            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600",
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
-            "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600",
-            "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600"
-          ]
-        }
-      ],
-      fill: [
-        {
-          before: "A cup of hot ",
-          after: ".",
-          answer: "coffee",
-          speak: "A cup of hot coffee.",
-          image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"
-        },
-        {
-          before: "The dog is ",
-          after: ".",
-          answer: "smiling",
-          speak: "The dog is smiling.",
-          image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800"
-        }
-      ],
-      contrast: [
-        {
-          phrase: "Choose the outdoor mountain view.",
-          speak: "Choose the outdoor mountain view.",
-          correct: 0,
-          images: [
-            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700",
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700"
-          ]
-        }
-      ]
-    };
-
-    // دمج الواجهة الرابعة مع البيانات
-    multiScreensData.phrase_choice = [
-      {
-        image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700",
-        speak: "The dog is smiling.",
-        correct: 1,
-        choices: [
-          "The boy is reading a book.",
-          "The dog is smiling.",
-          "A cup of hot coffee."
+      return {
+        id: `L${i + 1}`,
+        number: i + 1,
+        unitNum,
+        unitTitle: `Unit ${unitNum}: Topic ${unitNum}`,
+        title: `Lesson ${i + 1} (U${unitNum}-L${lessonInUnit})`,
+        topic: `${itemA.word} & ${itemB.word}`,
+        exercises: [
+          {
+            type: "choose_image",
+            prompt: itemA.full,
+            speak: itemA.full,
+            correct: 0,
+            images: opts
+          },
+          {
+            type: "fill_blank",
+            sentence: itemB.sentence,
+            answer: itemB.word,
+            speak: itemB.full,
+            image: itemB.img
+          }
         ]
-      }
-    ];
+      };
+    });
 
-    let currentLevel = 0;
-    let selectedLesson = 3; // Lesson 4 index
-    let currentMode = "match";
-    let stepIdx = 0;
-    let answered = false;
+    const STORAGE_KEY = "lingo_srs_100_v1";
+    let srsState = loadSrsState();
+    let currentLessonIdx = 0;
+    let currentExIdx = 0;
+    let solvedStep = false;
+    let mistakesInLesson = 0;
+
+    function loadSrsState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+      const init = {};
+      const now = Date.now();
+      lessons.forEach(l => {
+        init[l.id] = { reps: 0, intervalSec: 0, dueAt: now };
+      });
+      return init;
+    }
+
+    function saveSrsState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(srsState));
+      } catch (_) {}
+    }
+
+    function isDue(lessonId) {
+      return (srsState[lessonId]?.dueAt ?? 0) <= Date.now();
+    }
+
+    function isMastered(lessonId) {
+      return (srsState[lessonId]?.reps ?? 0) >= 3 && !isDue(lessonId);
+    }
+
+    // التكرار المتباعد (فترات متصاعدة بالثواني/الدقائق لسهولة التجربة)
+    function updateSrs(lessonId, success) {
+      const prev = srsState[lessonId] || { reps: 0, intervalSec: 0, dueAt: Date.now() };
+      const intervals = [60, 300, 1800, 86400, 259200]; // 1m, 5m, 30m, 1d, 3d
+      if (success) {
+        const nextReps = prev.reps + 1;
+        const sec = intervals[Math.min(prev.reps, intervals.length - 1)];
+        srsState[lessonId] = {
+          reps: nextReps,
+          intervalSec: sec,
+          dueAt: Date.now() + sec * 1000
+        };
+      } else {
+        srsState[lessonId] = {
+          reps: 0,
+          intervalSec: 30,
+          dueAt: Date.now() + 30 * 1000
+        };
+      }
+      saveSrsState();
+      refreshStats();
+    }
+
+    function resetProgress() {
+      localStorage.removeItem(STORAGE_KEY);
+      srsState = loadSrsState();
+      renderCatalog();
+      renderSrsQueue();
+      refreshStats();
+    }
+
+    function switchWindow(winId) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(winId).classList.add("active");
+      document.getElementById("tabCatalog").classList.toggle("active", winId === "catalogWin");
+      document.getElementById("tabActivity").classList.toggle("active", winId === "activityWin");
+      document.getElementById("tabSrs").classList.toggle("active", winId === "srsWin");
+      if (winId === "srsWin") renderSrsQueue();
+    }
 
     function speak(text) {
       if (!("speechSynthesis" in window) || !text) return;
@@ -515,258 +397,220 @@
       window.speechSynthesis.speak(u);
     }
 
-    function renderLevels() {
-      const row = document.getElementById("levelsRow");
-      row.innerHTML = "";
-      levels.forEach((lvl, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "level-pill" + (idx === currentLevel ? " active" : "");
-        btn.textContent = lvl.label;
-        btn.onclick = () => {
-          currentLevel = idx;
-          selectedLesson = 0;
-          renderLevels();
-          renderTrack();
-        };
-        row.appendChild(btn);
-      });
-    }
-
-    function renderTrack() {
-      const lvl = levels[currentLevel];
-      document.getElementById("unitHeading").textContent = lvl.unit;
-      document.getElementById("coreNum").textContent = selectedLesson + 1;
-      document.getElementById("coreSub").textContent = `Unit ${lvl.id}, Lesson ${selectedLesson + 1}`;
-
-      const line = document.getElementById("trackLine");
-      line.innerHTML = "";
-
-      for (let i = 0; i < lvl.lessons; i++) {
-        const node = document.createElement("button");
-        node.className = "lesson-node" + (i === selectedLesson ? " active" : "");
-        node.textContent = i + 1;
-        node.onclick = () => {
-          selectedLesson = i;
-          renderTrack();
-        };
-        line.appendChild(node);
-
-        if (i < lvl.lessons - 1) {
-          const ticks = document.createElement("div");
-          ticks.className = "sub-ticks";
-          for (let t = 0; t < 4; t++) {
-            const box = document.createElement("span");
-            box.className = "tick" + (i < selectedLesson ? " done" : "");
-            ticks.appendChild(box);
-          }
-          line.appendChild(ticks);
-        }
+    function populateUnitFilter() {
+      const sel = document.getElementById("unitFilter");
+      for (let u = 1; u <= 10; u++) {
+        const opt = document.createElement("option");
+        opt.value = String(u);
+        opt.textContent = `Unit ${u} (Lessons ${(u - 1) * 10 + 1}–${u * 10})`;
+        sel.appendChild(opt);
       }
     }
 
-    function openActivity(lessonIndex, mode) {
-      selectedLesson = lessonIndex;
-      currentMode = mode;
-      stepIdx = 0;
-      document.getElementById("pathView").classList.remove("active");
-      document.getElementById("activityView").classList.add("active");
-      syncModeButtons();
-      renderActivityStep();
+    function refreshStats() {
+      const dueList = lessons.filter(l => isDue(l.id));
+      const masteredList = lessons.filter(l => isMastered(l.id));
+      document.getElementById("statTotal").textContent = String(lessons.length);
+      document.getElementById("statDue").textContent = String(dueList.length);
+      document.getElementById("statMastered").textContent = String(masteredList.length);
+      document.getElementById("dueCountBadge").textContent = String(dueList.length);
     }
 
-    function backToPath() {
-      document.getElementById("activityView").classList.remove("active");
-      document.getElementById("pathView").classList.add("active");
+    function createLessonTile(lesson) {
+      const st = srsState[lesson.id] || { reps: 0 };
+      const due = isDue(lesson.id);
+      const mastered = isMastered(lesson.id);
+
+      const tile = document.createElement("div");
+      tile.className = "lesson-tile" + (mastered ? " mastered" : due ? " due" : "");
+
+      const pillClass = mastered ? "mastered" : due ? "due" : "";
+      const pillText = mastered ? `Mastered (${st.reps})` : due ? "Due Now" : `Reps: ${st.reps}`;
+
+      tile.innerHTML = `
+        <div class="tile-top">
+          <span>${lesson.unitTitle}</span>
+          <span class="srs-pill ${pillClass}">${pillText}</span>
+        </div>
+        <div>
+          <h3>${lesson.title}</h3>
+          <p>Focus: ${lesson.topic}</p>
+        </div>
+        <button class="btn" onclick="openLessonByNumber(${lesson.number})">Start Lesson ▶</button>
+      `;
+      return tile;
     }
 
-    function setMode(mode) {
-      currentMode = mode;
-      stepIdx = 0;
-      syncModeButtons();
-      renderActivityStep();
+    function renderCatalog() {
+      const unitVal = document.getElementById("unitFilter").value;
+      const statusVal = document.getElementById("statusFilter").value;
+      const grid = document.getElementById("lessonsGrid");
+      grid.innerHTML = "";
+
+      const filtered = lessons.filter(l => {
+        if (unitVal !== "all" && String(l.unitNum) !== unitVal) return false;
+        if (statusVal === "due") return isDue(l.id);
+        if (statusVal === "mastered") return isMastered(l.id);
+        return true;
+      });
+
+      filtered.forEach(l => grid.appendChild(createLessonTile(l)));
+      refreshStats();
     }
 
-    function syncModeButtons() {
-      document.getElementById("modeMatch").classList.toggle("active", currentMode === "match");
-      document.getElementById("modeFill").classList.toggle("active", currentMode === "fill");
-      document.getElementById("modeContrast").classList.toggle("active", currentMode === "contrast");
-      document.getElementById("modePhrase").classList.toggle("active", currentMode === "phrase_choice");
+    function renderSrsQueue() {
+      const grid = document.getElementById("srsQueueGrid");
+      grid.innerHTML = "";
+      const dueLessons = lessons.filter(l => isDue(l.id));
+      if (dueLessons.length === 0) {
+        grid.innerHTML = `<p style="grid-column:1/-1; font-weight:700; color:var(--muted);">No lessons due right now. All scheduled reviews are up to date.</p>`;
+        return;
+      }
+      dueLessons.slice(0, 24).forEach(l => grid.appendChild(createLessonTile(l)));
     }
 
-    function renderActivityStep() {
-      answered = false;
-      const list = multiScreensData[currentMode];
-      const item = list[stepIdx];
-      const promptBox = document.getElementById("promptBox");
-      const body = document.getElementById("activityBody");
-      const fb = document.getElementById("feedbackBox");
-      const nextBtn = document.getElementById("nextActionBtn");
+    function startNextDueLesson() {
+      const due = lessons.find(l => isDue(l.id));
+      if (due) openLessonByNumber(due.number);
+    }
 
-      promptBox.innerHTML = "";
+    function openLessonByNumber(num) {
+      currentLessonIdx = Math.max(0, Math.min(lessons.length - 1, num - 1));
+      currentExIdx = 0;
+      mistakesInLesson = 0;
+      switchWindow("activityWin");
+      renderExercise();
+    }
+
+    // فتح نافذة متصفح مستقلة للدرس الحالي
+    function popOutLessonWindow() {
+      const lesson = lessons[currentLessonIdx];
+      const w = window.open("", `Lesson_${lesson.id}`, "width=760,height=640");
+      if (!w) return;
+      const ex0 = lesson.exercises[0];
+      w.document.write(`
+        <!DOCTYPE html><html><head><title>${lesson.title}</title>
+        <style>body{font-family:sans-serif;background:#e8e5dc;padding:24px;text-align:center}
+        .box{background:#fff;padding:20px;border-radius:8px;max-width:640px;margin:auto;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+        img{max-width:100%;height:260px;object-fit:cover;border-radius:6px;margin-top:12px}</style></head>
+        <body><div class="box"><h2>${lesson.title}</h2><p>${ex0.prompt || ex0.sentence}</p>
+        <img src="${ex0.images ? ex0.images[0] : ex0.image}"></div></body></html>
+      `);
+      w.document.close();
+    }
+
+    function renderExercise() {
+      solvedStep = false;
+      const lesson = lessons[currentLessonIdx];
+      const ex = lesson.exercises[currentExIdx];
+
+      document.getElementById("lessonHeaderInfo").textContent = `${lesson.title} · ${lesson.unitTitle}`;
+      document.getElementById("stepCounter").textContent = `Exercise ${currentExIdx + 1} / ${lesson.exercises.length}`;
+      document.getElementById("feedbackLabel").textContent = "";
+      document.getElementById("feedbackLabel").className = "msg";
+
+      const promptDisplay = document.getElementById("promptDisplay");
+      const body = document.getElementById("exerciseBody");
+      promptDisplay.innerHTML = "";
       body.innerHTML = "";
-      fb.textContent = "";
-      fb.className = "feedback";
-      nextBtn.classList.remove("show");
 
-      document.getElementById("audioTrigger").onclick = () => speak(item.speak);
+      document.getElementById("speakBtn").onclick = () => speak(ex.speak);
 
-      if (currentMode === "match" || currentMode === "contrast") {
-        promptBox.textContent = item.phrase;
+      if (ex.type === "choose_image") {
+        promptDisplay.textContent = ex.prompt;
         const grid = document.createElement("div");
-        grid.className = currentMode === "match" ? "grid-4" : "grid-2";
-
+        grid.className = "grid-4";
         const cards = [];
-        item.images.forEach((src, idx) => {
-          const tile = document.createElement("div");
-          tile.className = "photo-tile";
+
+        ex.images.forEach((src, idx) => {
+          const c = document.createElement("div");
+          c.className = "photo-card";
           const img = document.createElement("img");
           img.src = src;
           img.onerror = () => { img.src = FALLBACK; };
-          tile.appendChild(img);
-          cards.push(tile);
+          c.appendChild(img);
+          cards.push(c);
 
-          tile.onclick = () => {
-            if (answered) return;
-            if (idx === item.correct) {
-              answered = true;
-              cards.forEach(c => c.classList.remove("err"));
-              tile.classList.add("ok");
+          c.onclick = () => {
+            if (solvedStep) return;
+            const fb = document.getElementById("feedbackLabel");
+            if (idx === ex.correct) {
+              solvedStep = true;
+              cards.forEach(x => x.classList.remove("err"));
+              c.classList.add("ok");
               fb.textContent = "Correct match.";
-              fb.className = "feedback ok";
-              nextBtn.classList.add("show");
+              fb.className = "msg ok";
             } else {
-              tile.classList.add("err");
-              fb.textContent = "Try another image.";
-              fb.className = "feedback err";
+              mistakesInLesson++;
+              c.classList.add("err");
+              fb.textContent = "Try another photo.";
+              fb.className = "msg err";
             }
           };
 
-          grid.appendChild(tile);
+          grid.appendChild(c);
         });
 
         body.appendChild(grid);
-        speak(item.speak);
-      } else if (currentMode === "fill") {
+        speak(ex.speak);
+      } else if (ex.type === "fill_blank") {
+        const parts = ex.sentence.split("___");
         const input = document.createElement("input");
         input.type = "text";
         input.placeholder = "...";
         input.autocomplete = "off";
 
         input.addEventListener("input", () => {
-          const ok = input.value.trim().toLowerCase() === item.answer.toLowerCase();
-          fb.textContent = ok ? "Correct." : "";
-          fb.className = ok ? "feedback ok" : "feedback";
-          nextBtn.classList.toggle("show", ok);
+          const ok = input.value.trim().toLowerCase() === ex.answer.toLowerCase();
+          solvedStep = ok;
+          const fb = document.getElementById("feedbackLabel");
+          fb.textContent = ok ? "Correct word." : "";
+          fb.className = ok ? "msg ok" : "msg";
         });
 
-        promptBox.append(item.before, input, item.after);
+        promptDisplay.append(parts[0] || "", input, parts[1] || "");
 
-        const box = document.createElement("div");
-        box.className = "single-photo-box";
+        const single = document.createElement("div");
+        single.className = "single-card";
         const img = document.createElement("img");
-        img.src = item.image;
+        img.src = ex.image;
         img.onerror = () => { img.src = FALLBACK; };
-        box.appendChild(img);
-        body.appendChild(box);
-        speak(item.speak);
-      } else if (currentMode === "phrase_choice") {
-        renderPhraseChoice(item, promptBox, body, fb, nextBtn);
+        single.appendChild(img);
+        body.appendChild(single);
+        speak(ex.speak);
       }
     }
 
-    function advanceActivity() {
-      const list = multiScreensData[currentMode];
-      if (stepIdx + 1 < list.length) {
-        stepIdx++;
-        renderActivityStep();
+    function rateCurrentLesson(quality) {
+      const lesson = lessons[currentLessonIdx];
+      updateSrs(lesson.id, quality >= 3 && mistakesInLesson === 0);
+      renderCatalog();
+      switchWindow("catalogWin");
+    }
+
+    function nextExercise() {
+      const lesson = lessons[currentLessonIdx];
+      if (!solvedStep) {
+        mistakesInLesson++;
+        const fb = document.getElementById("feedbackLabel");
+        fb.textContent = "Complete this exercise first or press Hard (Retry Soon).";
+        fb.className = "msg err";
+        return;
+      }
+
+      if (currentExIdx + 1 < lesson.exercises.length) {
+        currentExIdx++;
+        renderExercise();
       } else {
-        backToPath();
+        updateSrs(lesson.id, mistakesInLesson === 0);
+        renderCatalog();
+        switchWindow("catalogWin");
       }
     }
 
-    function loadProjectData() {
-      fetch("data.rsd")
-        .then(res => {
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          return res.json();
-        })
-        .then(json => {
-          if (Array.isArray(json.levels) && json.levels.length > 0) {
-            levels.length = 0;
-            json.levels.forEach(lvl => levels.push(lvl));
-
-            const firstActivities = json.levels[0].activities;
-            if (firstActivities) {
-              if (firstActivities.match?.length) multiScreensData.match = firstActivities.match;
-              if (firstActivities.fill?.length) multiScreensData.fill = firstActivities.fill;
-              if (firstActivities.contrast?.length) multiScreensData.contrast = firstActivities.contrast;
-              if (firstActivities.phrase_choice?.length) multiScreensData.phrase_choice = firstActivities.phrase_choice;
-            }
-          }
-          renderLevels();
-          renderTrack();
-        })
-        .catch(() => {
-          // يبقى على البيانات الافتراضية ويعرض المسار دون توقف
-          renderLevels();
-          renderTrack();
-        });
-    }
-
-    function renderPhraseChoice(item, promptBox, body, fb, nextBtn) {
-      promptBox.textContent = "Listen and choose the matching sentence:";
-
-      const box = document.createElement("div");
-      box.className = "single-photo-box";
-      box.style.marginBottom = "18px";
-
-      const img = document.createElement("img");
-      img.src = item.image;
-      img.onerror = () => { img.src = FALLBACK; };
-      box.appendChild(img);
-      body.appendChild(box);
-
-      const list = document.createElement("div");
-      list.style.display = "grid";
-      list.style.gap = "10px";
-      list.style.maxWidth = "700px";
-      list.style.margin = "0 auto";
-
-      const buttons = [];
-      item.choices.forEach((text, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "btn-ghost";
-        btn.style.textAlign = "left";
-        btn.style.padding = "12px 16px";
-        btn.style.fontSize = "16px";
-        btn.textContent = text;
-        buttons.push(btn);
-
-        btn.onclick = () => {
-          if (answered) return;
-          if (idx === item.correct) {
-            answered = true;
-            btn.style.borderColor = "var(--green)";
-            btn.style.background = "#eafaf1";
-            fb.textContent = "Correct sentence.";
-            fb.className = "feedback ok";
-            nextBtn.classList.add("show");
-          } else {
-            btn.style.borderColor = "var(--red)";
-            btn.style.background = "#fdedec";
-            fb.textContent = "Try another sentence.";
-            fb.className = "feedback err";
-          }
-        };
-
-        list.appendChild(btn);
-      });
-
-      body.appendChild(list);
-      speak(item.speak);
-    }
-
-    loadProjectData();
+    populateUnitFilter();
+    renderCatalog();
+    renderSrsQueue();
   </script>
 </body>
 </html>
