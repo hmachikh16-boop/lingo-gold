@@ -52,5 +52,36 @@
 
   <!-- سكربت التطبيق (defer يضمن تنفيذها بعد بناء الـ DOM) -->
   <script src="app.js" defer></script>
+
+  <script>
+    /* ============================================================
+       الخطوة 1: تحديث ملف التمارين
+       يتأكد هذا الكود من إكمال الدرس، يحفظ الحالة في المتصفح،
+       ثم يعيد التوجيه إلى لوحة التحكم بعد ثانية واحدة.
+       ============================================================ */
+
+    // رقم الدرس الحالي (النقطة الرابعة في المسار)
+    const currentLessonId = 4;
+
+    function completeLesson() {
+      // حفظ حالة الإكمال في ذاكرة المتصفح (تبقى بعد إغلاق الصفحة)
+      localStorage.setItem('lesson_' + currentLessonId, 'completed');
+
+      // انتقال تلقائي إلى لوحة التحكم بعد ثانية
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1000);
+    }
+
+    // إنشاء زر الإنهاء في أسفل الصفحة
+    const finishBtn = document.createElement('button');
+    finishBtn.innerText = 'إنهاء الدرس والعودة للمسار';
+    finishBtn.style =
+      'position: fixed; bottom: 20px; right: 20px; padding: 15px; ' +
+      'background: #1DB954; color: white; border: none; border-radius: 5px; ' +
+      'cursor: pointer; font-size: 16px; z-index: 100;';
+    finishBtn.onclick = completeLesson;
+    document.body.appendChild(finishBtn);
+  </script>
 </body>
 </html>

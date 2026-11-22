@@ -348,5 +348,29 @@
         Explore all activities for Unit 3
     </div>
 
+    <script>
+        /* ============================================================
+           قراءة حالة الدرس من localStorage بعد العودة من index.html
+           إذا كان lesson_4 مكتملاً نُظهر النقطة الرابعة كـ ✓
+           ============================================================ */
+        document.addEventListener('DOMContentLoaded', () => {
+            const done = localStorage.getItem('lesson_4') === 'completed';
+            if (!done) return;
+
+            // النقطة الرابعة في مسار التقدم
+            const nodes = document.querySelectorAll('.progress-path .node');
+            const current = nodes[3]; // الفهرس 3 = النقطة رقم 4
+            if (current) {
+                current.classList.remove('current');
+                current.classList.add('completed');
+                current.textContent = '✓';
+            }
+
+            // تحديث النص الإرشادي ليوضح أن الدرس أُكمل
+            const hint = document.querySelector('.instruction-text');
+            if (hint) hint.textContent = 'Core Lesson completed — great job!';
+        });
+    </script>
+
 </body>
 </html>
