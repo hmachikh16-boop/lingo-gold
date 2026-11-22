@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosetta Stone - Exercises</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #e5e5e5; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* الشريط العلوي */
+        .header { background: #222; color: #ccc; padding: 12px 20px; display: flex; justify-content: space-between; font-size: 14px; }
+        .header-logo { color: #f1c40f; font-weight: bold; font-size: 18px; }
+
+        /* شبكة البطاقات */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 40px; max-width: 1000px; margin: auto; width: 100%; }
+        
+        /* البطاقة */
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; position: relative; border: 2px solid transparent; }
+        .card.correct { border-color: #2ecc71; }
+        
+        /* رأس البطاقة (النص) */
+        .card-top { padding: 15px 20px; font-size: 20px; color: #333; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .card-top input { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 18px; width: 110px; text-align: center; background: #f9f9f9; outline: none; transition: 0.2s; }
+        .card-top input:focus { border-color: #3498db; background: #fff; }
+        
+        /* زر الصوت */
+        .audio-btn { color: #3498db; font-size: 18px; border: 2px solid #3498db; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        /* الصورة */
+        .card-img { width: 100%; height: 250px; object-fit: cover; display: block; }
+        
+        /* علامة الصح */
+        .check-mark { position: absolute; bottom: 10px; right: 10px; background: #2ecc71; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; opacity: 0; transition: 0.3s; }
+        .card.correct .check-mark { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-logo">RosettaStone</div>
+        <div>Spanish (Latin America) | Unit 1 - Lesson 2 > Grammar</div>
+    </div>
+
+    <div class="grid">
+        <div class="card correct">
+            <div class="card-top">
+                <div>The <input type="text" value="men"> are reading.</div>
+                <div class="audio-btn">▶</div>
+            </div>
+            <img class="card-img" src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=600" alt="men reading">
+            <div class="check-mark">✓</div>
+        </div>
+
+        <div class="card">
+            <div class="card-top">
+                <div>The <input type="text" placeholder="..."> is reading.</div>
+                <div class="audio-btn">▶</div>
+            </div>
+            <img class="card-img" src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600" alt="woman reading">
+            <div class="check-mark">✓</div>
+        </div>
+
+        <div class="card">
+            <div class="card-top">
+                <div>The <input type="text" placeholder="..."> are reading.</div>
+                <div class="audio-btn">▶</div>
+            </div>
+            <img class="card-img" src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600" alt="people reading">
+            <div class="check-mark">✓</div>
+        </div>
+
+        <div class="card">
+            <div class="card-top">
+                <div>The <input type="text" placeholder="..."> is reading.</div>
+                <div class="audio-btn">▶</div>
+            </div>
+            <img class="card-img" src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=600" alt="old man reading">
+            <div class="check-mark">✓</div>
+        </div>
+    </div>
+</body>
+</html>
