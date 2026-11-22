@@ -3,16 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Immersion Core - Classic Lesson & Exercise UI</title>
+  <title>20 Lesson Display Interfaces - Immersion UI</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
-      --bar-dark: #1a1c20;
-      --bar-sub: #3b3732;
-      --canvas-top: #e2dfd7;
-      --canvas-bot: #cdc9bf;
-      --card-bg: #ffffff;
+      --bar: #1a1c20;
+      --bg: #e3e0d8;
+      --card: #ffffff;
       --ink: #22252a;
       --muted: #656b73;
       --green: #43a047;
@@ -21,748 +19,180 @@
       --red-light: #ffebee;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
+    body { background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .topbar {
+      background: var(--bar);
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .badge { background: var(--gold); color: #111; padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 800; }
+
+    .switcher-bar {
+      background: #d3cfc4;
+      padding: 10px 18px;
+      border-bottom: 1px solid #b8b3a6;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .w-btn {
+      background: #fff; border: 1px solid #b5b0a4; color: #222;
+      padding: 6px 11px; border-radius: 4px; font-size: 12px; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+    .w-btn.active { background: var(--gold); border-color: var(--gold-dark); color: #111; }
+
+    .stage {
+      flex: 1; max-width: 980px; width: 100%; margin: 20px auto; padding: 0 18px;
+      display: flex; flex-direction: column; gap: 14px;
     }
 
-    body {
-      background: radial-gradient(circle at 50% 30%, var(--canvas-top), var(--canvas-bot));
-      color: var(--ink);
-      height: 100vh;
+    .meta-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .meta-head h1 { font-size: 19px; }
+    .meta-head span { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+    .lesson-canvas {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid #c5c0b4;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      min-height: 360px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      justify-content: center;
+      gap: 16px;
     }
 
-    /* ================= 1. الشريط العلوي الكلاسيكي ================= */
-    .top-header {
-      background: var(--bar-dark);
-      color: #fff;
-      height: 48px;
-      padding: 0 20px;
+    .prompt-strip {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 12px 18px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #000;
-      z-index: 20;
-    }
-
-    .brand-group {
-      display: flex;
       align-items: center;
       gap: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      border-left: 5px solid var(--gold);
+    }
+    .prompt-title { font-size: 20px; font-weight: 700; }
+
+    .spk-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--green); background: var(--green-light);
+      color: var(--green); font-weight: 800; cursor: pointer; flex-shrink: 0;
+    }
+    .spk-btn:hover { background: var(--green); color: #fff; }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+    .l-card {
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.09); border: 3px solid transparent;
+      cursor: pointer; transition: 0.15s;
+    }
+    .l-card:hover { transform: translateY(-2px); }
+    .l-card.ok { border-color: var(--green); background: var(--green-light); }
+    .l-card.err { border-color: var(--red); background: var(--red-light); }
+    .l-card img { width: 100%; height: 155px; object-fit: cover; display: block; }
+
+    .card-top {
+      padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
+      gap: 8px; font-size: 16px; font-weight: 700; background: #fff; border-bottom: 1px solid #eceae4;
+    }
+    .card-top select, .card-top input {
+      padding: 4px 8px; font-size: 15px; font-weight: 700;
+      border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb; width: 120px; text-align: center;
     }
 
-    .brand-badge {
-      background: var(--gold);
-      color: #111;
-      font-weight: 800;
-      font-size: 13px;
-      padding: 4px 10px;
-      border-radius: 3px;
-      letter-spacing: 0.4px;
+    .single-stage {
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      max-width: 660px; width: 100%; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
+    .single-stage img { width: 100%; height: 230px; object-fit: cover; display: block; }
 
-    .course-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: #e5e7eb;
+    .choices-col { display: grid; gap: 8px; padding: 12px; }
+    .choice-btn {
+      text-align: left; padding: 10px 14px; border-radius: 6px;
+      border: 1.5px solid #c5cbd3; background: #fff; font-weight: 700; cursor: pointer;
     }
+    .choice-btn:hover { border-color: var(--gold-dark); background: #fffdf5; }
 
-    .breadcrumb {
-      font-size: 13px;
-      color: #cbd5e1;
-      font-weight: 600;
-    }
+    .foot-note { font-size: 14px; font-weight: 700; min-height: 22px; color: var(--muted); }
+    .foot-note.ok { color: var(--green); }
+    .foot-note.err { color: var(--red); }
 
-    .top-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .icon-pill {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #fff;
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    .icon-pill:hover,
-    .icon-pill.active {
-      background: var(--gold);
-      color: #111;
-      border-color: var(--gold);
-    }
-
-    /* ================= 2. منطقة العرض الرئيسية ================= */
-    .workspace {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 18px 24px;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .view {
-      display: none;
-      width: 100%;
-      max-width: 1020px;
-      margin: auto;
-    }
-
-    .view.active {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 22px;
-    }
-
-    /* ================= 3. شاشة مسار الدروس ================= */
-    .unit-strip {
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: #4e4942;
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .unit-tab {
-      padding: 11px 10px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: #d6d3cd;
-      cursor: pointer;
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-      transition: 0.15s;
-    }
-
-    .unit-tab.active {
-      background: #f3f1eb;
-      color: #111;
-    }
-
-    .core-banner {
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid #b5b0a4;
-      border-radius: 6px;
-      padding: 18px 26px;
-      width: 100%;
-      max-width: 680px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    }
-
-    .core-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .diamond-badge {
-      width: 48px;
-      height: 48px;
-      background: #b71c1c;
-      color: #fff;
-      font-weight: 800;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      box-shadow: 0 3px 8px rgba(183, 28, 28, 0.35);
-    }
-
-    .core-titles span {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .core-titles h2 {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1e2227;
-    }
-
-    .start-play {
-      background: var(--green);
-      color: #fff;
-      border: none;
-      padding: 11px 22px;
-      border-radius: 5px;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 10px rgba(67, 160, 71, 0.3);
-      transition: 0.15s;
-    }
-
-    .start-play:hover {
-      filter: brightness(1.06);
-      transform: translateY(-1px);
-    }
-
-    .lesson-nodes-bar {
-      width: 100%;
-      max-width: 860px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: relative;
-      padding: 10px 0;
-    }
-
-    .lesson-nodes-bar::before {
-      content: "";
-      position: absolute;
-      left: 20px;
-      right: 20px;
-      top: 50%;
-      height: 3px;
-      background: #9c978c;
-      transform: translateY(-50%);
-      z-index: 1;
-    }
-
-    .l-node {
-      position: relative;
-      z-index: 2;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: #fff;
-      border: 3px solid #6e6a61;
-      font-weight: 800;
-      font-size: 15px;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    .l-node.selected {
-      background: #b71c1c;
-      border-color: #b71c1c;
-      color: #fff;
-      transform: scale(1.1);
-    }
-
-    .l-node.completed {
-      background: var(--green);
-      border-color: var(--green);
-      color: #fff;
-    }
-
-    .sub-boxes {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      gap: 5px;
-      background: #d6d3ca;
-      padding: 0 5px;
-    }
-
-    .sub-box {
-      width: 12px;
-      height: 15px;
-      border: 1.5px solid #7c786e;
-      background: #f5f4f0;
-    }
-
-    .sub-box.filled {
-      background: var(--gold);
-      border-color: var(--gold-dark);
-    }
-
-    .polaroids-row {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 18px;
-      margin-top: 6px;
-    }
-
-    .polaroid {
-      background: #fff;
-      padding: 8px 8px 22px;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
-      transition: transform 0.2s;
-    }
-
-    .polaroid:nth-child(1) { transform: rotate(-4deg); }
-    .polaroid:nth-child(2) { transform: rotate(3deg); }
-    .polaroid:nth-child(3) { transform: rotate(-2deg); }
-    .polaroid:nth-child(4) { transform: rotate(4deg); }
-    .polaroid:nth-child(5) { transform: rotate(-3deg); }
-    .polaroid:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 10; }
-    .polaroid img { width: 128px; height: 100px; object-fit: cover; display: block; }
-
-    /* ================= 4. شاشة التمارين (قريبة من الأسلوب الكلاسيكي) ================= */
-    .prompt-banner {
-      background: #fff;
-      border-radius: 8px;
-      padding: 14px 22px;
-      width: 100%;
-      max-width: 880px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-bottom: 3px solid #d1cdc2;
-    }
-
-    .prompt-text {
-      font-size: 22px;
-      font-weight: 600;
-      color: #1f2328;
-    }
-
-    .speaker-btn {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 2px solid var(--green);
-      background: var(--green-light);
-      color: var(--green);
-      font-weight: 800;
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: 0.15s;
-    }
-
-    .speaker-btn:hover {
-      background: var(--green);
-      color: #fff;
-    }
-
-    /* شبكة 2x2 للبطاقات */
-    .cards-grid-2x2 {
-      width: 100%;
-      max-width: 880px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-
-    .rs-card {
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
-      border: 3px solid transparent;
-      display: flex;
-      flex-direction: column;
-      transition: 0.15s;
-      cursor: pointer;
-    }
-
-    .rs-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
-    }
-
-    .rs-card.correct {
-      border-color: var(--green);
-      background: var(--green-light);
-    }
-
-    .rs-card.wrong {
-      border-color: var(--red);
-      background: var(--red-light);
-    }
-
-    .rs-card-header {
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      min-height: 48px;
-      font-size: 17px;
-      font-weight: 600;
-      color: #222;
-      background: #fff;
-      border-bottom: 1px solid #eceae4;
-    }
-
-    .rs-select {
-      padding: 4px 10px;
-      font-size: 16px;
-      font-weight: 700;
-      border: 2px solid #b0b7c0;
-      border-radius: 4px;
-      background: #f8f9fa;
-      color: #111;
-      cursor: pointer;
-      outline: none;
-    }
-
-    .rs-select:focus {
-      border-color: var(--gold-dark);
-      background: #fff;
-    }
-
-    .rs-card-photo {
-      width: 100%;
-      height: 195px;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* بطاقات الحوار المتجاورة (سؤال + جواب بصورتين) */
-    .pair-photos {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2px;
-      background: #ddd;
-    }
-
-    .pair-photos img {
-      width: 100%;
-      height: 185px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .pair-header {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 10px 12px;
-      background: #fff;
-      border-bottom: 1px solid #eceae4;
-    }
-
-    .pair-col {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    /* ================= 5. شريط التقدم السفلي المرقّم ================= */
-    .bottom-dock {
-      background: #23262b;
-      color: #fff;
-      height: 52px;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid #000;
-      z-index: 20;
-    }
-
-    .dock-status {
-      font-size: 13px;
-      font-weight: 700;
-      color: #cbd5e1;
-      min-width: 150px;
-    }
-
-    .slide-numbers {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .slide-num {
-      width: 28px;
-      height: 26px;
-      border-radius: 3px;
-      border: 1px solid #555b64;
-      background: #32363e;
-      color: #d1d5db;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    .slide-num.active {
-      border-color: var(--gold);
-      background: var(--gold);
-      color: #111;
-    }
-
-    .slide-num.passed {
-      border-color: var(--green);
-      background: var(--green);
-      color: #fff;
-    }
-
-    .next-arrow-btn {
-      background: var(--green);
-      color: #fff;
-      border: none;
-      padding: 7px 16px;
-      border-radius: 4px;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .next-arrow-btn:hover {
-      filter: brightness(1.08);
-    }
-
-    @media (max-width: 740px) {
-      body { height: auto; min-height: 100vh; overflow-y: auto; }
-      .cards-grid-2x2, .unit-strip { grid-template-columns: 1fr; }
-      .core-banner { flex-direction: column; align-items: flex-start; }
+    @media (max-width: 720px) {
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-
-  <!-- الشريط العلوي -->
-  <header class="top-header">
-    <div class="brand-group">
-      <span class="brand-badge">IMMERSION</span>
-      <span class="course-name">English (American) Level 1</span>
-      <span class="breadcrumb" id="breadcrumbLabel">Unit 1 &gt; Course Path</span>
+  <header class="topbar">
+    <div class="brand">
+      <span class="badge">20 LESSONS</span>
+      <span>Lesson Display Interfaces</span>
     </div>
-    <div class="top-controls">
-      <button class="icon-pill active" id="navPathBtn" onclick="switchScreen('pathView')">Course Path</button>
-      <button class="icon-pill" id="navLessonBtn" onclick="startLesson(selectedLessonIdx)">Lesson Activity</button>
-    </div>
+    <span style="font-size:13px; color:#d1d5db;">Click any number (1–20) to preview lesson layout</span>
   </header>
 
-  <!-- مساحة العمل -->
-  <main class="workspace">
-    <!-- الشاشة 1: مسار الوحدة والدروس -->
-    <section id="pathView" class="view active">
-      <div class="unit-strip" id="unitStrip"></div>
+  <nav class="switcher-bar" id="switcherBar"></nav>
 
-      <div class="core-banner">
-        <div class="core-left">
-          <div class="diamond-badge" id="bannerLessonNum">1</div>
-          <div class="core-titles">
-            <span id="bannerSubLabel">Unit 1 &gt; Lesson 1</span>
-            <h2 id="bannerLessonTitle">Core Lesson: People &amp; Actions</h2>
-          </div>
-        </div>
-        <button class="start-play" onclick="startLesson(selectedLessonIdx)">Start <span>▶</span></button>
-      </div>
-
-      <div class="lesson-nodes-bar" id="lessonNodesBar"></div>
-
-      <div class="polaroids-row">
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="p1"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="p2"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="p3"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300" alt="p4"></div>
-        <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="p5"></div>
-      </div>
-    </section>
-
-    <!-- الشاشة 2: واجهة التمارين التفاعلية -->
-    <section id="exerciseView" class="view">
-      <div class="prompt-banner" id="promptBanner">
-        <div class="prompt-text" id="promptText">The boy is drinking water.</div>
-        <button class="speaker-btn" id="mainSpeakerBtn" title="Listen">🔊</button>
-      </div>
-
-      <div class="cards-grid-2x2" id="cardsGrid"></div>
-    </section>
+  <main class="stage">
+    <div class="meta-head">
+      <h1 id="lessonUiTitle">1. 4-Photo Sentence Match</h1>
+      <span id="lessonUiDesc">Phrase prompt with four photo cards in a 2x2 grid</span>
+    </div>
+    <div class="lesson-canvas" id="lessonCanvas"></div>
+    <div class="foot-note" id="lessonFeedback"></div>
   </main>
 
-  <!-- الشريط السفلي المرقّم -->
-  <footer class="bottom-dock">
-    <div class="dock-status" id="dockStatus">Select a lesson to begin</div>
-    <div class="slide-numbers" id="slideNumbers"></div>
-    <button class="next-arrow-btn" id="nextSlideBtn" onclick="goNextSlide()">Next <span>➔</span></button>
-  </footer>
-
   <script>
-    const FALLBACK_IMG = "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240"><rect width="600" height="240" fill="#dcdad2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="18">Image</text></svg>`
-    );
+    const IMG = {
+      water: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
+      book: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
+      coffee: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600",
+      dog: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600",
+      cat: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600",
+      mountain: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600",
+      bread: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600",
+      friends: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
+    };
 
-    const units = [
-      { id: 1, title: "Unit 1: Language Basics" },
-      { id: 2, title: "Unit 2: Greetings & Introductions" },
-      { id: 3, title: "Unit 3: Work & School" },
-      { id: 4, title: "Unit 4: Shopping & Food" }
+    const lessonUis = [
+      { title: "1. 4-Photo Sentence Match", desc: "Listen and select the matching photo among four cards" },
+      { title: "2. 4-Card Dropdown Grammar", desc: "Select the missing word from a dropdown inside each card" },
+      { title: "3. Paired Q&A Photo Cards", desc: "Question and answer with two side-by-side images" },
+      { title: "4. Greeting & Speech Cards", desc: "Conversational phrases with audio playback" },
+      { title: "5. Single Photo + Text Choices", desc: "One clear photo with multiple sentence choices below" },
+      { title: "6. Single Photo + Fill Input", desc: "Type the missing word while viewing the scene" },
+      { title: "7. 2-Photo Contrast Pair", desc: "Compare two contrasting scenes side by side" },
+      { title: "8. 6-Card Vocabulary Grid (3x2)", desc: "Six vocabulary cards arranged in a three-column grid" },
+      { title: "9. Listening-First Photo Match", desc: "Audio prompt with four visual options" },
+      { title: "10. Verb Conjugation Cards", desc: "Choose verb forms matching singular or plural subjects" },
+      { title: "11. Number & Age Dialogue", desc: "Questions and answers showing ages and numbers" },
+      { title: "12. Food & Drink Visual Set", desc: "Everyday food and drink association cards" },
+      { title: "13. Nature vs. Indoor Contrast", desc: "Outdoor scenery compared with indoor activity" },
+      { title: "14. Sentence Completion Strip", desc: "Complete two related sentences with a shared visual cue" },
+      { title: "15. Word Bank Tap Selection", desc: "Tap word chips to complete a sentence" },
+      { title: "16. Picture Caption Verification", desc: "Confirm whether each card caption fits its photo" },
+      { title: "17. Mini Dialogue Bubble Cards", desc: "Short spoken exchanges with audio buttons" },
+      { title: "18. Plural vs. Singular Cards", desc: "Compare singular and plural subjects in 2x2 cards" },
+      { title: "19. Action Verb Spotlight", desc: "Focus on one core action with four options" },
+      { title: "20. Lesson Summary Review Grid", desc: "Quick visual recap of key words from the lesson" }
     ];
 
-    const lessonsData = [
-      {
-        title: "Core Lesson: People & Actions",
-        slides: [
-          {
-            type: "photo_match",
-            prompt: "The boy is drinking water.",
-            speak: "The boy is drinking water.",
-            correct: 0,
-            cards: [
-              { img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600" },
-              { img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600" },
-              { img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" },
-              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" }
-            ]
-          },
-          {
-            type: "dropdown_cards",
-            prompt: "Choose the correct word for each picture.",
-            speak: "Choose the correct word for each picture.",
-            cards: [
-              {
-                before: "The ",
-                after: " are reading.",
-                options: ["", "man", "men"],
-                answer: "men",
-                speak: "The men are reading.",
-                img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600"
-              },
-              {
-                before: "The ",
-                after: " is reading.",
-                options: ["", "woman", "women"],
-                answer: "woman",
-                speak: "The woman is reading.",
-                img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600"
-              },
-              {
-                before: "The ",
-                after: " are reading.",
-                options: ["", "woman", "women"],
-                answer: "women",
-                speak: "The women are reading.",
-                img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
-              },
-              {
-                before: "The ",
-                after: " is reading.",
-                options: ["", "man", "men"],
-                answer: "man",
-                speak: "The man is reading.",
-                img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600"
-              }
-            ]
-          },
-          {
-            type: "dialogue_pairs",
-            prompt: "Listen to each question and answer.",
-            speak: "How old is he? He is twelve years old.",
-            pairs: [
-              {
-                q: "How old is he?",
-                a: "He is twelve years old.",
-                img1: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400",
-                img2: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400"
-              },
-              {
-                q: "How old are you?",
-                a: "I am five years old.",
-                img1: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
-                img2: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400"
-              }
-            ]
-          },
-          {
-            type: "photo_match",
-            prompt: "A cup of hot coffee.",
-            speak: "A cup of hot coffee.",
-            correct: 2,
-            cards: [
-              { img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600" },
-              { img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600" },
-              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
-              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" }
-            ]
-          }
-        ]
-      },
-      {
-        title: "Lesson 2: Food & Drink",
-        slides: [
-          {
-            type: "photo_match",
-            prompt: "Fresh bread on the table.",
-            speak: "Fresh bread on the table.",
-            correct: 1,
-            cards: [
-              { img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" },
-              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" },
-              { img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600" },
-              { img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600" }
-            ]
-          }
-        ]
-      },
-      {
-        title: "Lesson 3: Nature & Outdoors",
-        slides: [
-          {
-            type: "photo_match",
-            prompt: "A tall mountain and lake.",
-            speak: "A tall mountain and lake.",
-            correct: 0,
-            cards: [
-              { img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600" },
-              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
-              { img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600" },
-              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" }
-            ]
-          }
-        ]
-      },
-      {
-        title: "Lesson 4: Review & Practice",
-        slides: [
-          {
-            type: "photo_match",
-            prompt: "The dog is smiling.",
-            speak: "The dog is smiling.",
-            correct: 3,
-            cards: [
-              { img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600" },
-              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" },
-              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
-              { img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" }
-            ]
-          }
-        ]
-      }
-    ];
-
-    let selectedUnitIdx = 0;
-    let selectedLessonIdx = 0;
-    let currentSlideIdx = 0;
-    const completedLessons = new Set();
-    const passedSlides = new Set();
+    let activeIdx = 0;
 
     function speak(text) {
       if (!("speechSynthesis" in window) || !text) return;
@@ -773,282 +203,263 @@
       window.speechSynthesis.speak(u);
     }
 
-    function switchScreen(viewId) {
-      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-      document.getElementById(viewId).classList.add("active");
-      document.getElementById("navPathBtn").classList.toggle("active", viewId === "pathView");
-      document.getElementById("navLessonBtn").classList.toggle("active", viewId === "exerciseView");
-
-      if (viewId === "pathView") {
-        document.getElementById("breadcrumbLabel").textContent = `Unit ${selectedUnitIdx + 1} > Course Path`;
-        document.getElementById("dockStatus").textContent = "Ready to start lesson";
-        document.getElementById("slideNumbers").innerHTML = "";
-      }
+    function setFb(msg, cls = "") {
+      const el = document.getElementById("lessonFeedback");
+      el.textContent = msg;
+      el.className = "foot-note " + cls;
     }
 
-    function renderUnits() {
-      const strip = document.getElementById("unitStrip");
-      strip.innerHTML = "";
-      units.forEach((u, idx) => {
-        const div = document.createElement("div");
-        div.className = "unit-tab" + (idx === selectedUnitIdx ? " active" : "");
-        div.textContent = u.title;
-        div.onclick = () => {
-          selectedUnitIdx = idx;
-          renderUnits();
-          renderPath();
-        };
-        strip.appendChild(div);
-      });
-    }
-
-    function renderPath() {
-      const lesson = lessonsData[selectedLessonIdx];
-      document.getElementById("bannerLessonNum").textContent = String(selectedLessonIdx + 1);
-      document.getElementById("bannerSubLabel").textContent = `Unit ${selectedUnitIdx + 1} > Lesson ${selectedLessonIdx + 1}`;
-      document.getElementById("bannerLessonTitle").textContent = lesson.title;
-
-      const bar = document.getElementById("lessonNodesBar");
+    function renderSwitcher() {
+      const bar = document.getElementById("switcherBar");
       bar.innerHTML = "";
-
-      lessonsData.forEach((_, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "l-node";
-        if (idx === selectedLessonIdx) btn.classList.add("selected");
-        else if (completedLessons.has(idx)) btn.classList.add("completed");
-        btn.textContent = String(idx + 1);
-        btn.onclick = () => {
-          selectedLessonIdx = idx;
-          renderPath();
+      lessonUis.forEach((u, i) => {
+        const b = document.createElement("button");
+        b.className = "w-btn" + (i === activeIdx ? " active" : "");
+        b.textContent = `${i + 1}`;
+        b.title = u.title;
+        b.onclick = () => {
+          activeIdx = i;
+          renderSwitcher();
+          renderLessonUi();
         };
-        bar.appendChild(btn);
-
-        if (idx < lessonsData.length - 1) {
-          const boxes = document.createElement("div");
-          boxes.className = "sub-boxes";
-          for (let s = 0; s < 4; s++) {
-            const sq = document.createElement("span");
-            sq.className = "sub-box" + (completedLessons.has(idx) ? " filled" : "");
-            boxes.appendChild(sq);
-          }
-          bar.appendChild(boxes);
-        }
+        bar.appendChild(b);
       });
     }
 
-    function startLesson(lessonIdx) {
-      selectedLessonIdx = lessonIdx;
-      currentSlideIdx = 0;
-      switchScreen("exerciseView");
-      renderSlide();
-    }
-
-    function renderSlideNumbers() {
-      const slides = lessonsData[selectedLessonIdx].slides;
-      const box = document.getElementById("slideNumbers");
-      box.innerHTML = "";
-
-      slides.forEach((_, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "slide-num";
-        if (passedSlides.has(`${selectedLessonIdx}-${idx}`)) btn.classList.add("passed");
-        if (idx === currentSlideIdx) btn.classList.add("active");
-        btn.textContent = String(idx + 1);
-        btn.onclick = () => {
-          currentSlideIdx = idx;
-          renderSlide();
+    function render4Photos(phrase, imgs, correctIdx) {
+      const c = document.getElementById("lessonCanvas");
+      c.innerHTML = `
+        <div class="prompt-strip">
+          <div class="prompt-title">${phrase}</div>
+          <button class="spk-btn" onclick="speak('${phrase.replace(/'/g, "\\'")}')">🔊</button>
+        </div>
+        <div class="grid-4" id="g4"></div>
+      `;
+      const g4 = document.getElementById("g4");
+      let solved = false;
+      imgs.forEach((src, idx) => {
+        const card = document.createElement("div");
+        card.className = "l-card";
+        card.innerHTML = `<img src="${src}" alt="opt">`;
+        card.onclick = () => {
+          if (solved) return;
+          if (idx === correctIdx) {
+            solved = true;
+            card.classList.add("ok");
+            setFb("Correct photo match.", "ok");
+          } else {
+            card.classList.add("err");
+            setFb("Try another image.", "err");
+          }
         };
-        box.appendChild(btn);
+        g4.appendChild(card);
       });
     }
 
-    function renderSlide() {
-      const lesson = lessonsData[selectedLessonIdx];
-      const slide = lesson.slides[currentSlideIdx];
-
-      document.getElementById("breadcrumbLabel").textContent =
-        `Unit ${selectedUnitIdx + 1} > Lesson ${selectedLessonIdx + 1} > Activity`;
-      document.getElementById("dockStatus").textContent =
-        `Slide ${currentSlideIdx + 1} of ${lesson.slides.length}`;
-
-      renderSlideNumbers();
-
-      const promptBanner = document.getElementById("promptBanner");
-      const promptText = document.getElementById("promptText");
-      const mainSpeaker = document.getElementById("mainSpeakerBtn");
-      const grid = document.getElementById("cardsGrid");
-
-      grid.innerHTML = "";
-      promptBanner.style.display = "flex";
-      promptText.textContent = slide.prompt;
-      mainSpeaker.onclick = () => speak(slide.speak);
-
-      if (slide.type === "photo_match") {
-        let solved = false;
-        const cardEls = [];
-
-        slide.cards.forEach((c, idx) => {
-          const card = document.createElement("div");
-          card.className = "rs-card";
-          cardEls.push(card);
-
-          const img = document.createElement("img");
-          img.className = "rs-card-photo";
-          img.style.height = "220px";
-          img.src = c.img;
-          img.onerror = () => { img.src = FALLBACK_IMG; };
-
-          card.appendChild(img);
-          card.onclick = () => {
-            if (solved) return;
-            if (idx === slide.correct) {
-              solved = true;
-              cardEls.forEach(el => el.classList.remove("wrong"));
-              card.classList.add("correct");
-              passedSlides.add(`${selectedLessonIdx}-${currentSlideIdx}`);
-              document.getElementById("dockStatus").textContent = "Correct match!";
-              renderSlideNumbers();
-            } else {
-              card.classList.add("wrong");
-              document.getElementById("dockStatus").textContent = "Try another picture";
-            }
-          };
-
-          grid.appendChild(card);
+    function renderDropdown4(items) {
+      const c = document.getElementById("lessonCanvas");
+      c.innerHTML = `<div class="grid-4" id="gd4"></div>`;
+      const gd4 = document.getElementById("gd4");
+      items.forEach(it => {
+        const card = document.createElement("div");
+        card.className = "l-card";
+        const top = document.createElement("div");
+        top.className = "card-top";
+        const wrap = document.createElement("div");
+        const sel = document.createElement("select");
+        ["", ...it.opts].forEach(o => {
+          const op = document.createElement("option");
+          op.value = o;
+          op.textContent = o || "---";
+          sel.appendChild(op);
         });
-
-        speak(slide.speak);
-      } else if (slide.type === "dropdown_cards") {
-        const refs = [];
-
-        const checkAll = () => {
-          let allDone = true;
-          let allCorrect = true;
-          refs.forEach(({ card, select, answer }) => {
-            if (!select.value) {
-              allDone = false;
-              card.classList.remove("correct", "wrong");
-            } else if (select.value === answer) {
-              card.classList.add("correct");
-              card.classList.remove("wrong");
-            } else {
-              allCorrect = false;
-              card.classList.add("wrong");
-              card.classList.remove("correct");
-            }
-          });
-
-          if (allDone && allCorrect) {
-            passedSlides.add(`${selectedLessonIdx}-${currentSlideIdx}`);
-            document.getElementById("dockStatus").textContent = "All sentences completed!";
-            renderSlideNumbers();
+        sel.onchange = () => {
+          if (!sel.value) { card.classList.remove("ok", "err"); return; }
+          if (sel.value === it.ans) {
+            card.classList.add("ok"); card.classList.remove("err");
+            setFb("Correct word selected.", "ok");
+            speak(it.before + sel.value + it.after);
+          } else {
+            card.classList.add("err"); card.classList.remove("ok");
+            setFb("Check the word choice.", "err");
           }
         };
+        wrap.append(it.before, sel, it.after);
+        const spk = document.createElement("button");
+        spk.className = "spk-btn";
+        spk.textContent = "🔊";
+        spk.onclick = (e) => { e.stopPropagation(); speak(it.before + it.ans + it.after); };
+        top.append(wrap, spk);
+        card.append(top);
+        const img = document.createElement("img");
+        img.src = it.img;
+        card.append(img);
+        gd4.appendChild(card);
+      });
+    }
 
-        slide.cards.forEach(c => {
-          const card = document.createElement("div");
-          card.className = "rs-card";
+    function renderPairs(pairs) {
+      const c = document.getElementById("lessonCanvas");
+      c.innerHTML = `<div class="grid-2">${pairs.map(p => `
+        <div class="l-card">
+          <div class="card-top">
+            <span>${p.q}</span>
+            <button class="spk-btn" onclick="event.stopPropagation(); speak('${p.q}')">🔊</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#ddd;">
+            <img src="${p.i1}" alt="q">
+            <img src="${p.i2}" alt="a">
+          </div>
+          <div class="card-top" style="border-top:1px solid #eceae4;border-bottom:none;">
+            <span>${p.a}</span>
+            <button class="spk-btn" onclick="event.stopPropagation(); speak('${p.a}')">🔊</button>
+          </div>
+        </div>
+      `).join("")}</div>`;
+    }
 
-          const header = document.createElement("div");
-          header.className = "rs-card-header";
+    function renderLessonUi() {
+      const meta = lessonUis[activeIdx];
+      document.getElementById("lessonUiTitle").textContent = meta.title;
+      document.getElementById("lessonUiDesc").textContent = meta.desc;
+      setFb("");
+      const c = document.getElementById("lessonCanvas");
 
-          const sentenceWrap = document.createElement("div");
-          const sel = document.createElement("select");
-          sel.className = "rs-select";
-          c.options.forEach(opt => {
-            const o = document.createElement("option");
-            o.value = opt;
-            o.textContent = opt || "     ";
-            sel.appendChild(o);
-          });
-
-          sel.onchange = () => {
-            if (sel.value) speak(c.before + sel.value + c.after);
-            checkAll();
+      switch (activeIdx) {
+        case 0:
+          render4Photos("The boy is drinking water.", [IMG.water, IMG.book, IMG.coffee, IMG.dog], 0);
+          break;
+        case 1:
+          renderDropdown4([
+            { before: "The ", after: " are reading.", opts: ["man", "men"], ans: "men", img: IMG.friends },
+            { before: "The ", after: " is reading.", opts: ["woman", "man"], ans: "woman", img: IMG.book },
+            { before: "A hot ", after: ".", opts: ["coffee", "dog"], ans: "coffee", img: IMG.coffee },
+            { before: "A smiling ", after: ".", opts: ["dog", "cat"], ans: "dog", img: IMG.dog }
+          ]);
+          break;
+        case 2:
+          renderPairs([
+            { q: "How old is he?", a: "He is twelve years old.", i1: IMG.friends, i2: IMG.book },
+            { q: "How old are you?", a: "I am five years old.", i1: IMG.dog, i2: IMG.cat }
+          ]);
+          break;
+        case 3:
+          render4Photos("Hello.", [IMG.friends, IMG.dog, IMG.coffee, IMG.mountain], 0);
+          break;
+        case 4:
+          c.innerHTML = `<div class="single-stage">
+            <div class="card-top"><span>Choose the matching sentence</span><button class="spk-btn" onclick="speak('The dog is smiling.')">🔊</button></div>
+            <img src="${IMG.dog}" alt="dog">
+            <div class="choices-col">
+              ${["The dog is smiling.", "A cup of hot coffee.", "She is reading a book."].map((txt, i) =>
+                `<button class="choice-btn" onclick="setFb('${i === 0 ? "Correct." : "Try again."}', '${i === 0 ? "ok" : "err"}')">${txt}</button>`
+              ).join("")}
+            </div>
+          </div>`;
+          break;
+        case 5:
+          c.innerHTML = `<div class="single-stage">
+            <div class="card-top">
+              <div>A cup of hot <input id="fillInp" placeholder="..." />.</div>
+              <button class="spk-btn" onclick="speak('A cup of hot coffee.')">🔊</button>
+            </div>
+            <img src="${IMG.coffee}" alt="coffee">
+          </div>`;
+          document.getElementById("fillInp").oninput = (e) => {
+            const ok = e.target.value.trim().toLowerCase() === "coffee";
+            setFb(ok ? "Correct word: coffee" : "", ok ? "ok" : "");
           };
-
-          sentenceWrap.append(c.before, sel, c.after);
-
-          const spk = document.createElement("button");
-          spk.className = "speaker-btn";
-          spk.textContent = "🔊";
-          spk.onclick = (e) => {
-            e.stopPropagation();
-            speak(c.speak);
+          break;
+        case 6:
+          c.innerHTML = `<div class="prompt-strip"><div class="prompt-title">Outdoor mountain vs. Indoor book</div><button class="spk-btn" onclick="speak('Outdoor mountain')">🔊</button></div>
+            <div class="grid-2">
+              <div class="l-card" onclick="this.classList.add('ok');setFb('Selected outdoor scene.','ok')"><img src="${IMG.mountain}" alt="m"></div>
+              <div class="l-card" onclick="this.classList.add('err');setFb('Try the outdoor scene.','err')"><img src="${IMG.book}" alt="b"></div>
+            </div>`;
+          break;
+        case 7:
+          c.innerHTML = `<div class="grid-3">${[IMG.water, IMG.book, IMG.coffee, IMG.dog, IMG.cat, IMG.bread].map((src, i) =>
+            `<div class="l-card" onclick="this.classList.toggle('ok');setFb('Item ${i + 1} selected.','ok')"><img src="${src}" alt="item"></div>`
+          ).join("")}</div>`;
+          break;
+        case 8:
+          render4Photos("Listen and pick the book.", [IMG.cat, IMG.book, IMG.bread, IMG.mountain], 1);
+          break;
+        case 9:
+          renderDropdown4([
+            { before: "She ", after: " a book.", opts: ["reads", "read"], ans: "reads", img: IMG.book },
+            { before: "They ", after: " bread.", opts: ["eat", "eats"], ans: "eat", img: IMG.bread },
+            { before: "He ", after: " water.", opts: ["drinks", "drink"], ans: "drinks", img: IMG.water },
+            { before: "We ", after: " coffee.", opts: ["drink", "drinks"], ans: "drink", img: IMG.coffee }
+          ]);
+          break;
+        case 10:
+          renderPairs([
+            { q: "One cup.", a: "Two cups.", i1: IMG.coffee, i2: IMG.water },
+            { q: "One dog.", a: "One cat.", i1: IMG.dog, i2: IMG.cat }
+          ]);
+          break;
+        case 11:
+          render4Photos("Fresh bread on the table.", [IMG.bread, IMG.dog, IMG.book, IMG.cat], 0);
+          break;
+        case 12:
+          c.innerHTML = `<div class="grid-2">
+            <div class="l-card"><div class="card-top"><span>Outside</span></div><img src="${IMG.mountain}" alt="out"></div>
+            <div class="l-card"><div class="card-top"><span>Inside</span></div><img src="${IMG.book}" alt="in"></div>
+          </div>`;
+          break;
+        case 13:
+          c.innerHTML = `<div class="single-stage">
+            <div class="card-top"><span>The boy is drinking <input id="s13" placeholder="..." />.</span></div>
+            <img src="${IMG.water}" alt="water">
+          </div>`;
+          document.getElementById("s13").oninput = (e) => {
+            if (e.target.value.trim().toLowerCase() === "water") setFb("Correct!", "ok");
           };
-
-          header.append(sentenceWrap, spk);
-
-          const img = document.createElement("img");
-          img.className = "rs-card-photo";
-          img.src = c.img;
-          img.onerror = () => { img.src = FALLBACK_IMG; };
-
-          card.append(header, img);
-          grid.appendChild(card);
-          refs.push({ card, select: sel, answer: c.answer });
-        });
-      } else if (slide.type === "dialogue_pairs") {
-        slide.pairs.forEach(p => {
-          const card = document.createElement("div");
-          card.className = "rs-card";
-
-          const header = document.createElement("div");
-          header.className = "pair-header";
-
-          const col1 = document.createElement("div");
-          col1.className = "pair-col";
-          col1.innerHTML = `<span>${p.q}</span>`;
-          const b1 = document.createElement("button");
-          b1.className = "speaker-btn";
-          b1.textContent = "🔊";
-          b1.onclick = () => speak(p.q);
-          col1.appendChild(b1);
-
-          const col2 = document.createElement("div");
-          col2.className = "pair-col";
-          col2.innerHTML = `<span>${p.a}</span>`;
-          const b2 = document.createElement("button");
-          b2.className = "speaker-btn";
-          b2.textContent = "🔊";
-          b2.onclick = () => speak(p.a);
-          col2.appendChild(b2);
-
-          header.append(col1, col2);
-
-          const photos = document.createElement("div");
-          photos.className = "pair-photos";
-          const i1 = document.createElement("img");
-          i1.src = p.img1;
-          i1.onerror = () => { i1.src = FALLBACK_IMG; };
-          const i2 = document.createElement("img");
-          i2.src = p.img2;
-          i2.onerror = () => { i2.src = FALLBACK_IMG; };
-          photos.append(i1, i2);
-
-          card.append(header, photos);
-          grid.appendChild(card);
-        });
-
-        passedSlides.add(`${selectedLessonIdx}-${currentSlideIdx}`);
-        renderSlideNumbers();
+          break;
+        case 14:
+          c.innerHTML = `<div class="single-stage">
+            <div class="card-top"><span id="chipTarget">She is ___ a book.</span></div>
+            <img src="${IMG.book}" alt="read">
+            <div class="choices-col" style="grid-template-columns:repeat(3,1fr);">
+              ${["reading", "running", "cooking"].map(w =>
+                `<button class="choice-btn" onclick="document.getElementById('chipTarget').textContent='She is '+this.textContent+' a book.';setFb(this.textContent==='reading'?'Correct!':'Try reading',this.textContent==='reading'?'ok':'err')">${w}</button>`
+              ).join("")}
+            </div>
+          </div>`;
+          break;
+        case 15:
+          render4Photos("The cat is resting.", [IMG.dog, IMG.cat, IMG.bread, IMG.water], 1);
+          break;
+        case 16:
+          renderPairs([
+            { q: "Hello!", a: "Goodbye!", i1: IMG.friends, i2: IMG.mountain }
+          ]);
+          break;
+        case 17:
+          renderDropdown4([
+            { before: "One ", after: ".", opts: ["dog", "dogs"], ans: "dog", img: IMG.dog },
+            { before: "Many ", after: ".", opts: ["friends", "friend"], ans: "friends", img: IMG.friends },
+            { before: "One ", after: ".", opts: ["book", "books"], ans: "book", img: IMG.book },
+            { before: "One ", after: ".", opts: ["cat", "cats"], ans: "cat", img: IMG.cat }
+          ]);
+          break;
+        case 18:
+          render4Photos("She is reading a book.", [IMG.coffee, IMG.dog, IMG.book, IMG.water], 2);
+          break;
+        case 19:
+          c.innerHTML = `<div class="grid-4">${[
+            { t: "Water", i: IMG.water },
+            { t: "Book", i: IMG.book },
+            { t: "Coffee", i: IMG.coffee },
+            { t: "Dog", i: IMG.dog }
+          ].map(x => `<div class="l-card" onclick="speak('${x.t}');setFb('Spoken: ${x.t}','ok')"><div class="card-top"><span>${x.t}</span><button class="spk-btn">🔊</button></div><img src="${x.i}" alt="${x.t}"></div>`).join("")}</div>`;
+          break;
       }
     }
 
-    function goNextSlide() {
-      const lesson = lessonsData[selectedLessonIdx];
-      if (currentSlideIdx + 1 < lesson.slides.length) {
-        currentSlideIdx++;
-        renderSlide();
-      } else {
-        completedLessons.add(selectedLessonIdx);
-        renderPath();
-        switchScreen("pathView");
-      }
-    }
-
-    renderUnits();
-    renderPath();
+    renderSwitcher();
+    renderLessonUi();
   </script>
 </body>
 </html>
