@@ -262,5 +262,4 @@ const items = <LearnItem>[
   LearnItem("A fox", "The fox sits in the forest.", "fox.jpg"),
   LearnItem("A market", "The market is full of fresh vegetables.", "market_morning.jpg"),
   LearnItem("The doctor", "He is a doctor.", "L208_the_doctor.jpg"),
-  LearnItem("The nurse", "She is a nurse.", "L209_the_nurse.jpg"),
 ];

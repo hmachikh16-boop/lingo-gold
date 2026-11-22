@@ -234,7 +234,7 @@ class DashboardScreen extends StatelessWidget {
     final item = itemAt(p.current);
     return CardBox(
       padding: const EdgeInsets.all(9),
-      onTap: () => openPage(context, LessonJourneyScreen(index: p.current)),
+      onTap: () => openPage(context, LessonSessionScreen(index: p.current)),
       child: Row(
         children: [
           ClipRRect(borderRadius: BorderRadius.circular(12), child: SizedBox(width: 74, height: 74, child: Photo(item.image))),
@@ -293,7 +293,7 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 4),
             ProgressBar(p.completed / items.length, height: 7),
             const SizedBox(height: 10),
-            primaryButton('Practice Now', () => openPage(context, LessonJourneyScreen(index: p.current)), icon: Icons.play_arrow_rounded),
+            primaryButton('Practice Now', () => openPage(context, LessonSessionScreen(index: p.current)), icon: Icons.play_arrow_rounded),
           ],
         ),
       );
@@ -339,13 +339,13 @@ class LessonJourneyScreen extends StatelessWidget {
           final unit = index ~/ 4;
           final lessonInUnit = index % 4 + 1;
           final unitEnd = min((unit + 1) * 4, items.length);
-          final doneInUnit = (p.completed - unit * 4).clamp(0, 4);
-          final lessonDone = index < p.completed;
-          final unitDone = p.completed >= unitEnd;
+          final doneInUnit = List<int>.generate(4, (i) => unit * 4 + i).where((i) => p.isCompleted(i)).length;
+          final lessonDone = p.isCompleted(index);
+          final unitDone = doneInUnit == 4;
           final steps = <_PlanStep>[
             _PlanStep('Core Lesson', 'الدرس الأساسي • صورة وكلمة وجملة', Icons.school_rounded, '30m', () => openPage(context, CoreLessonScreen(index: index))),
             _PlanStep('Pronunciation', 'النطق • TruAccent', Icons.record_voice_over_rounded, '10m', () => openPage(context, PronunciationScreen(index: index))),
-            _PlanStep('Vocabulary', 'المفردات • كلمات جديدة', Icons.menu_book_rounded, '5m', () => openPage(context, const VocabularyScreen())),
+            _PlanStep('Vocabulary', 'المفردات • كلمات جديدة', Icons.menu_book_rounded, '5m', () => openPage(context, VocabularyScreen(index: index))),
             _PlanStep('Grammar', 'القواعد • تركيب الجملة', Icons.rule_rounded, '10m', () => openPage(context, GrammarScreen(index: index))),
           ];
           return Scaffold(
@@ -488,8 +488,8 @@ class LessonJourneyScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   primaryButton(
-                    lessonDone ? 'Practice Again' : 'Start Core Lesson',
-                    () => openPage(context, CoreLessonScreen(index: index)),
+                    lessonDone ? 'Practice Again' : 'Start Lesson Session',
+                    () => openPage(context, LessonSessionScreen(index: index)),
                     icon: Icons.play_arrow_rounded,
                   ),
                   const SizedBox(height: 8),
@@ -574,7 +574,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
         const SizedBox(height: 12),
         CardBox(
           color: kGreenSoft,
-          onTap: () => openPage(context, LessonJourneyScreen(index: p.current)),
+          onTap: () => openPage(context, LessonSessionScreen(index: p.current)),
           child: Row(
             children: [
               ClipRRect(borderRadius: BorderRadius.circular(12), child: SizedBox(width: 72, height: 72, child: Photo(current.image))),
@@ -615,7 +615,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
     final start = unit * 4;
     final end = min(start + 4, items.length);
     final unitItems = items.sublist(start, end);
-    final done = List<int>.generate(end - start, (i) => start + i).where((i) => i < p.completed).length;
+    final done = List<int>.generate(end - start, (i) => start + i).where((i) => p.isCompleted(i)).length;
     final theme = themes[unit % themes.length];
     return CardBox(
       padding: const EdgeInsets.all(12),
@@ -656,10 +656,11 @@ class _LessonsScreenState extends State<LessonsScreen> {
 
   Widget _lessonTile(BuildContext context, Progress p, int index) {
     final it = items[index];
-    final completed = index < p.completed;
+    final completed = p.isCompleted(index);
     final current = index == p.current;
+    final unlocked = p.isUnlocked(index);
     return GestureDetector(
-      onTap: () => openPage(context, LessonJourneyScreen(index: index)),
+      onTap: unlocked ? () => openPage(context, LessonJourneyScreen(index: index)) : null,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -687,7 +688,11 @@ class _LessonsScreenState extends State<LessonsScreen> {
                           color: completed ? kGreen : Colors.white.withValues(alpha: .92),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(completed ? Icons.check : Icons.lock_outline_rounded, size: 11, color: completed ? Colors.white : kMuted),
+                        child: Icon(
+                          completed ? Icons.check : (unlocked ? Icons.play_arrow_rounded : Icons.lock_outline_rounded),
+                          size: 11,
+                          color: completed || unlocked ? Colors.white : kMuted,
+                        ),
                       ),
                     ),
                   ],
@@ -1114,9 +1119,9 @@ class TrainingScreen extends StatelessWidget {
           final p = Progress.instance;
           final current = itemAt(p.current);
           final learning = <_Skill>[
-            _Skill('Core Lesson', 'الدرس الأساسي', Icons.school_rounded, () => openPage(context, LessonJourneyScreen(index: p.current))),
+            _Skill('Core Lesson', 'الدرس الأساسي', Icons.school_rounded, () => openPage(context, LessonSessionScreen(index: p.current))),
             _Skill('Pronunciation', 'النطق • TruAccent', Icons.record_voice_over_rounded, () => openPage(context, PronunciationScreen(index: p.current))),
-            _Skill('Vocabulary', 'المفردات', Icons.menu_book_rounded, () => openPage(context, const VocabularyScreen())),
+            _Skill('Vocabulary', 'المفردات', Icons.menu_book_rounded, () => openPage(context, VocabularyScreen(index: p.current))),
             _Skill('Grammar', 'القواعد', Icons.rule_rounded, () => openPage(context, GrammarScreen(index: p.current))),
             _Skill('Reading', 'القراءة', Icons.auto_stories_rounded, () => openPage(context, ReadingScreen(index: p.current))),
             _Skill('Writing', 'الكتابة', Icons.edit_note_rounded, () => openPage(context, WritingScreen(index: p.current))),
@@ -1167,7 +1172,7 @@ class TrainingScreen extends StatelessWidget {
                         width: 42,
                         height: 42,
                         child: FilledButton(
-                          onPressed: () => openPage(context, LessonJourneyScreen(index: p.current)),
+                          onPressed: () => openPage(context, LessonSessionScreen(index: p.current)),
                           style: FilledButton.styleFrom(shape: const CircleBorder(), padding: EdgeInsets.zero),
                           child: const Icon(Icons.play_arrow_rounded),
                         ),

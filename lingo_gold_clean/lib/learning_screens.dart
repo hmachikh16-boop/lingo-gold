@@ -22,6 +22,18 @@ List<LearnItem> choicesFor(LearnItem correct, int seed, {int count = 3}) {
   return [correct, ...pool.take(count)]..shuffle(Random(seed + 1));
 }
 
+/// The four lessons that belong to the same unit as [index].
+List<LearnItem> unitItems(int index) {
+  final start = (index ~/ 4) * 4;
+  return List<LearnItem>.generate(
+    min(4, items.length - start),
+    (i) => items[start + i],
+  );
+}
+
+int imageIndex(List<LearnItem> list, String image) =>
+    list.indexWhere((e) => e.image == image);
+
 String letterFor(int i) => String.fromCharCode(65 + i);
 
 String _normalize(String value) => value
@@ -45,6 +57,7 @@ class _CoreLessonScreenState extends State<CoreLessonScreen> {
   int? _selected;
   bool _done = false;
   bool _awarded = false;
+  bool _wasCorrect = false;
 
   late final LearnItem item;
   late final List<LearnItem> choices;
@@ -58,8 +71,9 @@ class _CoreLessonScreenState extends State<CoreLessonScreen> {
 
   void _finish(bool correct) {
     if (!_awarded) {
-      Progress.instance.complete(widget.index, correct);
+      Progress.instance.recordAnswer(correct);
       _awarded = true;
+      _wasCorrect = correct;
     }
     setState(() => _done = true);
   }
@@ -78,14 +92,20 @@ class _CoreLessonScreenState extends State<CoreLessonScreen> {
                 children: [
                   const CircleIcon(Icons.check_rounded, size: 96, background: kGreen, foreground: Colors.white),
                   const SizedBox(height: 20),
-                  const Text('Lesson Complete', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: kInk)),
+                  const Text('Practice Complete', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: kInk)),
                   const SizedBox(height: 10),
                   Text(item.word, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, color: kMuted)),
                   const SizedBox(height: 14),
-                  const StarRow(count: 3, size: 34),
+                  StarRow(count: _wasCorrect ? 3 : 1, size: 34),
                   const SizedBox(height: 10),
-                  const Pill('+20 XP', icon: Icons.bolt_rounded),
-                  const SizedBox(height: 30),
+                  const Pill('Answer saved', icon: Icons.save_rounded),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Open the lesson plan and finish the session to earn XP.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 11, color: kMuted, height: 1.4),
+                  ),
+                  const SizedBox(height: 24),
                   primaryButton('Continue', () => Navigator.pop(context)),
                 ],
               ),
@@ -258,8 +278,9 @@ class PronunciationScreen extends StatefulWidget {
 }
 
 class _PronunciationScreenState extends State<PronunciationScreen> {
-  int _score = 92;
+  int? _score;
   bool _recording = false;
+  String? _heard;
   late final LearnItem item;
 
   @override
@@ -270,13 +291,22 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
 
   Future<void> _record() async {
     if (_recording) return;
-    setState(() => _recording = true);
-    await Tts.instance.speak(item.word);
-    await Future<void>.delayed(const Duration(milliseconds: 950));
+    setState(() {
+      _recording = true;
+      _heard = null;
+    });
+    // Never play the word into the microphone before listening.
+    final heard = await Voice.instance.recognize();
     if (!mounted) return;
-    final score = 88 + (item.word.length * 3) % 9;
+    if (heard == null) {
+      setState(() => _recording = false);
+      showToast(context, 'التعرف على الصوت غير متاح. استمع وكرر كلمة بنفسك.');
+      return;
+    }
+    final score = speechScore(item.word, heard);
     setState(() {
       _score = score;
+      _heard = heard;
       _recording = false;
     });
     await Progress.instance.setPronunciation(score);
@@ -284,13 +314,20 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final score = _score;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: topBar(
         context,
         green: true,
-        title: 'TruAccent • Pronunciation',
-        subtitle: 'TruAccent • Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4',
+        title: 'Pronunciation Practice',
+        subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.volume_up_rounded),
+            onPressed: () => Tts.instance.speak(item.word),
+          ),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -305,7 +342,7 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Photo('native_speaker_woman.jpg'),
+                    Photo(item.image),
                     Positioned(
                       left: 0,
                       right: 0,
@@ -321,7 +358,7 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                         ),
                         child: Column(
                           children: [
-                            const Waveform(height: 50, progress: 0.72, color: Colors.white),
+                            Waveform(height: 50, progress: _recording ? 0.82 : 0.35, color: Colors.white),
                             const SizedBox(height: 6),
                             Text(item.sentence, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700)),
                           ],
@@ -341,13 +378,15 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                           border: Border.all(color: kGreen, width: 4),
                           boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 12)],
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('$_score%', style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: kGreenDark)),
-                            const Text('score', style: TextStyle(fontSize: 8, color: kMuted, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
+                        child: score == null
+                            ? const Icon(Icons.mic_none_rounded, size: 32, color: kGreen)
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('$score%', style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: kGreenDark)),
+                                  const Text('real score', style: TextStyle(fontSize: 8, color: kMuted, fontWeight: FontWeight.w700)),
+                                ],
+                              ),
                       ),
                     ),
                   ],
@@ -360,19 +399,25 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleIcon(Icons.check_rounded, size: 40, background: kGreen, foreground: Colors.white),
+                  CircleIcon(
+                    score == null ? Icons.mic_none_rounded : (score >= 70 ? Icons.check_rounded : Icons.repeat_rounded),
+                    size: 40,
+                    background: kGreen,
+                    foreground: Colors.white,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Excellent!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kInk)),
-                        const Text('Your pronunciation is clear', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: kInk)),
-                        const SizedBox(height: 4),
                         Text(
-                          _score >= 92
-                              ? "Great enunciation. Keep practicing to improve to 95%+."
-                              : "Good effort. Slow down and stress the first syllable.",
+                          score == null ? 'Tap the mic and say the word' : (score >= 70 ? 'Good pronunciation!' : 'Try once more'),
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kInk),
+                        ),
+                        Text(
+                          _heard == null
+                              ? 'Your score comes only from what the device actually hears.'
+                              : 'Heard: “$_heard” — slower, clearer speech scores better.',
                           style: const TextStyle(fontSize: 11.5, color: kMuted, height: 1.45),
                         ),
                       ],
@@ -398,14 +443,22 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(_recording ? 'Listening…' : 'Tap to record • Try again', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kMuted)),
+            Text(
+              _recording ? 'Listening…' : (score == null ? 'Tap to speak' : 'Tap to try again'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kMuted),
+            ),
             const SizedBox(height: 18),
-            outlineButton('Continue to Next Word', () {
-              Progress.instance.complete(widget.index, _score >= 80);
+            outlineButton('Done', () {
+              if (score != null) Progress.instance.recordAnswer(score >= 70);
               Navigator.pop(context);
             }),
             const SizedBox(height: 8),
-            const Text('Your score is saved to your weekly pronunciation report.', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: kMuted)),
+            const Text(
+              'No score is stored unless your device recognizes your voice.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 10, color: kMuted),
+            ),
           ],
         ),
       ),
@@ -417,16 +470,21 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
 // 3. VOCABULARY
 // ============================================================
 class VocabularyScreen extends StatelessWidget {
-  const VocabularyScreen({super.key});
+  final int index;
+  const VocabularyScreen({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final words = List<LearnItem>.generate(15, (i) => items[(8 + i) % items.length]);
-    final featured = [findItem('apple'), findItem('banana'), findItem('pear')];
-    const arabic = ['تفاحة', 'موزة', 'كمثرى'];
+    final unit = unitItems(index);
+    final featured = unit.take(3).toList();
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: topBar(context, green: true, title: 'Vocabulary', subtitle: 'Focused Activity • Fruits • 15 New Words'),
+      appBar: topBar(
+        context,
+        green: true,
+        title: 'Vocabulary',
+        subtitle: 'Unit ${index ~/ 4 + 1} • ${unit.length} words from this unit',
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
@@ -443,16 +501,15 @@ class VocabularyScreen extends StatelessWidget {
                       children: [
                         Text('Listen & Repeat', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kInk)),
                         SizedBox(height: 2),
-                        Text('Tap the audio to hear each word. Practice pronunciation.', style: TextStyle(fontSize: 10.5, color: kMuted, height: 1.4)),
+                        Text('Tap a card to hear the word from your current unit.', style: TextStyle(fontSize: 10.5, color: kMuted, height: 1.4)),
                       ],
                     ),
                   ),
-                  const Pill('Audio On', icon: Icons.volume_up_rounded),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            const SectionTitle('Learn: Fruits', trailing: '3 / 3 items shown'),
+            SectionTitle('Learn: This Unit', trailing: '${featured.length} cards'),
             Row(
               children: [
                 for (var i = 0; i < featured.length; i++) ...[
@@ -467,11 +524,11 @@ class VocabularyScreen extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 7),
-                            child: Column(
-                              children: [
-                                Text(featured[i].word, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: kInk)),
-                                Text(arabic[i], style: const TextStyle(fontSize: 10, color: kMuted)),
-                              ],
+                            child: Text(
+                              featured[i].word,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: kInk),
                             ),
                           ),
                           InkWell(
@@ -492,8 +549,8 @@ class VocabularyScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
-            const SectionTitle('15 New Words • This Lesson', trailing: 'Progress 20%'),
-            for (final w in words)
+            SectionTitle('Unit word list', trailing: '${unit.length} words'),
+            for (final w in unit)
               InkWell(
                 onTap: () => Tts.instance.speak(w.word),
                 child: Padding(
@@ -517,10 +574,7 @@ class VocabularyScreen extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 14),
-            primaryButton('Continue Practice', () {
-              Progress.instance.complete(Progress.instance.current, true);
-              Navigator.pop(context);
-            }, icon: Icons.play_arrow_rounded),
+            primaryButton('Done', () => Navigator.pop(context), icon: Icons.check_rounded),
           ],
         ),
       ),
@@ -539,28 +593,34 @@ class GrammarScreen extends StatefulWidget {
 }
 
 class _GrammarScreenState extends State<GrammarScreen> {
-  int _selected = 0;
+  int? _selected;
   bool _checked = false;
-  bool _awarded = false;
+  late final LearnItem item;
+  late final LearnItem other;
+  late final List<String> options;
+  late final int correctIndex;
 
-  static const options = [
-    'The boy is running while the girl is reading.',
-    'The boy is reading while the girl is running.',
-    'The boy and girl are both running.',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    item = itemAt(widget.index);
+    final pool = choicesFor(item, widget.index + 27, count: 2);
+    options = pool.map((e) => e.sentence).toList();
+    correctIndex = pool.indexWhere((e) => e.image == item.image);
+    final unit = unitItems(widget.index);
+    other = unit.firstWhere((e) => e.image != item.image, orElse: () => pool.last);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final run = findItem('run');
-    final read = findItem('read');
-    final correct = _selected == 0;
+    final correct = _selected == correctIndex;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: topBar(
         context,
         green: true,
-        title: 'Grammar Lesson',
-        subtitle: 'Sentence Structure • Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4',
+        title: 'Sentence Practice',
+        subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4',
       ),
       body: SafeArea(
         child: ListView(
@@ -568,27 +628,27 @@ class _GrammarScreenState extends State<GrammarScreen> {
           children: [
             Row(
               children: [
-                const Text('72% complete', style: TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w700)),
+                Text('Lesson ${widget.index % 4 + 1} of 4', style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w700)),
                 const Spacer(),
-                const Text('72%', style: TextStyle(fontSize: 12, color: kGreenDark, fontWeight: FontWeight.w900)),
+                Text('${widget.index % 4 + 1}/4', style: const TextStyle(fontSize: 12, color: kGreenDark, fontWeight: FontWeight.w900)),
               ],
             ),
             const SizedBox(height: 5),
-            const ProgressBar(0.72, height: 7),
+            ProgressBar((widget.index % 4 + 1) / 4, height: 7),
             const SizedBox(height: 16),
             CardBox(
               child: Column(
                 children: [
-                  const Text('Choose the sentence that matches both photos', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14.5, color: kInk)),
+                  const Text('Which sentence matches the first photo?', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14.5, color: kInk)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
                         child: Column(
                           children: [
-                            ClipRRect(borderRadius: BorderRadius.circular(13), child: SizedBox(height: 170, width: double.infinity, child: Photo(run.image))),
+                            ClipRRect(borderRadius: BorderRadius.circular(13), child: SizedBox(height: 170, width: double.infinity, child: Photo(item.image))),
                             const SizedBox(height: 6),
-                            const Pill('Boy is running', background: kGreenSoft),
+                            const Pill('Photo A', background: kGreenSoft),
                           ],
                         ),
                       ),
@@ -596,9 +656,9 @@ class _GrammarScreenState extends State<GrammarScreen> {
                       Expanded(
                         child: Column(
                           children: [
-                            ClipRRect(borderRadius: BorderRadius.circular(13), child: SizedBox(height: 170, width: double.infinity, child: Photo(read.image))),
+                            ClipRRect(borderRadius: BorderRadius.circular(13), child: SizedBox(height: 170, width: double.infinity, child: Photo(other.image))),
                             const SizedBox(height: 6),
-                            const Pill('Girl is reading', background: kGreenSoft),
+                            const Pill('Photo B', background: kCard, foreground: kMuted),
                           ],
                         ),
                       ),
@@ -620,8 +680,8 @@ class _GrammarScreenState extends State<GrammarScreen> {
                     color: _selected == i ? kGreenSoft : Colors.white,
                     borderRadius: BorderRadius.circular(13),
                     border: Border.all(
-                      color: _checked && i == 0 ? kGreen : (_selected == i ? kGreen : kLine),
-                      width: _selected == i ? 2 : 1,
+                      color: _checked && i == correctIndex ? kGreen : (_selected == i ? kGreen : kLine),
+                      width: _selected == i || (_checked && i == correctIndex) ? 2 : 1,
                     ),
                   ),
                   child: Row(
@@ -651,7 +711,7 @@ class _GrammarScreenState extends State<GrammarScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        correct ? 'Correct! “While” connects two actions happening at the same time.' : 'Not quite. The photos show a boy running and a girl reading.',
+                        correct ? 'Correct — this sentence describes the first photo.' : 'The right sentence is: “${item.sentence}”',
                         style: const TextStyle(fontSize: 11.5, color: kInk, height: 1.4),
                       ),
                     ),
@@ -659,18 +719,16 @@ class _GrammarScreenState extends State<GrammarScreen> {
                 ),
               ),
             const SizedBox(height: 12),
-            primaryButton('Check Answer', _checked ? null : () {
-              setState(() => _checked = true);
-              if (!_awarded) {
-                Progress.instance.complete(widget.index, correct);
-                _awarded = true;
-              }
-            }),
-            const SizedBox(height: 10),
-            const Text(
-              'Tip: Use “while” to connect two actions happening at the same time.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10.5, color: kMuted, height: 1.4),
+            primaryButton(
+              _checked ? 'Done' : 'Check Answer',
+              _checked
+                  ? () => Navigator.pop(context)
+                  : (_selected == null
+                      ? null
+                      : () {
+                          setState(() => _checked = true);
+                          Progress.instance.recordAnswer(correct);
+                        }),
             ),
           ],
         ),
@@ -691,41 +749,34 @@ class ReadingScreen extends StatefulWidget {
 
 class _ReadingScreenState extends State<ReadingScreen> {
   int _tab = 0;
-  bool _awarded = false;
+  int? _quizSelected;
+  bool _quizChecked = false;
+  late final List<LearnItem> unit;
+  late final String story;
+  late final LearnItem target;
+  late final List<LearnItem> quizOptions;
+  late final int correctIndex;
 
-  static const story =
-      'In the morning, the market is busy and full of life. Local vendors set up their stalls early to sell fresh produce to the community. You can see baskets of golden apples, ripe tomatoes, and bunches of herbs neatly arranged. The customers walk through the market, speaking with the vendors and choosing the best ingredients for the day. The smell of fresh bread fills the air as people greet each other with smiles.';
-
-  static const meanings = {
-    'market': 'السوق',
-    'vendors': 'البائعون',
-    'community': 'المجتمع',
-    'apples': 'التفاح',
-    'tomatoes': 'الطماطم',
-    'herbs': 'الأعشاب',
-    'bread': 'الخبز',
-    'fresh': 'طازج',
-  };
+  @override
+  void initState() {
+    super.initState();
+    unit = unitItems(widget.index);
+    target = itemAt(widget.index);
+    story = unit.map((e) => e.sentence).join(' ');
+    quizOptions = choicesFor(target, widget.index + 41, count: 2);
+    correctIndex = imageIndex(quizOptions, target.image);
+  }
 
   List<InlineSpan> _spans() {
-    final spans = <InlineSpan>[];
-    for (final word in story.split(' ')) {
-      final clean = word.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
-      final highlight = meanings.containsKey(clean);
+    return story.split(' ').map((word) {
       final recognizer = TapGestureRecognizer()
-        ..onTap = () {
-          Tts.instance.speak(clean);
-          showToast(context, '$clean — ${meanings[clean]}');
-        };
-      spans.add(TextSpan(
+        ..onTap = () => Tts.instance.speak(word.replaceAll(RegExp(r'[^a-zA-Z]'), ''));
+      return TextSpan(
         text: '$word ',
-        recognizer: highlight ? recognizer : null,
-        style: highlight
-            ? const TextStyle(backgroundColor: kGreenSoft, color: kGreenDark, fontWeight: FontWeight.w800)
-            : const TextStyle(color: kInk, height: 1.65),
-      ));
-    }
-    return spans;
+        recognizer: recognizer,
+        style: const TextStyle(color: kInk, height: 1.65),
+      );
+    }).toList();
   }
 
   @override
@@ -736,7 +787,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         context,
         green: true,
         title: 'Reading Lesson',
-        subtitle: 'The Market in the Morning',
+        subtitle: 'Unit ${widget.index ~/ 4 + 1} • ${unit.length} sentence story',
         actions: [
           IconButton(icon: const Icon(Icons.headphones_rounded), onPressed: () => Tts.instance.speak(story)),
         ],
@@ -753,71 +804,18 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   CircleIcon(Icons.menu_book_rounded, size: 34, background: Colors.white, foreground: kGreenDark),
                   SizedBox(width: 10),
                   Expanded(child: Text('LINGO GOLD • READING', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.2, fontSize: 12))),
-                  Pill('B1', background: Colors.white, foreground: kGreenDark),
+                  Pill('A1', background: Colors.white, foreground: kGreenDark),
                 ],
               ),
             ),
             const SizedBox(height: 12),
-            Text('UNIT ${widget.index ~/ 4 + 1} • LESSON ${widget.index % 4 + 1} • READING • THE MARKET IN THE MORNING', style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: kMuted, letterSpacing: .4)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text('Progress 60%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: kInk)),
-                const Spacer(),
-                const Text('8 min left', style: TextStyle(fontSize: 11, color: kMuted)),
-              ],
-            ),
-            const SizedBox(height: 5),
-            const ProgressBar(0.6, height: 7),
-            const SizedBox(height: 14),
-            ClipRRect(borderRadius: BorderRadius.circular(18), child: SizedBox(height: 195, width: double.infinity, child: Photo('market_morning.jpg'))),
-            const SizedBox(height: 12),
-            CardBox(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('The Story', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: kInk)),
-                  const SizedBox(height: 8),
-                  Text.rich(TextSpan(children: _spans()), style: const TextStyle(fontSize: 12.5)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            CardBox(
-              color: kGreenSoft,
-              child: const Row(
-                children: [
-                  Icon(Icons.lightbulb_outline_rounded, color: kGreenDark, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tap any highlighted word to hear its pronunciation and see the Arabic meaning.',
-                      style: TextStyle(fontSize: 11, color: kInk, height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: outlineButton('Listen', () => Tts.instance.speak(story), icon: Icons.volume_up_rounded),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: primaryButton('Continue', () {
-                    if (!_awarded) {
-                      Progress.instance.complete(widget.index, true);
-                      _awarded = true;
-                    }
-                    Navigator.pop(context);
-                  }, icon: Icons.arrow_forward_rounded),
-                ),
-              ],
+            Text(
+              'UNIT ${widget.index ~/ 4 + 1} • LESSON ${widget.index % 4 + 1} • READING • ${target.word.toUpperCase()}',
+              style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: kMuted, letterSpacing: .4),
             ),
             const SizedBox(height: 14),
+            ClipRRect(borderRadius: BorderRadius.circular(18), child: SizedBox(height: 195, width: double.infinity, child: Photo(unit.first.image))),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(color: kCard, borderRadius: BorderRadius.circular(14)),
@@ -828,6 +826,102 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   _ReadingTab(label: 'Quiz', icon: Icons.check_circle_rounded, selected: _tab == 2, onTap: () => setState(() => _tab = 2)),
                 ],
               ),
+            ),
+            const SizedBox(height: 12),
+            if (_tab == 0) ...[
+              CardBox(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('The Story', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: kInk)),
+                    const SizedBox(height: 8),
+                    Text.rich(TextSpan(children: _spans()), style: const TextStyle(fontSize: 12.5)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              CardBox(
+                color: kGreenSoft,
+                child: const Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline_rounded, color: kGreenDark, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Tap any word to hear it. The story uses only this unit’s sentences.',
+                        style: TextStyle(fontSize: 11, color: kInk, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else if (_tab == 1) ...[
+              SectionTitle('Words in this story', trailing: '${unit.length} items'),
+              CardBox(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < unit.length; i++) ...[
+                      ListRow(
+                        icon: Icons.volume_up_rounded,
+                        title: unit[i].word,
+                        subtitle: unit[i].sentence,
+                        onTap: () => Tts.instance.speak(unit[i].sentence),
+                      ),
+                      if (i < unit.length - 1) const Divider(height: 1, color: kLine),
+                    ],
+                  ],
+                ),
+              ),
+            ] else ...[
+              Text('Which photo matches “${target.sentence}” ?', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kInk)),
+              const SizedBox(height: 10),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: quizOptions.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 1),
+                itemBuilder: (context, i) {
+                  final selected = _quizSelected == i;
+                  return GestureDetector(
+                    onTap: _quizChecked ? null : () => setState(() => _quizSelected = i),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _quizChecked && i == correctIndex ? kGreen : (selected ? kGreen : kLine),
+                            width: selected || (_quizChecked && i == correctIndex) ? 3 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Photo(quizOptions[i].image),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              primaryButton(
+                _quizChecked ? 'Done' : 'Check Answer',
+                _quizChecked
+                    ? () => Navigator.pop(context)
+                    : (_quizSelected == null
+                        ? null
+                        : () {
+                            setState(() => _quizChecked = true);
+                            Progress.instance.recordAnswer(_quizSelected == correctIndex);
+                          }),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: outlineButton('Listen', () => Tts.instance.speak(story), icon: Icons.volume_up_rounded)),
+                const SizedBox(width: 10),
+                Expanded(child: primaryButton('Done', () => Navigator.pop(context), icon: Icons.check_rounded)),
+              ],
             ),
           ],
         ),
@@ -880,14 +974,19 @@ class _WritingScreenState extends State<WritingScreen> {
   final _controller = TextEditingController();
   bool _checked = false;
   bool _correct = false;
-  bool _awarded = false;
+  bool _saved = false;
   late final LearnItem item;
+  late final List<String> chips;
 
   @override
   void initState() {
     super.initState();
-    item = findItem('dog');
-    _controller.text = 'The dog is sleeping';
+    item = itemAt(widget.index);
+    final words = item.sentence.split(RegExp(r'\s+'));
+    final extras = choicesFor(item, widget.index + 53, count: 2)
+        .expand((e) => e.sentence.split(RegExp(r'\s+')))
+        .where((w) => !words.contains(w));
+    chips = [...words, ...extras.take(3)].toList()..shuffle(Random(widget.index + 59));
   }
 
   @override
@@ -897,14 +996,14 @@ class _WritingScreenState extends State<WritingScreen> {
   }
 
   void _check() {
-    final correct = _normalize(_controller.text) == _normalize('The dog is sleeping');
+    final correct = _normalize(_controller.text) == _normalize(item.sentence);
     setState(() {
       _checked = true;
       _correct = correct;
     });
-    if (!_awarded) {
-      Progress.instance.complete(widget.index, correct);
-      _awarded = true;
+    if (!_saved) {
+      Progress.instance.recordAnswer(correct);
+      _saved = true;
     }
   }
 
@@ -917,7 +1016,6 @@ class _WritingScreenState extends State<WritingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chips = ['The', 'dog', 'is', 'sleeping', 'sleep', 'running'];
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: topBar(context, green: true, title: 'Writing Practice', subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4'),
@@ -929,11 +1027,11 @@ class _WritingScreenState extends State<WritingScreen> {
               children: [
                 const Text('Writing Practice', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: kInk)),
                 const Spacer(),
-                Text('${widget.index % 10 + 2} / 10', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: kGreenDark)),
+                Text('${widget.index % 4 + 1} / 4', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: kGreenDark)),
               ],
             ),
             const SizedBox(height: 6),
-            ProgressBar((widget.index % 10 + 2) / 10, height: 7),
+            ProgressBar((widget.index % 4 + 1) / 4, height: 7),
             const SizedBox(height: 14),
             CardBox(
               padding: const EdgeInsets.all(12),
@@ -941,9 +1039,9 @@ class _WritingScreenState extends State<WritingScreen> {
                 children: [
                   ClipRRect(borderRadius: BorderRadius.circular(14), child: SizedBox(height: 185, width: double.infinity, child: Photo(item.image))),
                   const SizedBox(height: 12),
-                  const Text('Look at the photo and type the phrase:', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5, color: kInk)),
+                  const Text('Look at the photo and type the sentence:', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5, color: kInk)),
                   const SizedBox(height: 4),
-                  const Text('The dog is sleeping', style: TextStyle(fontSize: 12, color: kMuted, fontStyle: FontStyle.italic)),
+                  Text('Target: ${item.word}', style: const TextStyle(fontSize: 12, color: kMuted, fontStyle: FontStyle.italic)),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _controller,
@@ -960,11 +1058,11 @@ class _WritingScreenState extends State<WritingScreen> {
                     onChanged: (_) => setState(() => _checked = false),
                   ),
                   const SizedBox(height: 10),
-                  primaryButton('Check Answer', _check, expand: false),
+                  primaryButton(_checked ? 'Done' : 'Check Answer', _checked ? () => Navigator.pop(context) : _check, expand: false),
                   if (_checked) ...[
                     const SizedBox(height: 8),
                     Text(
-                      _correct ? 'Correct! The dog is sleeping.' : 'Try again. Use the words from the photo.',
+                      _correct ? 'Correct!' : 'Correct sentence: ${item.sentence}',
                       style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: _correct ? kGreenDark : kMuted),
                     ),
                   ],
@@ -1011,21 +1109,24 @@ class _ListeningScreenState extends State<ListeningScreen> {
   bool _playing = false;
   int? _selected;
   bool _checked = false;
-  bool _awarded = false;
+  late final LearnItem item;
+  late final List<LearnItem> options;
+  late final int correctIndex;
 
-  static const prompt = 'The cat is sleeping on the windowsill';
+  @override
+  void initState() {
+    super.initState();
+    item = itemAt(widget.index);
+    options = choicesFor(item, widget.index + 61);
+    correctIndex = imageIndex(options, item.image);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final options = [
-      {'label': 'Dog', 'image': 'L153_the_dog.jpg'},
-      {'label': 'Bird', 'image': 'L155_the_bird.jpg'},
-      {'label': 'Cat', 'image': 'cat_sleeping_window.jpg'},
-      {'label': 'Fox', 'image': 'fox.jpg'},
-    ];
+    final prompt = item.sentence;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: topBar(context, green: true, title: 'Listening Activity', subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4 • Animals'),
+      appBar: topBar(context, green: true, title: 'Listening Activity', subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4'),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 22),
@@ -1058,20 +1159,24 @@ class _ListeningScreenState extends State<ListeningScreen> {
                           ],
                         ),
                       ),
-                      const Text('0:07 / 0:12', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: kMuted)),
+                      const Text('EN • A1', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: kMuted)),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Waveform(height: 42, progress: _playing ? 0.8 : 0.6),
+                  Waveform(height: 42, progress: _playing ? 0.8 : 0.35),
                   const SizedBox(height: 6),
-                  const ProgressBar(0.6, height: 5),
+                  ProgressBar((widget.index % 4 + 1) / 4, height: 5),
                 ],
               ),
             ),
             const SizedBox(height: 14),
-            const Text('Choose the image that matches:', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kInk)),
+            const Text('Choose the image you hear:', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kInk)),
             const SizedBox(height: 4),
-            const Text('“$prompt”', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: kGreenDark)),
+            Text(
+              _checked ? '“$prompt”' : 'The sentence is hidden — listen with the play button.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: kMuted),
+            ),
             const SizedBox(height: 12),
             GridView.builder(
               shrinkWrap: true,
@@ -1085,7 +1190,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
               ),
               itemBuilder: (context, i) {
                 final selected = _selected == i;
-                final isCorrect = i == 2;
+                final isCorrect = i == correctIndex;
                 return GestureDetector(
                   onTap: () => setState(() => _selected = i),
                   child: Container(
@@ -1101,13 +1206,13 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       borderRadius: BorderRadius.circular(12),
                       child: Column(
                         children: [
-                          Expanded(child: Photo(options[i]['image']!)),
+                          Expanded(child: Photo(options[i].image)),
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             color: selected ? kGreenSoft : Colors.white,
                             child: Text(
-                              options[i]['label']!,
+                              options[i].word,
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kInk),
                             ),
@@ -1120,22 +1225,28 @@ class _ListeningScreenState extends State<ListeningScreen> {
               },
             ),
             const SizedBox(height: 12),
-            primaryButton('Check Answer', _selected == null ? null : () {
-              final correct = _selected == 2;
-              setState(() {
-                _checked = true;
-                _playing = false;
-              });
-              if (!_awarded) {
-                Progress.instance.complete(widget.index, correct);
-                _awarded = true;
-              }
-            }),
+            primaryButton(
+              _checked ? 'Done' : 'Check Answer',
+              _checked
+                  ? () => Navigator.pop(context)
+                  : (_selected == null
+                      ? null
+                      : () {
+                          final correct = _selected == correctIndex;
+                          setState(() {
+                            _checked = true;
+                            _playing = false;
+                          });
+                          Progress.instance.recordAnswer(correct);
+                        }),
+            ),
             const SizedBox(height: 7),
             Text(
-              _checked ? (_selected == 2 ? 'Correct! The cat is sleeping.' : 'The correct answer is Cat.') : 'Tap the correct image to continue',
+              _checked
+                  ? (_selected == correctIndex ? 'Correct! $prompt' : 'Correct answer: ${item.word}')
+                  : 'Tap the correct image, then check.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10.5, color: _checked && _selected == 2 ? kGreenDark : kMuted, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 10.5, color: _checked && _selected == correctIndex ? kGreenDark : kMuted, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -1156,26 +1267,48 @@ class SpeakingScreen extends StatefulWidget {
 
 class _SpeakingScreenState extends State<SpeakingScreen> {
   bool _listening = false;
-  bool _tried = false;
+  bool _saved = false;
+  int? _score;
+  String? _heard;
+  late final LearnItem item;
 
-  static const phrase = 'The library is on the left';
+  @override
+  void initState() {
+    super.initState();
+    item = itemAt(widget.index);
+  }
 
   Future<void> _listen() async {
+    await Tts.instance.speak(item.sentence);
+  }
+
+  Future<void> _record() async {
     if (_listening) return;
     setState(() {
       _listening = true;
-      _tried = true;
+      _heard = null;
     });
-    await Tts.instance.speak(phrase);
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-    if (mounted) setState(() => _listening = false);
+    final heard = await Voice.instance.recognize();
+    if (!mounted) return;
+    if (heard == null) {
+      setState(() => _listening = false);
+      showToast(context, 'التعرف على الصوت غير متاح. استمع وكرر الجملة.');
+      return;
+    }
+    final score = speechScore(item.sentence, heard);
+    setState(() {
+      _score = score;
+      _heard = heard;
+      _listening = false;
+    });
+    await Progress.instance.setPronunciation(score);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: topBar(context, title: 'Speaking Practice', subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4 • Pronunciation'),
+      appBar: topBar(context, title: 'Speaking Practice', subtitle: 'Unit ${widget.index ~/ 4 + 1} • Lesson ${widget.index % 4 + 1} of 4'),
       body: SafeArea(
         child: Column(
           children: [
@@ -1186,9 +1319,9 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Speak the phrase', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kMuted)),
+                    const Text('Speak this sentence', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kMuted)),
                     const SizedBox(height: 2),
-                    const Text('“$phrase”', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+                    Text('“${item.sentence}”', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
                     const SizedBox(height: 10),
                     Row(
                       children: [
@@ -1198,16 +1331,20 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(_listening ? 'Listening…' : 'Tap to speak', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: kGreenDark)),
-                              Text(_tried ? 'Great pronunciation! Keep speaking.' : 'Say the phrase clearly.', style: const TextStyle(fontSize: 10, color: kMuted)),
+                              Text(_listening ? 'Listening…' : (_score == null ? 'Tap Speak' : 'Tap Speak to try again'),
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: kGreenDark)),
+                              Text(
+                                _heard == null ? 'A real score appears after recognition.' : 'Heard: “$_heard”',
+                                style: const TextStyle(fontSize: 10, color: kMuted),
+                              ),
                             ],
                           ),
                         ),
-                        const Pill('A2', background: Colors.white),
+                        const Pill('A1', background: Colors.white),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    ProgressBar(_tried ? 0.84 : 0.35, height: 7),
+                    ProgressBar(_score == null ? 0.2 : (_score! / 100), height: 7),
                   ],
                 ),
               ),
@@ -1222,7 +1359,7 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Photo('L151_kid.jpg'),
+                        Photo(item.image),
                         Positioned(
                           left: 10,
                           right: 10,
@@ -1235,9 +1372,9 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
                                 const CircleIcon(Icons.graphic_eq_rounded, size: 32, background: kGreenSoft, foreground: kGreen),
                                 const SizedBox(width: 8),
                                 const Expanded(
-                                  child: Text('Listening to your voice…', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: kInk)),
+                                  child: Text('Recognition score', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: kInk)),
                                 ),
-                                Text(_tried ? '84%' : '—', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kGreenDark)),
+                                Text(_score == null ? '—' : '$_score%', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kGreenDark)),
                               ],
                             ),
                           ),
@@ -1252,11 +1389,16 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
               child: Row(
                 children: [
-                  Expanded(child: outlineButton('Try again', _listen)),
+                  Expanded(child: outlineButton('Listen', _listen, icon: Icons.volume_up_rounded)),
+                  const SizedBox(width: 10),
+                  Expanded(child: outlineButton('Speak', _record, icon: Icons.mic_rounded)),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: primaryButton('Continue', () {
-                      Progress.instance.complete(widget.index, _tried);
+                    child: primaryButton('Done', () {
+                      if (!_saved && _score != null) {
+                        Progress.instance.recordAnswer(_score! >= 70);
+                        _saved = true;
+                      }
                       Navigator.pop(context);
                     }),
                   ),
@@ -1394,7 +1536,7 @@ class _ChooseImageScreenState extends State<ChooseImageScreen> {
               final correct = choices[_selected!].image == item.image;
               setState(() => _checked = true);
               if (!_awarded) {
-                Progress.instance.complete(widget.index, correct);
+                Progress.instance.recordAnswer(correct);
                 _awarded = true;
               }
             }),
@@ -1426,34 +1568,37 @@ class ChoosePromptScreen extends StatefulWidget {
 class _ChoosePromptScreenState extends State<ChoosePromptScreen> {
   int? _selected;
   bool _checked = false;
-  bool _awarded = false;
+  late final LearnItem item;
+  late final List<LearnItem> options;
+  late final int correctIndex;
 
-  static const prompt = 'The man is drinking coffee at the café';
-  static const options = [
-    {'image': 'act_drink.jpg', 'label': 'A man drinking coffee at the café'},
-    {'image': 'job_student.jpg', 'label': 'A woman working on a laptop'},
-    {'image': 'act_read.jpg', 'label': 'A man reading a book on a park bench'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    item = itemAt(widget.index);
+    options = choicesFor(item, widget.index + 71, count: 2);
+    correctIndex = imageIndex(options, item.image);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: topBar(context, green: true, title: 'Choose a Prompt', subtitle: 'Match the photo to the prompt • Unit ${widget.index ~/ 4 + 1}'),
+      appBar: topBar(context, green: true, title: 'Choose a Prompt', subtitle: 'Match the photo • Unit ${widget.index ~/ 4 + 1}'),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 22),
           children: [
-            const ProgressBar(0.2, height: 5),
+            ProgressBar((widget.index % 4 + 1) / 4, height: 5),
             const SizedBox(height: 14),
             const Text('Choose a Prompt', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kInk)),
-            const Text('Match the photo to the prompt below', style: TextStyle(fontSize: 12, color: kMuted)),
+            const Text('Match the photo to this unit sentence', style: TextStyle(fontSize: 12, color: kMuted)),
             const SizedBox(height: 12),
             CardBox(
               color: kGreenSoft,
               child: Row(
                 children: [
-                  ClipRRect(borderRadius: BorderRadius.circular(11), child: SizedBox(width: 78, height: 78, child: Photo('act_drink.jpg'))),
+                  const CircleIcon(Icons.volume_up_rounded, size: 64, background: Colors.white, foreground: kGreen),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1461,9 +1606,13 @@ class _ChoosePromptScreenState extends State<ChoosePromptScreen> {
                       children: [
                         const Text('PROMPT', style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w900, color: kGreenDark, letterSpacing: 1)),
                         const SizedBox(height: 3),
-                        const Text(prompt, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: kInk, height: 1.4)),
+                        Text(item.sentence, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: kInk, height: 1.4)),
                       ],
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.volume_up_rounded, color: kGreen),
+                    onPressed: () => Tts.instance.speak(item.sentence),
                   ),
                 ],
               ),
@@ -1480,8 +1629,8 @@ class _ChoosePromptScreenState extends State<ChoosePromptScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: _checked && i == 0 ? kGreen : (_selected == i ? kGreen : kLine),
-                      width: _selected == i || (_checked && i == 0) ? 3 : 1,
+                      color: _checked && i == correctIndex ? kGreen : (_selected == i ? kGreen : kLine),
+                      width: _selected == i || (_checked && i == correctIndex) ? 3 : 1,
                     ),
                   ),
                   child: Row(
@@ -1494,7 +1643,7 @@ class _ChoosePromptScreenState extends State<ChoosePromptScreen> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Photo(options[i]['image']!),
+                              Photo(options[i].image),
                               Positioned(
                                 top: 5,
                                 left: 5,
@@ -1513,30 +1662,32 @@ class _ChoosePromptScreenState extends State<ChoosePromptScreen> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(10),
-                          child: Text(options[i]['label']!, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: kInk, height: 1.35)),
+                          child: Text(options[i].word, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: kInk, height: 1.35)),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            primaryButton('Check Answer', _selected == null ? null : () {
-              setState(() => _checked = true);
-              if (!_awarded) {
-                Progress.instance.complete(widget.index, _selected == 0);
-                _awarded = true;
-              }
-            }),
+            primaryButton(
+              _checked ? 'Done' : 'Check Answer',
+              _checked
+                  ? () => Navigator.pop(context)
+                  : (_selected == null
+                      ? null
+                      : () {
+                          setState(() => _checked = true);
+                          Progress.instance.recordAnswer(_selected == correctIndex);
+                        }),
+            ),
             if (_checked) ...[
               const SizedBox(height: 8),
               Text(
-                _selected == 0 ? 'Correct! The prompt matches photo A.' : 'The prompt matches photo A.',
+                _selected == correctIndex ? 'Correct! ${item.word}' : 'Correct answer: ${item.word}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: kGreenDark),
               ),
             ],
-            const SizedBox(height: 8),
-            const Text('Need a hint? Tap the speaker on the prompt card.', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: kMuted)),
           ],
         ),
       ),
@@ -1560,7 +1711,6 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
   int? _selected;
   bool _checked = false;
   bool _done = false;
-  bool _awarded = false;
   late final List<LearnItem> _questions;
 
   @override
@@ -1725,10 +1875,6 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
                     Future<void>.delayed(const Duration(milliseconds: 350), () {
                       if (!mounted) return;
                       if (_q == 9) {
-                        if (!_awarded) {
-                          Progress.instance.complete(Progress.instance.current, _score >= 7);
-                          _awarded = true;
-                        }
                         setState(() => _done = true);
                       } else {
                         setState(() {
@@ -1755,7 +1901,8 @@ class _AdaptiveRecallScreenState extends State<AdaptiveRecallScreen> {
 // 12. MILESTONE CONVERSATION
 // ============================================================
 class MilestoneConversationScreen extends StatefulWidget {
-  const MilestoneConversationScreen({super.key});
+  final int? unit;
+  const MilestoneConversationScreen({super.key, this.unit});
   @override
   State<MilestoneConversationScreen> createState() => _MilestoneConversationScreenState();
 }
@@ -1763,10 +1910,27 @@ class MilestoneConversationScreen extends StatefulWidget {
 class _MilestoneConversationScreenState extends State<MilestoneConversationScreen> {
   final _controller = TextEditingController();
   final _scroll = ScrollController();
-  final _messages = <Map<String, String>>[
-    {'who': 'them', 'text': 'Hello! Welcome to the café. What would you like to order today?'},
-  ];
+  late final List<LearnItem> unit;
+  late final String opening;
+  late final String followUp;
+  late final List<Map<String, String>> _messages;
   bool _sending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final unitNumber = widget.unit ?? (Progress.instance.firstIncomplete ~/ 4);
+    final start = unitNumber * 4;
+    unit = List<LearnItem>.generate(
+      min(4, items.length - start),
+      (i) => items[start + i],
+    );
+    opening = 'Hello! This is Unit ${unitNumber + 1}. Let’s talk about “${unit.first.word}”. What can you see?';
+    followUp = 'Good! Now try a sentence with “${unit.last.word}”.';
+    _messages = [
+      {'who': 'them', 'text': opening},
+    ];
+  }
 
   @override
   void dispose() {
@@ -1795,18 +1959,18 @@ class _MilestoneConversationScreenState extends State<MilestoneConversationScree
     await Future<void>.delayed(const Duration(milliseconds: 650));
     if (!mounted) return;
     setState(() {
-      _messages.add({'who': 'them', 'text': 'Great choice! Would you like anything else with that?'});
+      _messages.add({'who': 'them', 'text': followUp});
       _sending = false;
     });
     _scrollToBottom();
-    Tts.instance.speak('Great choice! Would you like anything else with that?');
+    Tts.instance.speak(followUp);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: topBar(context, green: true, title: 'LINGO GOLD', subtitle: 'Unit Milestone • Conversation'),
+      appBar: topBar(context, green: true, title: 'LINGO GOLD', subtitle: 'Unit ${(widget.unit ?? (Progress.instance.firstIncomplete ~/ 4)) + 1} Milestone • Conversation'),
       body: SafeArea(
         child: Column(
           children: [
@@ -1815,12 +1979,15 @@ class _MilestoneConversationScreenState extends State<MilestoneConversationScree
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: kGreenSoft, borderRadius: BorderRadius.circular(13)),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.chat_bubble_outline_rounded, color: kGreenDark, size: 17),
-                    SizedBox(width: 7),
+                    const Icon(Icons.chat_bubble_outline_rounded, color: kGreenDark, size: 17),
+                    const SizedBox(width: 7),
                     Expanded(
-                      child: Text('You are practicing conversation. Reply as if you are at a café.', style: TextStyle(fontSize: 10.5, color: kInk, height: 1.4)),
+                      child: Text(
+                        'You are practicing Unit ${(widget.unit ?? (Progress.instance.firstIncomplete ~/ 4)) + 1} conversation. Use the unit words in your replies.',
+                        style: const TextStyle(fontSize: 10.5, color: kInk, height: 1.4),
+                      ),
                     ),
                   ],
                 ),
@@ -1855,13 +2022,16 @@ class _MilestoneConversationScreenState extends State<MilestoneConversationScree
                     margin: const EdgeInsets.only(bottom: 10, top: 2),
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(color: kGreenSoft, borderRadius: BorderRadius.circular(11)),
-                    child: const Row(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.lightbulb_outline_rounded, color: kGreenDark, size: 17),
-                        SizedBox(width: 6),
+                        const Icon(Icons.lightbulb_outline_rounded, color: kGreenDark, size: 17),
+                        const SizedBox(width: 6),
                         Expanded(
-                          child: Text('Tip: Use polite ordering phrases like “I would like…” or “Could I have…?”', style: TextStyle(fontSize: 10.5, color: kInk, height: 1.4)),
+                          child: Text(
+                            'Tip: Start with “${unit.first.word}” and answer with a full sentence.',
+                            style: const TextStyle(fontSize: 10.5, color: kInk, height: 1.4),
+                          ),
                         ),
                       ],
                     ),
@@ -1909,11 +2079,11 @@ class _MilestoneConversationScreenState extends State<MilestoneConversationScree
                   const SizedBox(height: 7),
                   Row(
                     children: [
-                      _ChatChip(icon: Icons.lightbulb_outline_rounded, label: 'Hint', onTap: () => showToast(context, 'Try: “I would like a coffee, please.”')),
+                      _ChatChip(icon: Icons.lightbulb_outline_rounded, label: 'Hint', onTap: () => showToast(context, 'Try: “${unit.first.sentence}”')),
                       const SizedBox(width: 6),
-                      _ChatChip(icon: Icons.mic_none_rounded, label: 'Practice Speaking', onTap: () => Tts.instance.speak('I would like a coffee, please.')),
+                      _ChatChip(icon: Icons.mic_none_rounded, label: 'Practice Speaking', onTap: () => Tts.instance.speak(unit.first.sentence)),
                       const SizedBox(width: 6),
-                      _ChatChip(icon: Icons.translate_rounded, label: 'Translate', onTap: () => showToast(context, 'أود طلب قهوة من فضلك.')),
+                      _ChatChip(icon: Icons.menu_book_rounded, label: 'Unit words', onTap: () => showToast(context, unit.map((e) => e.word).join(' • '))),
                     ],
                   ),
                 ],
@@ -2345,6 +2515,366 @@ class ChatMissionsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ============================================================
+// 16. LESSON SESSION — the only place that completes a lesson
+// ============================================================
+class LessonSessionScreen extends StatefulWidget {
+  final int index;
+  const LessonSessionScreen({super.key, required this.index});
+
+  @override
+  State<LessonSessionScreen> createState() => _LessonSessionScreenState();
+}
+
+class _LessonSessionScreenState extends State<LessonSessionScreen> {
+  static const _titles = [
+    'Learn the word',
+    'Choose the photo',
+    'Listen and choose',
+    'Write the sentence',
+    'Say the sentence',
+    'Quick review',
+  ];
+
+  int _step = 0;
+  int? _selected;
+  bool _checked = true;
+  bool _done = false;
+  bool _awarded = false;
+  bool? _lastCorrect;
+  bool _recording = false;
+  int? _speakScore;
+  final _controller = TextEditingController();
+  final _answers = <bool>[];
+
+  late final LearnItem item;
+  late final LearnItem previous;
+  late final List<LearnItem> imageOptions;
+  late final List<LearnItem> listenOptions;
+  late final List<LearnItem> reviewOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    item = itemAt(widget.index);
+    previous = itemAt((widget.index - 1 + items.length) % items.length);
+    imageOptions = choicesFor(item, widget.index + 101);
+    listenOptions = choicesFor(item, widget.index + 103);
+    reviewOptions = choicesFor(previous, widget.index + 107);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  bool get _canCheck {
+    switch (_step) {
+      case 1:
+      case 2:
+      case 5:
+        return _selected != null;
+      case 3:
+        return _controller.text.trim().isNotEmpty;
+      case 4:
+        return _speakScore != null;
+      default:
+        return true;
+    }
+  }
+
+  void _check() {
+    if (_step == 0) {
+      setState(() => _checked = true);
+      return;
+    }
+    bool correct;
+    switch (_step) {
+      case 1:
+        correct = imageOptions[_selected!].image == item.image;
+        break;
+      case 2:
+        correct = listenOptions[_selected!].image == item.image;
+        break;
+      case 3:
+        correct = _normalize(_controller.text) == _normalize(item.sentence);
+        break;
+      case 4:
+        correct = _speakScore! >= 70;
+        break;
+      default:
+        correct = reviewOptions[_selected!].image == previous.image;
+    }
+    _answers.add(correct);
+    Progress.instance.recordAnswer(correct);
+    setState(() {
+      _lastCorrect = correct;
+      _checked = true;
+    });
+  }
+
+  void _advance() {
+    if (_step == _titles.length - 1) {
+      final correct = _answers.where((e) => e).length;
+      final passed = correct >= 4;
+      if (!_awarded) {
+        Progress.instance.complete(widget.index, passed);
+        _awarded = true;
+      }
+      setState(() => _done = true);
+      return;
+    }
+    setState(() {
+      _step += 1;
+      _selected = null;
+      _checked = _step == 0;
+      _lastCorrect = null;
+      _controller.clear();
+      _speakScore = null;
+      _recording = false;
+    });
+  }
+
+  Future<void> _recordSpeech() async {
+    if (_recording) return;
+    setState(() {
+      _recording = true;
+      _speakScore = null;
+    });
+    final heard = await Voice.instance.recognize();
+    if (!mounted) return;
+    if (heard == null) {
+      setState(() => _recording = false);
+      showToast(context, 'التعرف غير متاح — استمع وكرر الجملة ثم تابع.');
+      return;
+    }
+    setState(() {
+      _speakScore = speechScore(item.sentence, heard);
+      _recording = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_done) {
+      final correct = _answers.where((e) => e).length;
+      final passed = correct >= 4;
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(26),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleIcon(Icons.check_rounded, size: 92, background: kGreen, foreground: Colors.white),
+                  const SizedBox(height: 18),
+                  const Text('Lesson Complete', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: kInk)),
+                  const SizedBox(height: 8),
+                  Text(item.word, style: const TextStyle(fontSize: 17, color: kMuted)),
+                  const SizedBox(height: 16),
+                  StarRow(count: passed ? 3 : 1, size: 32),
+                  const SizedBox(height: 10),
+                  Text('$correct / ${_answers.length} answers correct', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kInk)),
+                  const SizedBox(height: 8),
+                  Pill(passed ? '+20 XP' : '+5 XP', icon: Icons.bolt_rounded),
+                  const SizedBox(height: 26),
+                  primaryButton('Back to lesson plan', () => Navigator.pop(context)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: topBar(
+        context,
+        green: true,
+        title: 'Lesson ${widget.index + 1}',
+        subtitle: 'Unit ${widget.index ~/ 4 + 1} • ${_titles[_step]}',
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Text('${_step + 1} / ${_titles.length}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: kGreenDark)),
+                      const Spacer(),
+                      Text(_titles[_step], style: const TextStyle(fontSize: 11, color: kMuted)),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  ProgressBar((_step + 1) / _titles.length, height: 7),
+                ],
+              ),
+            ),
+            Expanded(child: ListView(padding: const EdgeInsets.fromLTRB(16, 14, 16, 12), children: [_body()])),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+              child: primaryButton(
+                _checked ? (_step == _titles.length - 1 ? 'Finish lesson' : 'Continue') : 'Check answer',
+                _checked ? _advance : (_canCheck ? _check : null),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _body() {
+    switch (_step) {
+      case 0:
+        return Column(
+          children: [
+            ClipRRect(borderRadius: BorderRadius.circular(22), child: SizedBox(height: 300, width: double.infinity, child: Photo(item.image))),
+            const SizedBox(height: 16),
+            Text(item.word, textAlign: TextAlign.center, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w900, color: kInk)),
+            const SizedBox(height: 6),
+            Text(item.sentence, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: kMuted)),
+            const SizedBox(height: 12),
+            outlineButton('Listen again', () => Tts.instance.speak(item.sentence), icon: Icons.volume_up_rounded),
+          ],
+        );
+
+      case 1:
+        return _imageGrid(
+          title: 'Choose the photo that matches “${item.word}”',
+          options: imageOptions,
+          correct: imageOptions.firstWhere((e) => e.image == item.image),
+          speak: item.word,
+        );
+
+      case 2:
+        return _imageGrid(
+          title: _checked ? 'The sentence was: ${item.sentence}' : 'Listen and choose the matching photo',
+          options: listenOptions,
+          correct: listenOptions.firstWhere((e) => e.image == item.image),
+          speak: item.sentence,
+          hideWords: true,
+        );
+
+      case 3:
+        return Column(
+          children: [
+            ClipRRect(borderRadius: BorderRadius.circular(18), child: SizedBox(height: 190, width: double.infinity, child: Photo(item.image))),
+            const SizedBox(height: 12),
+            const Text('Type the sentence', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _controller,
+              textAlign: TextAlign.center,
+              enabled: !_checked,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: kGreenSoft,
+                hintText: 'Write what you see…',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: kGreen)),
+              ),
+            ),
+            if (_checked) ...[
+              const SizedBox(height: 10),
+              Text(
+                _lastCorrect == true ? 'Correct!' : 'Correct sentence: ${item.sentence}',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kGreenDark),
+              ),
+            ],
+          ],
+        );
+
+      case 4:
+        return Column(
+          children: [
+            ClipRRect(borderRadius: BorderRadius.circular(18), child: SizedBox(height: 210, width: double.infinity, child: Photo(item.image))),
+            const SizedBox(height: 12),
+            Text('“${item.sentence}”', textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: kInk)),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(child: outlineButton('Listen', () => Tts.instance.speak(item.sentence), icon: Icons.volume_up_rounded)),
+                const SizedBox(width: 8),
+                Expanded(child: outlineButton('Speak', _recordSpeech, icon: Icons.mic_rounded)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _recording ? 'Listening…' : (_speakScore == null ? 'Real score: —' : 'Real score: $_speakScore%'),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kGreenDark),
+            ),
+          ],
+        );
+
+      default:
+        return _imageGrid(
+          title: 'Review: choose “${previous.word}”',
+          options: reviewOptions,
+          correct: reviewOptions.firstWhere((e) => e.image == previous.image),
+          speak: previous.word,
+        );
+    }
+  }
+
+  Widget _imageGrid({
+    required String title,
+    required List<LearnItem> options,
+    required LearnItem correct,
+    required String speak,
+    bool hideWords = false,
+  }) {
+    return Column(
+      children: [
+        Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: kInk)),
+        const SizedBox(height: 8),
+        outlineButton('Hear it again', () => Tts.instance.speak(speak), icon: Icons.volume_up_rounded),
+        const SizedBox(height: 14),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: options.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 0.95),
+          itemBuilder: (context, i) {
+            final selected = _selected == i;
+            final showCorrect = _checked && options[i].image == correct.image;
+            return GestureDetector(
+              onTap: _checked ? null : () => setState(() => _selected = i),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: showCorrect || selected ? kGreen : kLine, width: showCorrect || selected ? 3 : 1.5),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    children: [
+                      Expanded(child: Photo(options[i].image)),
+                      if (!hideWords)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          color: selected ? kGreenSoft : Colors.white,
+                          child: Text(options[i].word, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kInk)),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

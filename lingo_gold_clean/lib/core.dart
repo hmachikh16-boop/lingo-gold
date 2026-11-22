@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import 'lessons_data.dart';
 
@@ -46,12 +48,105 @@ class Tts {
   }
 }
 
+/// Real speech recognition. Never returns a fabricated score — if the device
+/// has no speech service or permission, recognition simply returns null.
+class Voice {
+  Voice._();
+  static final Voice instance = Voice._();
+  final SpeechToText _stt = SpeechToText();
+  bool _initialized = false;
+
+  Future<bool> initialize() async {
+    if (_initialized) return true;
+    try {
+      _initialized = await _stt.initialize(onError: (_) {});
+    } catch (_) {
+      _initialized = false;
+    }
+    return _initialized;
+  }
+
+  Future<String?> recognize({String localeId = 'en_US'}) async {
+    if (!await initialize() || !_stt.isAvailable) return null;
+    final completer = Completer<String?>();
+    try {
+      await _stt.listen(
+        onResult: (r) {
+          if (r.finalResult && !completer.isCompleted) {
+            completer.complete(r.recognizedWords);
+          }
+        },
+        localeId: localeId,
+        listenMode: ListenMode.dictation,
+        cancelOnError: true,
+        partialResults: false,
+      );
+    } catch (_) {
+      return null;
+    }
+    final result = await completer.future.timeout(
+      const Duration(seconds: 9),
+      onTimeout: () => null,
+    );
+    await _stt.stop();
+    final text = (result ?? '').trim();
+    return text.isEmpty ? null : text;
+  }
+}
+
+/// Honest pronunciation score: character similarity of every expected word
+/// against the best matching word that was actually recognized.
+int speechScore(String expected, String heard) {
+  List<String> tokens(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp(r"[^a-z0-9' ]"), ' ')
+      .split(RegExp(r'\s+'))
+      .where((e) => e.isNotEmpty)
+      .toList();
+
+  final want = tokens(expected);
+  final said = tokens(heard);
+  if (want.isEmpty || said.isEmpty) return 0;
+
+  int distance(String a, String b) {
+    final prev = List<int>.generate(b.length + 1, (i) => i);
+    final cur = List<int>.filled(b.length + 1, 0);
+    for (var i = 1; i <= a.length; i++) {
+      cur[0] = i;
+      for (var j = 1; j <= b.length; j++) {
+        cur[j] = min(
+          min(cur[j - 1] + 1, prev[j] + 1),
+          prev[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1),
+        );
+      }
+      for (var j = 0; j <= b.length; j++) prev[j] = cur[j];
+    }
+    return prev[b.length];
+  }
+
+  double similarity(String a, String b) {
+    final longest = max(a.length, b.length);
+    return longest == 0 ? 1 : 1 - distance(a, b) / longest;
+  }
+
+  var total = 0.0;
+  for (final word in want) {
+    var best = 0.0;
+    for (final heardWord in said) {
+      best = max(best, similarity(word, heardWord));
+    }
+    total += best;
+  }
+  return (total / want.length * 100).round().clamp(0, 100);
+}
+
 /// Real, persisted learning progress. Everything on the tracking screens
 /// reads from this single source of truth.
 class Progress extends ChangeNotifier {
   Progress._();
   static final Progress instance = Progress._();
 
+  final Set<int> _completedIds = <int>{};
   int completed = 0;
   int stars = 0;
   int xp = 0;
@@ -61,7 +156,7 @@ class Progress extends ChangeNotifier {
   int todayLessons = 0;
   int quizCorrect = 0;
   int quizTotal = 0;
-  int pronunciation = 92;
+  int pronunciation = 0;
   int dailyGoalMinutes = 10;
   String lastDay = '';
   String weekStart = '';
@@ -70,25 +165,77 @@ class Progress extends ChangeNotifier {
   int get level => xp ~/ 200 + 1;
   int get levelXp => xp % 200;
   int get xpToNext => 200 - levelXp;
-  int get accuracy => quizTotal == 0 ? pronunciation : (quizCorrect * 100 / quizTotal).round();
+  int get accuracy => quizTotal == 0 ? 0 : (quizCorrect * 100 / quizTotal).round();
+  bool get hasAnswers => quizTotal > 0;
   int get wordsLearned => words;
   int get weekTotal => week.fold<int>(0, (a, b) => a + b);
 
+  bool isCompleted(int index) => _completedIds.contains(index);
+
+  /// Used only by tests to get a clean singleton between cases.
+  void resetForTests() {
+    _completedIds.clear();
+    completed = 0;
+    words = 0;
+    current = 0;
+    xp = 0;
+    stars = 0;
+    quizTotal = 0;
+    quizCorrect = 0;
+    pronunciation = 0;
+    todayLessons = 0;
+    streak = 0;
+    lastDay = '';
+  }
+
+  int get firstIncomplete {
+    for (var i = 0; i < items.length; i++) {
+      if (!_completedIds.contains(i)) return i;
+    }
+    return 0;
+  }
+
+  /// A unit opens only when the previous unit's four lessons are complete.
+  bool isUnlocked(int index) {
+    final unit = index ~/ 4;
+    if (unit == 0) return true;
+    for (var i = (unit - 1) * 4; i < unit * 4 && i < items.length; i++) {
+      if (!_completedIds.contains(i)) return false;
+    }
+    return true;
+  }
+
   Future<void> load() async {
     final p = await SharedPreferences.getInstance();
-    completed = p.getInt('completed') ?? 0;
+    final legacyCompleted = (p.getInt('completed') ?? 0).clamp(0, items.length);
     stars = p.getInt('stars') ?? 0;
     xp = p.getInt('xp') ?? 0;
     streak = p.getInt('streak') ?? 0;
     current = (p.getInt('current') ?? 0) % items.length;
-    words = p.getInt('words') ?? completed * 4;
+    words = p.getInt('words') ?? legacyCompleted * 4;
     todayLessons = p.getInt('today_lessons') ?? 0;
     quizCorrect = p.getInt('quiz_correct') ?? 0;
     quizTotal = p.getInt('quiz_total') ?? 0;
-    pronunciation = p.getInt('pronunciation') ?? 92;
+    pronunciation = p.getInt('pronunciation') ?? 0;
     dailyGoalMinutes = p.getInt('daily_goal_minutes') ?? 10;
     lastDay = p.getString('last_day') ?? '';
     weekStart = p.getString('week_start') ?? '';
+
+    final rawIds = p.getString('completed_ids') ?? '';
+    if (rawIds.isNotEmpty) {
+      for (final value in rawIds.split(',')) {
+        final id = int.tryParse(value);
+        if (id != null && id >= 0 && id < items.length) _completedIds.add(id);
+      }
+    } else {
+      // Migrate an older install that stored only a single "max index".
+      for (var i = 0; i < legacyCompleted; i++) {
+        _completedIds.add(i);
+      }
+    }
+    completed = _completedIds.length;
+    current = firstIncomplete;
+
     final rawWeek = p.getString('week_activity') ?? '';
     if (rawWeek.isNotEmpty) {
       final parsed = rawWeek.split(',').map(int.tryParse).toList();
@@ -106,6 +253,8 @@ class Progress extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Called once, by the lesson session, after the whole session is finished.
+  /// Repeating a lesson never inflates lessons/words/stars again.
   Future<void> complete(int index, bool correct) async {
     final today = dayKey();
     if (lastDay != today) {
@@ -119,17 +268,18 @@ class Progress extends ChangeNotifier {
       week = List<int>.filled(7, 0);
       weekStart = weekKey();
     }
-    if (index + 1 > completed) {
-      completed = index + 1;
+    final firstTime = _completedIds.add(index);
+    if (firstTime) {
+      completed = _completedIds.length;
       words += 4;
+      stars += correct ? 3 : 1;
+      xp += correct ? 20 : 5;
+      todayLessons += 1;
+      week[DateTime.now().weekday - 1] += 1;
     }
-    stars += correct ? 3 : 1;
-    xp += correct ? 20 : 5;
-    todayLessons += 1;
-    week[DateTime.now().weekday - 1] += 1;
     quizTotal += 1;
     if (correct) quizCorrect += 1;
-    current = (index + 1) % items.length;
+    current = firstIncomplete;
     await _save();
     notifyListeners();
   }
@@ -160,6 +310,7 @@ class Progress extends ChangeNotifier {
   Future<void> _save() async {
     final p = await SharedPreferences.getInstance();
     await p.setInt('completed', completed);
+    await p.setString('completed_ids', (_completedIds.toList()..sort()).join(','));
     await p.setInt('stars', stars);
     await p.setInt('xp', xp);
     await p.setInt('streak', streak);
