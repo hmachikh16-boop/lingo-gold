@@ -54,6 +54,32 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script>
+    window._lingoTranscript = '';
+    window.lingoStartListening = function () {
+      window._lingoTranscript = '';
+      var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) return false;
+      try {
+        var recognition = new Recognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onresult = function (event) {
+          window._lingoTranscript = event.results[0][0].transcript || '';
+        };
+        recognition.start();
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    window.lingoGetTranscript = function () { return window._lingoTranscript || ''; };
+    window.lingoLoadProgress = function () {
+      try { return localStorage.getItem('lingo_replica_progress') || ''; } catch (e) { return ''; }
+    };
+    window.lingoSaveProgress = function (xp, stars) {
+      try { localStorage.setItem('lingo_replica_progress', xp + ':' + stars); } catch (e) {}
+    };
     window.lingoSpeak = function (text) {
       try {
         if (!('speechSynthesis' in window)) return false;

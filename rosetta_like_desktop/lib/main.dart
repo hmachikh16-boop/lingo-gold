@@ -8,10 +8,69 @@ import 'assets_manifest.dart';
 @JS('lingoSpeak')
 external bool _lingoSpeak(String text);
 
+@JS('lingoStartListening')
+external bool _lingoStartListening();
+
+@JS('lingoGetTranscript')
+external String _lingoGetTranscript();
+
+@JS('lingoLoadProgress')
+external String _lingoLoadProgress();
+
+@JS('lingoSaveProgress')
+external void _lingoSaveProgress(int xp, int stars);
+
 void speak(String text) {
   try {
     _lingoSpeak(text);
   } catch (_) {}
+}
+
+bool startListening() {
+  try {
+    return _lingoStartListening();
+  } catch (_) {
+    return false;
+  }
+}
+
+String heardText() {
+  try {
+    return _lingoGetTranscript();
+  } catch (_) {
+    return '';
+  }
+}
+
+({int xp, int stars}) loadSavedProgress() {
+  try {
+    final raw = _lingoLoadProgress();
+    final parts = raw.split(':');
+    if (parts.length == 2) {
+      return (xp: int.tryParse(parts[0]) ?? 0, stars: int.tryParse(parts[1]) ?? 0);
+    }
+  } catch (_) {}
+  return (xp: 0, stars: 0);
+}
+
+void saveProgress(int xp, int stars) {
+  try {
+    _lingoSaveProgress(xp, stars);
+  } catch (_) {}
+}
+
+int simpleScore(String expected, String heard) {
+  List<String> words(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp(r"[^a-z0-9 ]"), ' ')
+      .split(RegExp(r'\s+'))
+      .where((e) => e.isNotEmpty)
+      .toList();
+  final want = words(expected);
+  final said = words(heard);
+  if (want.isEmpty || said.isEmpty) return 0;
+  final hits = want.where((w) => said.contains(w)).length;
+  return (hits / want.length * 100).round();
 }
 
 void main() => runApp(const ReplicaApp());
@@ -130,6 +189,16 @@ class _ReplicaShellState extends State<ReplicaShell> {
   int _right = 0;
   int _wrong = 0;
   bool _finished = false;
+  int _xp = 0;
+  int _stars = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final saved = loadSavedProgress();
+    _xp = saved.xp;
+    _stars = saved.stars;
+  }
 
   void _openLesson() {
     setState(() {
@@ -152,20 +221,32 @@ class _ReplicaShellState extends State<ReplicaShell> {
     setState(() {
       _checked = true;
       _lastCorrect = correct;
-      if (correct) _right++;
+      if (correct) {
+        _right++;
+        _xp += 10;
+      } else {
+        _wrong++;
+        _xp += 2;
+      }
+      saveProgress(_xp, _stars);
     });
-    Future<void>.delayed(const Duration(milliseconds: 750), () {
-      if (!mounted) return;
+  }
+
+  void _advance() {
+    if (!_checked) return;
+    if (_step < totalSteps - 1) {
       setState(() {
-        _checked = false;
+        _step++;
         _selected = null;
-        if (!correct) _wrong++;
-        if (_step < totalSteps - 1) {
-          _step++;
-        } else {
-          _finished = true;
-        }
+        _checked = false;
       });
+      return;
+    }
+    final earned = _wrong == 0 ? 3 : (_wrong <= 3 ? 2 : 1);
+    setState(() {
+      _stars = earned > _stars ? earned : _stars;
+      _finished = true;
+      saveProgress(_xp, _stars);
     });
   }
 
@@ -182,10 +263,12 @@ class _ReplicaShellState extends State<ReplicaShell> {
                     ? 'Unit 1  >  Lesson 4  >  Core Lesson'
                     : 'Unit 1  >  Lesson 4  >  Pronunciation',
             onHome: _openCourse,
+            xp: _xp,
+            stars: _stars,
           ),
           Expanded(
             child: _screen == AppScreen.course
-                ? CourseMap(onStart: _openLesson, onContext: _openContext)
+                ? CourseMap(onStart: _openLesson, onContext: _openContext, xp: _xp, stars: _stars)
                 : _screen == AppScreen.lesson
                     ? LessonScreen(
                         step: _step,
@@ -197,9 +280,19 @@ class _ReplicaShellState extends State<ReplicaShell> {
                         wrong: _wrong,
                         onSelect: (i) => setState(() => _selected = i),
                         onCheck: _checkAnswer,
+                        onAdvance: _advance,
                         onHome: _openCourse,
                       )
-                    : ContextScreen(onHome: _openCourse, onLesson: _openLesson),
+                    : ContextScreen(
+                        onHome: _openCourse,
+                        onLesson: _openLesson,
+                        onXp: (amount) {
+                          setState(() {
+                            _xp += amount;
+                            saveProgress(_xp, _stars);
+                          });
+                        },
+                      ),
           ),
         ],
       ),
@@ -210,7 +303,9 @@ class _ReplicaShellState extends State<ReplicaShell> {
 class _Header extends StatelessWidget {
   final String breadcrumb;
   final VoidCallback onHome;
-  const _Header({required this.breadcrumb, required this.onHome});
+  final int xp;
+  final int stars;
+  const _Header({required this.breadcrumb, required this.onHome, required this.xp, required this.stars});
 
   @override
   Widget build(BuildContext context) {
@@ -246,6 +341,18 @@ class _Header extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w800),
           ),
           const Spacer(),
+          Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: Colors.white, size: 16),
+              const SizedBox(width: 3),
+              Text('$xp', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
+              const SizedBox(width: 12),
+              const Icon(Icons.star_rounded, color: Colors.white, size: 16),
+              const SizedBox(width: 3),
+              Text('$stars', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(width: 10),
           IconButton(
             icon: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 20),
             onPressed: () {},
@@ -274,6 +381,7 @@ class LessonScreen extends StatelessWidget {
   final int wrong;
   final ValueChanged<int> onSelect;
   final ValueChanged<String> onCheck;
+  final VoidCallback onAdvance;
   final VoidCallback onHome;
 
   const LessonScreen({
@@ -287,6 +395,7 @@ class LessonScreen extends StatelessWidget {
     required this.wrong,
     required this.onSelect,
     required this.onCheck,
+    required this.onAdvance,
     required this.onHome,
   });
 
@@ -359,7 +468,8 @@ class LessonScreen extends StatelessWidget {
           step: step,
           right: right,
           wrong: wrong,
-          onCheck: selected == null || checked ? null : () => onCheck(prompt.image),
+          label: checked ? 'Continue' : 'Check',
+          onCheck: checked ? onAdvance : (selected == null ? null : () => onCheck(prompt.image)),
           onHome: onHome,
         ),
       ],
@@ -396,16 +506,33 @@ class _PhotoTile extends StatelessWidget {
           ),
           boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 5)],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Column(
-            children: [
-              Container(height: 48, color: kCanvas),
-              Expanded(
-                child: Image.asset('assets/images/$image', fit: BoxFit.cover, width: double.infinity),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Column(
+                children: [
+                  Container(height: 48, color: kCanvas),
+                  Expanded(
+                    child: Image.asset('assets/images/$image', fit: BoxFit.cover, width: double.infinity),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            if (checked && (correct || selected))
+              Positioned.fill(
+                child: Container(
+                  color: const Color(0x22000000),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    correct ? Icons.check_circle_rounded : Icons.cancel_outlined,
+                    size: 52,
+                    color: correct ? kGreen : kMuted,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -448,6 +575,7 @@ class _StepBar extends StatelessWidget {
   final int wrong;
   final VoidCallback? onCheck;
   final VoidCallback onHome;
+  final String label;
   const _StepBar({
     super.key,
     required this.step,
@@ -455,6 +583,7 @@ class _StepBar extends StatelessWidget {
     required this.wrong,
     required this.onCheck,
     required this.onHome,
+    this.label = 'Continue',
   });
 
   @override
@@ -496,12 +625,18 @@ class _StepBar extends StatelessWidget {
           _SmallCount(icon: Icons.close_rounded, value: wrong, color: kMuted),
           const SizedBox(width: 8),
           Container(
-            width: 44,
             height: 40,
             decoration: BoxDecoration(color: onCheck == null ? const Color(0xFFCFCFC7) : kGreen, borderRadius: BorderRadius.circular(10)),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22),
+            child: FilledButton.icon(
               onPressed: onCheck,
+              icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+              label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                minimumSize: const Size(0, 40),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -530,7 +665,9 @@ class _SmallCount extends StatelessWidget {
 class CourseMap extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onContext;
-  const CourseMap({super.key, required this.onStart, required this.onContext});
+  final int xp;
+  final int stars;
+  const CourseMap({super.key, required this.onStart, required this.onContext, required this.xp, required this.stars});
 
   @override
   Widget build(BuildContext context) {
@@ -561,6 +698,12 @@ class CourseMap extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(color: kGreenSoft, borderRadius: BorderRadius.circular(14)),
               child: Text('${photoPool.length} local photos', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: kGreenDark)),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: kGreenSoft, borderRadius: BorderRadius.circular(14)),
+              child: Text('$xp XP  •  $stars ★', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: kGreenDark)),
             ),
           ],
         ),
@@ -729,7 +872,8 @@ class _Diamond extends StatelessWidget {
 class ContextScreen extends StatefulWidget {
   final VoidCallback onHome;
   final VoidCallback onLesson;
-  const ContextScreen({super.key, required this.onHome, required this.onLesson});
+  final ValueChanged<int> onXp;
+  const ContextScreen({super.key, required this.onHome, required this.onLesson, required this.onXp});
 
   @override
   State<ContextScreen> createState() => _ContextScreenState();
@@ -740,6 +884,31 @@ class _ContextScreenState extends State<ContextScreen> {
   int _wrong = 0;
   int? _selected;
   bool _checked = false;
+  bool _listening = false;
+  int? _pronScore;
+  String? _heard;
+
+  Future<void> _checkPronunciation() async {
+    if (_listening) return;
+    if (!startListening()) {
+      setState(() => _heard = 'Speech recognition is not available in this browser.');
+      return;
+    }
+    setState(() {
+      _listening = true;
+      _heard = null;
+    });
+    await Future<void>.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+    final heard = heardText();
+    final score = heard.isEmpty ? 0 : simpleScore('Hello', heard);
+    setState(() {
+      _listening = false;
+      _heard = heard.isEmpty ? 'No speech detected. Try again.' : 'Heard: “$heard”';
+      _pronScore = score;
+    });
+    if (score >= 70) widget.onXp(10);
+  }
 
   void _choose(bool correct) {
     setState(() {
@@ -809,6 +978,53 @@ class _ContextScreenState extends State<ContextScreen> {
                   onPressed: _retry,
                   icon: const Icon(Icons.replay_rounded, size: 17),
                   label: const Text('Try again'),
+                  style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), minimumSize: const Size(0, 40)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: Container(
+            width: 560,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: kLine)),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(color: kGreenSoft, shape: BoxShape.circle),
+                      child: const Icon(Icons.mic_rounded, color: kGreen, size: 19),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Pronunciation check', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: kInk)),
+                          Text('Say “Hello.” and let the browser score it.', style: TextStyle(fontSize: 10.5, color: kMuted)),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      _pronScore == null ? '—' : '$_pronScore%',
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kGreenDark),
+                    ),
+                  ],
+                ),
+                if (_heard != null) ...[
+                  const SizedBox(height: 8),
+                  Text(_heard!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: kMuted)),
+                ],
+                const SizedBox(height: 10),
+                FilledButton.icon(
+                  onPressed: _checkPronunciation,
+                  icon: Icon(_listening ? Icons.graphic_eq_rounded : Icons.mic_rounded, size: 17),
+                  label: Text(_listening ? 'Listening…' : 'Check pronunciation'),
                   style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), minimumSize: const Size(0, 40)),
                 ),
               ],
