@@ -1,38 +1,45 @@
 {
-  "language": "English (American)",
-  "title": "Unit 1 - Lesson 2 > Grammar",
-  "questions": [
+  "units": [
     {
-      "id": "q1",
-      "before": "The",
-      "after": "are reading.",
-      "answer": "men",
-      "audio": "men",
-      "image": "media/images/img_four_boys.jpg"
-    },
-    {
-      "id": "q2",
-      "before": "The",
-      "after": "is reading.",
-      "answer": "man",
-      "audio": "man",
-      "image": "media/images/img_man.jpg"
-    },
-    {
-      "id": "q3",
-      "before": "The",
-      "after": "is reading.",
-      "answer": "woman",
-      "audio": "woman",
-      "image": "media/images/img_woman.jpg"
-    },
-    {
-      "id": "q4",
-      "before": "The",
-      "after": "is reading.",
-      "answer": "boy",
-      "audio": "boy",
-      "image": "media/images/img_boy.jpg"
+      "unitId": 1,
+      "title": "Unit 1: Basics",
+      "lessons": [
+        {
+          "lessonId": 1,
+          "title": "Lesson 1",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/images/img_four_boys.jpg",
+              "sentence": "The ___ are reading.",
+              "answer": "men"
+            },
+            {
+              "type": "choose_image",
+              "audio": "media/hello.mp3",
+              "question": "Hello.",
+              "options": [
+                "media/images/img_hello.jpg",
+                "media/images/img_one_car.jpg",
+                "media/images/img_one_dog.jpg",
+                "media/images/img_one_apple.jpg"
+              ],
+              "answer": "media/images/img_hello.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/images/img_one_car.jpg",
+              "options": [
+                "The car is red.",
+                "The dog is barking.",
+                "I eat an apple.",
+                "The men are reading."
+              ],
+              "answer": "The car is red."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

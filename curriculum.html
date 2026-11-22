@@ -134,28 +134,20 @@
 
     <script>
         /* ============================================================
-           بيانات الوحدات الـ16 (كما في الكود المرفق)
+           قراءة المنهج من data.rsd (الهيكل الجديد: units -> lessons -> exercises)
+           نعرض 16 وحدة، ونستخدم بيانات data.rsd عندما تكون متوفرة.
            ============================================================ */
-        const units = [
-            { id: 1,  title: 'Language Basics' },
-            { id: 2,  title: 'Greetings and Introductions' },
-            { id: 3,  title: 'Work and School' },
-            { id: 4,  title: 'Shopping' },
-            { id: 5,  title: 'Travel' },
-            { id: 6,  title: 'Past and Future' },
-            { id: 7,  title: 'Friends and Social Life' },
-            { id: 8,  title: 'Dining and Vacation' },
-            { id: 9,  title: 'Home and Health' },
-            { id: 10, title: 'Life and World' },
-            { id: 11, title: 'Everyday Things' },
-            { id: 12, title: 'Places and Events' },
-            { id: 13, title: 'Tourism and Recreation' },
-            { id: 14, title: 'Professions and Hobbies' },
-            { id: 15, title: 'At Home and Around Town' },
-            { id: 16, title: 'Style and Personal Wellness' }
+
+        // أسماء احتياطية للوحدات الـ16 (تُستبدل بما في data.rsd)
+        const fallbackUnits = [
+            'Language Basics', 'Greetings and Introductions', 'Work and School', 'Shopping',
+            'Travel', 'Past and Future', 'Friends and Social Life', 'Dining and Vacation',
+            'Home and Health', 'Life and World', 'Everyday Things', 'Places and Events',
+            'Tourism and Recreation', 'Professions and Hobbies', 'At Home and Around Town',
+            'Style and Personal Wellness'
         ];
 
-        /* صور محلية موجودة فعلياً داخل media/images (بدل روابط الإنترنت) */
+        // صور محلية موجودة فعلياً داخل media/images
         const localImages = [
             'media/images/img_one_dog.jpg',
             'media/images/img_four_boys.jpg',
@@ -170,14 +162,14 @@
 
         const grid = document.getElementById('curriculumGrid');
 
-        /* بناء بطاقات الوحدات تلقائياً */
-        units.forEach((unit, index) => {
+        /* إنشاء بطاقة وحدة واحدة */
+        function makeCard(id, title, iconSrc) {
             const card = document.createElement('div');
-            card.className = 'unit-card unit-' + unit.id;
+            card.className = 'unit-card unit-' + id;
 
-            // الضغط على الوحدة يفتح الدرس بعد حفظ رقم الوحدة
+            // الضغط يفتح الدرس بعد حفظ رقم الوحدة
             card.onclick = () => {
-                localStorage.setItem('selectedUnit', unit.id);
+                localStorage.setItem('selectedUnit', id);
                 window.location.href = 'index.html';
             };
 
@@ -186,22 +178,61 @@
 
             const number = document.createElement('div');
             number.className = 'unit-number';
-            number.textContent = 'Unit ' + unit.id;
+            number.textContent = 'Unit ' + id;
 
-            const title = document.createElement('div');
-            title.className = 'unit-title';
-            title.textContent = unit.title;
+            const label = document.createElement('div');
+            label.className = 'unit-title';
+            label.textContent = title;
 
-            info.append(number, title);
+            info.append(number, label);
 
             const icon = document.createElement('div');
             icon.className = 'unit-icon';
-            // توزيع الصور المحلية على الوحدات بالتكرار
-            icon.style.backgroundImage = "url('" + localImages[index % localImages.length] + "')";
+            icon.style.backgroundImage = "url('" + iconSrc + "')";
 
             card.append(info, icon);
-            grid.appendChild(card);
-        });
+            return card;
+        }
+
+        /* جلب البيانات من data.rsd ثم بناء الشبكة */
+        fetch('data.rsd')
+            .then((r) => r.json())
+            .then((data) => {
+                const byId = {};
+                (data.units || []).forEach((u) => { byId[u.unitId] = u; });
+
+                fallbackUnits.forEach((fallbackTitle, index) => {
+                    const id = index + 1;
+                    const fromData = byId[id];
+
+                    // عنوان الوحدة من الملف أو الاحتياطي
+                    let title = fallbackTitle;
+                    if (fromData && fromData.title) {
+                        title = fromData.title.replace(/^Unit\s*\d+\s*:\s*/, '');
+                    }
+
+                    // صورة الوحدة: أول صورة من تمريناتها إن وُجدت
+                    let icon = localImages[index % localImages.length];
+                    if (fromData) {
+                        for (const lesson of (fromData.lessons || [])) {
+                            const ex = (lesson.exercises || [])[0];
+                            if (ex && (ex.image || (ex.options && ex.options[0]))) {
+                                icon = ex.image || ex.options[0];
+                                break;
+                            }
+                        }
+                    }
+
+                    grid.appendChild(makeCard(id, title, icon));
+                });
+            })
+            .catch((err) => {
+                // عند الفشل نبني الوحدات بالأسماء الاحتياطية
+                console.error(err);
+                fallbackUnits.forEach((title, index) => {
+                    grid.appendChild(makeCard(index + 1, title, localImages[index % localImages.length]));
+                });
+            });
     </script>
 
 </body>
