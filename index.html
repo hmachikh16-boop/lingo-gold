@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lingo Gold — Rosetta Style</title>
+
+  <!-- ملف التصميم الخارجي -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ================= الشريط العلوي ================= -->
+  <header class="header">
+    <div class="header-left">
+      <!-- الشعار الأخضر -->
+      <div class="logo">Lingo Gold</div>
+
+      <!-- التنقل: اللغة + مكان الدرس -->
+      <div class="header-nav">
+        <span id="languageLabel">English (American)</span>
+        <span class="divider">|</span>
+        <span id="breadcrumb">Unit 1 - Lesson 2 &gt; Grammar</span>
+      </div>
+    </div>
+
+    <!-- أيقونات الجانب الأيمن -->
+    <div class="header-right">
+      <span class="icon">🔊</span>
+      <span class="icon">🔒</span>
+      <span class="signout">Sign Out</span>
+    </div>
+  </header>
+
+  <!-- ================= شريط حالة الخطوات (نقاط) ================= -->
+  <div class="status-bar" id="statusBar" aria-label="Lesson progress">
+    <!-- تُنشأ النقاط تلقائياً من app.js حسب عدد الأسئلة -->
+  </div>
+
+  <!-- ================= منطقة البطاقات ================= -->
+  <main class="main-container">
+    <!-- تُبنى البطاقات الأربع تلقائياً بواسطة app.js من ملف data.rsd -->
+    <div class="cards-grid" id="cardsGrid"></div>
+  </main>
+
+  <!-- ================= الشريط السفلي ================= -->
+  <footer class="footer">
+    <div class="footer-dots" id="footerDots"></div>
+    <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+  </footer>
+
+  <!-- سكربت التطبيق (defer يضمن تنفيذها بعد بناء الـ DOM) -->
+  <script src="app.js" defer></script>
+</body>
+</html>

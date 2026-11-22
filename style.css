@@ -1,0 +1,305 @@
+/* ============================================================
+   Lingo Gold — Rosetta Style
+   تصميم مطابق لروزيتا ستون باستخدام هوية خضراء فقط
+   ============================================================ */
+
+/* متغيرات الألوان لتسهيل التعديل لاحقاً */
+:root {
+  --green: #1DB954;
+  --green-dark: #168A3E;
+  --green-soft: #E9F9EF;
+  --dark: #1F2328;
+  --dark-2: #333333;
+  --gray: #666666;
+  --light: #f5f5f5;
+  --line: #dddddd;
+  --wrong: #FF3B30;
+}
+
+/* إعدادات عامة */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: var(--light);
+  color: var(--dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= الشريط العلوي ================= */
+.header {
+  background: var(--dark);
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  background: var(--green);
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.header-nav {
+  color: #ccc;
+}
+
+.header-nav span {
+  margin-right: 12px;
+}
+
+.divider {
+  color: #777;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  cursor: pointer;
+}
+
+.signout {
+  color: #ddd;
+  font-size: 12px;
+}
+
+/* ================= شريط الحالة (النقاط) ================= */
+.status-bar {
+  background: #444;
+  padding: 8px 20px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #666;
+}
+
+/* النقطة الحالية تظهر بالأخضر */
+.dot.active {
+  background: var(--green);
+}
+
+/* ================= شبكة البطاقات ================= */
+.main-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+}
+
+.cards-grid {
+  width: 100%;
+  max-width: 1000px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+/* ================= البطاقة ================= */
+.card {
+  background: #fff;
+  border: 3px solid transparent;      /* حد شفاف حتى لا يحدث قفز عند التغيير */
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.10);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* إطار أخضر عند الإجابة الصحيحة */
+.card.correct {
+  border-color: var(--green);
+}
+
+/* إطار أحمر + اهتزاز عند الإجابة الخاطئة */
+.card.wrong {
+  border-color: var(--wrong);
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+
+/* منطقة النص داخل البطاقة */
+.card-text-area {
+  padding: 18px;
+  background: #fff;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  position: relative;
+}
+
+/* خانة الفراغ القابلة للكتابة */
+.blank {
+  width: 90px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f9f9f9;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-dark);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.blank:focus {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+/* زر الصوت الدائري */
+.audio-btn {
+  position: absolute;
+  right: 16px;
+  top: 18px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--green);
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.audio-btn:hover {
+  background: var(--green);
+  color: #fff;
+}
+
+/* منطقة الصورة */
+.card-image-area {
+  width: 100%;
+  height: 220px;
+  background: #eee;
+  position: relative;
+}
+
+.card-image-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* علامة الصح تظهر فقط عند الإجابة الصحيحة */
+.success-mark {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.card.correct .success-mark {
+  display: flex;
+}
+
+/* ================= الشريط السفلي ================= */
+.footer {
+  background: var(--dark);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.footer-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.footer-dots .dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: #555;
+}
+
+.footer-dots .dot.done {
+  background: var(--green);
+}
+
+.reset-btn {
+  background: var(--green);
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: var(--green-dark);
+}
+
+/* رسالة خطأ عند فشل قراءة البيانات */
+.error-message {
+  color: var(--wrong);
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* ================= تجاوب الشاشة ================= */
+@media (max-width: 760px) {
+  .cards-grid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .card-image-area { height: 180px; }
+  .card-text-area { font-size: 16px; }
+}

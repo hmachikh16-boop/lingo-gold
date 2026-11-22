@@ -1,0 +1,38 @@
+{
+  "language": "English (American)",
+  "title": "Unit 1 - Lesson 2 > Grammar",
+  "questions": [
+    {
+      "id": "q1",
+      "before": "The",
+      "after": "are reading.",
+      "answer": "men",
+      "audio": "men",
+      "image": "media/images/img_four_boys.jpg"
+    },
+    {
+      "id": "q2",
+      "before": "The",
+      "after": "is reading.",
+      "answer": "man",
+      "audio": "man",
+      "image": "media/images/img_man.jpg"
+    },
+    {
+      "id": "q3",
+      "before": "The",
+      "after": "is reading.",
+      "answer": "woman",
+      "audio": "woman",
+      "image": "media/images/img_woman.jpg"
+    },
+    {
+      "id": "q4",
+      "before": "The",
+      "after": "is reading.",
+      "answer": "boy",
+      "audio": "boy",
+      "image": "media/images/img_boy.jpg"
+    }
+  ]
+}
