@@ -3,389 +3,364 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Immersion 100-Lesson Engine (Multi-Window & SRS)</title>
+  <title>Classic Course Path - 100 Lessons & SRS</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
-      --bar: #1c1f24;
-      --bg: #e8e5dc;
-      --card: #ffffff;
-      --ink: #202429;
-      --muted: #656c75;
-      --ok: #28a745;
-      --err: #dc3545;
-      --info: #2563eb;
+      --bar: #191b1f;
+      --bg: #dfddd5;
+      --card: #f2f0ea;
+      --ink: #22262b;
+      --muted: #666c75;
+      --red: #b42318;
+      --green: #28a745;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
     body { background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Top Navigation Bar */
+    /* Top Course Bar */
     .topbar {
       background: var(--bar);
       color: #fff;
-      padding: 10px 20px;
+      padding: 8px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-    .badge { background: var(--gold); color: #111; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 800; }
+    .brand-left { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+    .gold-tag { background: var(--gold); color: #111; padding: 3px 8px; border-radius: 3px; font-weight: 800; font-size: 12px; }
 
-    .win-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-    .win-tab {
-      background: rgba(255,255,255,0.08);
-      color: #ddd;
-      border: 1px solid rgba(255,255,255,0.16);
-      padding: 6px 12px;
-      border-radius: 5px;
+    .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .top-btn {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 5px 11px;
+      border-radius: 4px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
-    .win-tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
+    .top-btn.active, .top-btn:hover { background: var(--gold); color: #111; border-color: var(--gold); }
 
-    .container { max-width: 1120px; width: 100%; margin: 20px auto; padding: 0 18px; flex: 1; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    /* Filter & Stats Bar */
-    .toolbar {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 14px 18px;
-      margin-bottom: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    select.filter-sel {
-      padding: 7px 12px;
-      border-radius: 6px;
-      border: 1.5px solid #c5cbd3;
-      font-weight: 700;
-      background: #fff;
-    }
-    .stats-row { display: flex; gap: 14px; font-size: 13px; font-weight: 700; color: var(--muted); }
-    .stats-row span strong { color: var(--ink); }
-
-    /* 100 Lessons Grid */
-    .lessons-grid {
+    /* Units Strip (like top of image 2) */
+    .units-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(4, 1fr);
+      background: #4a453f;
+      border-bottom: 2px solid #2b2824;
     }
-    .lesson-tile {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 14px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-      border-left: 5px solid #9aa3ae;
+    .unit-col {
+      padding: 8px 12px;
+      text-align: center;
+      color: #ddd;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border-right: 1px solid rgba(255,255,255,0.12);
+      background: #57514a;
+      transition: 0.15s;
+    }
+    .unit-col.active { background: #dcd8ce; color: #111; }
+
+    /* Main Stage */
+    .stage {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 10px;
-      transition: 0.15s;
+      gap: 20px;
     }
-    .lesson-tile:hover { transform: translateY(-2px); }
-    .lesson-tile.due { border-left-color: var(--gold-dark); background: #fffdf5; }
-    .lesson-tile.mastered { border-left-color: var(--ok); }
+    .view { display: none; }
+    .view.active { display: flex; flex-direction: column; justify-content: space-between; gap: 20px; flex: 1; }
 
-    .tile-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; color: var(--muted); }
-    .srs-pill {
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      background: #eef1f4;
-      color: #333;
-    }
-    .srs-pill.due { background: #fff0b3; color: #7a5800; }
-    .srs-pill.mastered { background: #dcfce7; color: #166534; }
-
-    .lesson-tile h3 { font-size: 15px; line-height: 1.3; }
-    .lesson-tile p { font-size: 12px; color: var(--muted); }
-
-    .btn {
-      background: var(--gold); color: #111; border: none;
-      padding: 9px 14px; border-radius: 6px; font-weight: 800;
-      cursor: pointer; font-size: 13px;
-    }
-    .btn:hover { background: var(--gold-dark); }
-    .btn-ghost {
-      background: #fff; color: var(--ink); border: 1px solid #c5cbd3;
-      padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px;
-    }
-    .btn-popout {
-      background: #2563eb; color: #fff; border: none;
-      padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px;
-    }
-
-    /* Activity & Review Stage */
-    .stage-head {
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
-    }
-    .prompt-card {
-      background: var(--card); border-left: 6px solid var(--gold);
-      border-radius: 8px; padding: 16px 20px;
-      display: flex; justify-content: space-between; align-items: center; gap: 12px;
-      margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    .prompt-text { font-size: 21px; font-weight: 700; }
-    .prompt-text input {
-      font-size: 19px; padding: 6px 12px; width: 160px;
-      border: 2px solid #bcc3cc; border-radius: 6px; text-align: center;
-    }
-    .audio-btn {
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 2px solid var(--gold-dark); background: #fff8dc;
-      font-weight: 800; cursor: pointer; flex-shrink: 0;
-    }
-
-    .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .photo-card {
-      background: var(--card); border-radius: 8px; overflow: hidden;
-      border: 4px solid transparent; cursor: pointer;
+    /* Core Lesson Box */
+    .core-box {
+      background: #c8c2b6;
+      border: 1px solid #a9a295;
+      border-radius: 4px;
+      padding: 14px 20px;
+      max-width: 660px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    .photo-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
-    .photo-card.ok { border-color: var(--ok); }
-    .photo-card.err { border-color: var(--err); opacity: 0.75; }
-
-    .single-card {
-      background: var(--card); border-radius: 8px; overflow: hidden;
-      max-width: 680px; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    .core-left { display: flex; align-items: center; gap: 14px; }
+    .diamond-num {
+      width: 44px; height: 44px;
+      background: var(--red); color: #fff;
+      font-weight: 800; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; flex-shrink: 0;
     }
-    .single-card img { width: 100%; height: 290px; object-fit: cover; display: block; }
-
-    .stage-foot {
-      margin-top: 16px; display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 10px; min-height: 44px;
+    .core-meta-top { font-size: 12px; color: #444; font-weight: 700; }
+    .core-title { font-size: 24px; font-weight: 600; color: #1f2328; }
+    .core-right { display: flex; align-items: center; gap: 12px; }
+    .core-info { text-align: right; font-size: 12px; color: #333; line-height: 1.35; }
+    .start-square {
+      width: 42px; height: 42px; border-radius: 4px; border: none;
+      background: var(--green); color: #fff; font-size: 18px; cursor: pointer;
     }
+
+    /* Horizontal Track with 10 Lessons in Active Unit */
+    .track-scroller { overflow-x: auto; padding: 10px 4px; }
+    .track {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 780px;
+      position: relative;
+    }
+    .track::before {
+      content: "";
+      position: absolute;
+      left: 16px; right: 16px; top: 50%;
+      height: 2px; background: #8e8a80;
+      transform: translateY(-50%); z-index: 1;
+    }
+    .node-btn {
+      position: relative; z-index: 2;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #f5f4f0; border: 2px solid #555;
+      font-weight: 800; font-size: 13px; cursor: pointer;
+    }
+    .node-btn.selected { background: var(--red); border-color: var(--red); color: #fff; }
+    .node-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
+
+    .mini-squares {
+      position: relative; z-index: 2;
+      display: flex; gap: 4px; background: var(--bg); padding: 0 4px;
+    }
+    .mini-sq {
+      width: 11px; height: 14px;
+      border: 1.5px solid #78756c; background: #f2f0ea;
+    }
+    .mini-sq.done { background: var(--gold); border-color: var(--gold-dark); }
+
+    /* Bottom Polaroids */
+    .polaroids {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 18px;
+    }
+    .polaroid {
+      background: #fff; padding: 7px 7px 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+      transition: transform 0.2s;
+    }
+    .polaroid:nth-child(1) { transform: rotate(-4deg); }
+    .polaroid:nth-child(2) { transform: rotate(3deg); }
+    .polaroid:nth-child(3) { transform: rotate(-2deg); }
+    .polaroid:nth-child(4) { transform: rotate(4deg); }
+    .polaroid:nth-child(5) { transform: rotate(-3deg); }
+    .polaroid:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 5; }
+    .polaroid img { width: 120px; height: 95px; object-fit: cover; display: block; }
+
+    /* All 100 Lessons Drawer/View */
+    .hundred-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px;
+      max-height: 68vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .h-item {
+      background: #fff; border-radius: 6px; padding: 10px 12px;
+      border-left: 4px solid var(--gold-dark);
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .h-item button {
+      background: var(--gold); border: none; border-radius: 4px;
+      padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer;
+    }
+
+    /* Exercise View */
+    .ex-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn-back { background: #fff; border: 1px solid #b5bcc4; padding: 7px 14px; border-radius: 5px; font-weight: 700; cursor: pointer; }
+    .btn-gold { background: var(--gold); border: none; padding: 9px 18px; border-radius: 5px; font-weight: 800; cursor: pointer; }
+
+    .ex-card {
+      background: #fff; border-radius: 8px; padding: 20px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08); max-width: 780px; width: 100%; margin: 0 auto;
+    }
+    .ex-prompt-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .ex-phrase { font-size: 22px; font-weight: 700; }
+    .ex-phrase input { font-size: 19px; padding: 5px 10px; width: 150px; border: 2px solid #bcc3cc; border-radius: 5px; text-align: center; }
+    .audio-btn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--gold-dark); background: #fff8dc; font-weight: 800; cursor: pointer; }
+    .ex-img { width: 100%; height: 280px; object-fit: cover; border-radius: 6px; display: block; margin-bottom: 14px; }
+    .ex-foot { display: flex; justify-content: space-between; align-items: center; min-height: 36px; }
     .msg { font-weight: 700; font-size: 14px; }
-    .msg.ok { color: var(--ok); }
-    .msg.err { color: var(--err); }
+    .msg.ok { color: var(--green); }
+    .msg.err { color: var(--red); }
 
-    @media (max-width: 680px) {
-      .grid-4 { grid-template-columns: 1fr; }
+    @media (max-width: 700px) {
+      .units-strip { grid-template-columns: repeat(2, 1fr); }
+      .core-box { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span class="badge">100+ LESSONS</span>
-      <span>Multi-Window &amp; SRS Studio</span>
+    <div class="brand-left">
+      <span class="gold-tag">COURSE</span>
+      <span>English (American) · 100 Lessons</span>
     </div>
-    <div class="win-tabs">
-      <button class="win-tab active" id="tabCatalog" onclick="switchWindow('catalogWin')">1. Course (100 Lessons)</button>
-      <button class="win-tab" id="tabActivity" onclick="switchWindow('activityWin')">2. Lesson Window</button>
-      <button class="win-tab" id="tabSrs" onclick="switchWindow('srsWin')">3. Spaced Review (<span id="dueCountBadge">0</span>)</button>
+    <div class="top-actions">
+      <button class="top-btn active" id="btnPathView" onclick="showView('pathView')">Course Path</button>
+      <button class="top-btn" id="btnAll100View" onclick="showView('all100View')">All 100 Lessons (<span id="dueBadge">0</span> Due)</button>
+      <button class="top-btn" onclick="resetSrs()">Reset SRS</button>
     </div>
   </header>
 
-  <main class="container">
-    <!-- Window 1: 100 Lessons Catalog -->
-    <section id="catalogWin" class="screen active">
-      <div class="toolbar">
-        <div class="filters">
-          <select class="filter-sel" id="unitFilter" onchange="renderCatalog()">
-            <option value="all">All Units (100 Lessons)</option>
-          </select>
-          <select class="filter-sel" id="statusFilter" onchange="renderCatalog()">
-            <option value="all">All Status</option>
-            <option value="due">Due for Review</option>
-            <option value="mastered">Mastered</option>
-          </select>
-          <button class="btn-ghost" onclick="resetProgress()">Reset SRS</button>
+  <div class="units-strip" id="unitsStrip"></div>
+
+  <main class="stage">
+    <!-- Classic Course Path View -->
+    <section id="pathView" class="view active">
+      <div class="core-box">
+        <div class="core-left">
+          <div class="diamond-num" id="coreLessonNum">1</div>
+          <div>
+            <div class="core-meta-top" id="corePathMeta">Unit 1 &gt; Lesson 1</div>
+            <div class="core-title">Core Lesson</div>
+          </div>
         </div>
-        <div class="stats-row">
-          <span>Total: <strong id="statTotal">100</strong></span>
-          <span>Due Now: <strong id="statDue">0</strong></span>
-          <span>Mastered: <strong id="statMastered">0</strong></span>
+        <div class="core-right">
+          <div class="core-info">
+            <strong id="coreSrsStatus">Due Now</strong>
+            <div>About 30 minutes</div>
+          </div>
+          <button class="start-square" onclick="launchLesson(activeLessonIndex)" title="Start">▶</button>
         </div>
       </div>
 
-      <div class="lessons-grid" id="lessonsGrid"></div>
-    </section>
-
-    <!-- Window 2: Active Lesson Window -->
-    <section id="activityWin" class="screen">
-      <div class="stage-head">
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-ghost" onclick="switchWindow('catalogWin')">← Course</button>
-          <button class="btn-popout" onclick="popOutLessonWindow()">↗ Pop-out Separate Window</button>
-        </div>
-        <strong id="lessonHeaderInfo" style="color:var(--muted);"></strong>
+      <div class="track-scroller">
+        <div class="track" id="unitTrack"></div>
       </div>
 
-      <div class="prompt-card">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <button class="audio-btn" id="speakBtn" title="Listen">▶</button>
-          <div class="prompt-text" id="promptDisplay"></div>
-        </div>
-        <span id="stepCounter" style="font-weight:700; color:var(--muted);"></span>
-      </div>
-
-      <div id="exerciseBody"></div>
-
-      <div class="stage-foot">
-        <div class="msg" id="feedbackLabel"></div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-ghost" onclick="rateCurrentLesson(1)">Hard (Retry Soon)</button>
-          <button class="btn" id="nextExBtn" onclick="nextExercise()">Next Step ➔</button>
-        </div>
+      <div class="polaroids">
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="p1"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="p2"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="p3"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300" alt="p4"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="p5"></div>
       </div>
     </section>
 
-    <!-- Window 3: Spaced Repetition Queue -->
-    <section id="srsWin" class="screen">
-      <div class="toolbar">
-        <div>
-          <h2 style="font-size:18px;">Spaced Repetition Queue (SRS)</h2>
-          <p style="font-size:13px; color:var(--muted);">Lessons whose review interval has arrived appear first.</p>
-        </div>
-        <button class="btn" onclick="startNextDueLesson()">Practice Next Due Lesson ▶</button>
+    <!-- All 100 Lessons List View -->
+    <section id="all100View" class="view">
+      <div class="hundred-grid" id="hundredGrid"></div>
+    </section>
+
+    <!-- Lesson Exercise View -->
+    <section id="exerciseView" class="view">
+      <div class="ex-top">
+        <button class="btn-back" onclick="showView('pathView')">← Back to Course</button>
+        <strong id="exHeaderLabel"></strong>
       </div>
-      <div class="lessons-grid" id="srsQueueGrid"></div>
+
+      <div class="ex-card">
+        <div class="ex-prompt-row">
+          <div class="ex-phrase" id="exPhraseBox"></div>
+          <button class="audio-btn" id="exAudioBtn">▶</button>
+        </div>
+        <img class="ex-img" id="exImage" src="" alt="exercise" />
+        <div class="ex-foot">
+          <div class="msg" id="exFeedback"></div>
+          <button class="btn-gold" id="exNextBtn" onclick="nextEx()">Continue ➔</button>
+        </div>
+      </div>
     </section>
   </main>
 
   <script>
-    const FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="220"><rect width="500" height="220" fill="#dcdad2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="18">Image</text></svg>`
-    );
-
     const bank = [
-      { word: "water", sentence: "The boy is drinking ___.", full: "The boy is drinking water.", img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=500" },
-      { word: "reading", sentence: "She is ___ a book.", full: "She is reading a book.", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500" },
-      { word: "coffee", sentence: "A cup of hot ___.", full: "A cup of hot coffee.", img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500" },
-      { word: "dog", sentence: "The ___ is smiling.", full: "The dog is smiling.", img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500" },
-      { word: "cat", sentence: "The ___ is resting.", full: "The cat is resting.", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500" },
-      { word: "mountain", sentence: "We see a tall ___.", full: "We see a tall mountain.", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500" },
-      { word: "friends", sentence: "The ___ are together.", full: "The friends are together.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500" },
-      { word: "bread", sentence: "Fresh ___ on the table.", full: "Fresh bread on the table.", img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" }
+      { word: "water", sentence: "The boy is drinking ___.", full: "The boy is drinking water.", img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=700" },
+      { word: "reading", sentence: "She is ___ a book.", full: "She is reading a book.", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700" },
+      { word: "coffee", sentence: "A cup of hot ___.", full: "A cup of hot coffee.", img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700" },
+      { word: "dog", sentence: "The ___ is smiling.", full: "The dog is smiling.", img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700" },
+      { word: "cat", sentence: "The ___ is resting.", full: "The cat is resting.", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=700" },
+      { word: "mountain", sentence: "We see a tall ___.", full: "We see a tall mountain.", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700" }
     ];
 
-    // توليد 100 درس موزعة على 10 وحدات (كل وحدة 10 دروس)
-    const lessons = Array.from({ length: 100 }, (_, i) => {
-      const unitNum = Math.floor(i / 10) + 1;
-      const lessonInUnit = (i % 10) + 1;
-      const itemA = bank[i % bank.length];
-      const itemB = bank[(i + 1) % bank.length];
-      const opts = [
-        itemA.img,
-        bank[(i + 2) % bank.length].img,
-        bank[(i + 3) % bank.length].img,
-        bank[(i + 4) % bank.length].img
-      ];
+    const unitNames = [
+      "Unit 1: Language Basics",
+      "Unit 2: Everyday Actions",
+      "Unit 3: People & Life",
+      "Unit 4: Around Us"
+    ];
 
+    // 100 درس موزعة على الوحدات (25 درس لكل وحدة، وفي المسار نعرض 10 عقد للوحدة النشطة)
+    const lessons = Array.from({ length: 100 }, (_, i) => {
+      const uIdx = Math.floor(i / 25);
+      const item = bank[i % bank.length];
       return {
         id: `L${i + 1}`,
-        number: i + 1,
-        unitNum,
-        unitTitle: `Unit ${unitNum}: Topic ${unitNum}`,
-        title: `Lesson ${i + 1} (U${unitNum}-L${lessonInUnit})`,
-        topic: `${itemA.word} & ${itemB.word}`,
+        num: i + 1,
+        uIdx,
+        unitLabel: unitNames[uIdx],
+        lessonInUnit: (i % 25) + 1,
         exercises: [
-          {
-            type: "choose_image",
-            prompt: itemA.full,
-            speak: itemA.full,
-            correct: 0,
-            images: opts
-          },
-          {
-            type: "fill_blank",
-            sentence: itemB.sentence,
-            answer: itemB.word,
-            speak: itemB.full,
-            image: itemB.img
-          }
+          { sentence: item.sentence, answer: item.word, speak: item.full, img: item.img },
+          { sentence: bank[(i + 1) % bank.length].sentence, answer: bank[(i + 1) % bank.length].word, speak: bank[(i + 1) % bank.length].full, img: bank[(i + 1) % bank.length].img }
         ]
       };
     });
 
-    const STORAGE_KEY = "lingo_srs_100_v1";
-    let srsState = loadSrsState();
-    let currentLessonIdx = 0;
-    let currentExIdx = 0;
-    let solvedStep = false;
-    let mistakesInLesson = 0;
+    const SRS_KEY = "classic_path_100_srs";
+    let srs = loadSrs();
+    let activeUnit = 0;
+    let activeLessonIndex = 0;
+    let exStep = 0;
+    let stepSolved = false;
 
-    function loadSrsState() {
+    function loadSrs() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        const saved = localStorage.getItem(SRS_KEY);
+        if (saved) return JSON.parse(saved);
       } catch (_) {}
       const init = {};
-      const now = Date.now();
-      lessons.forEach(l => {
-        init[l.id] = { reps: 0, intervalSec: 0, dueAt: now };
-      });
+      lessons.forEach(l => { init[l.id] = { reps: 0, dueAt: Date.now() }; });
       return init;
     }
 
-    function saveSrsState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(srsState));
-      } catch (_) {}
+    function saveSrs() {
+      try { localStorage.setItem(SRS_KEY, JSON.stringify(srs)); } catch (_) {}
     }
 
-    function isDue(lessonId) {
-      return (srsState[lessonId]?.dueAt ?? 0) <= Date.now();
+    function resetSrs() {
+      localStorage.removeItem(SRS_KEY);
+      srs = loadSrs();
+      renderAll();
     }
 
-    function isMastered(lessonId) {
-      return (srsState[lessonId]?.reps ?? 0) >= 3 && !isDue(lessonId);
+    function isDue(id) {
+      return (srs[id]?.dueAt ?? 0) <= Date.now();
     }
 
-    // التكرار المتباعد (فترات متصاعدة بالثواني/الدقائق لسهولة التجربة)
-    function updateSrs(lessonId, success) {
-      const prev = srsState[lessonId] || { reps: 0, intervalSec: 0, dueAt: Date.now() };
-      const intervals = [60, 300, 1800, 86400, 259200]; // 1m, 5m, 30m, 1d, 3d
-      if (success) {
-        const nextReps = prev.reps + 1;
-        const sec = intervals[Math.min(prev.reps, intervals.length - 1)];
-        srsState[lessonId] = {
-          reps: nextReps,
-          intervalSec: sec,
-          dueAt: Date.now() + sec * 1000
-        };
+    function markSrs(id, ok) {
+      const prev = srs[id] || { reps: 0, dueAt: Date.now() };
+      const intervalsSec = [60, 300, 1800, 86400];
+      if (ok) {
+        const reps = prev.reps + 1;
+        const sec = intervalsSec[Math.min(prev.reps, intervalsSec.length - 1)];
+        srs[id] = { reps, dueAt: Date.now() + sec * 1000 };
       } else {
-        srsState[lessonId] = {
-          reps: 0,
-          intervalSec: 30,
-          dueAt: Date.now() + 30 * 1000
-        };
+        srs[id] = { reps: 0, dueAt: Date.now() + 30 * 1000 };
       }
-      saveSrsState();
-      refreshStats();
-    }
-
-    function resetProgress() {
-      localStorage.removeItem(STORAGE_KEY);
-      srsState = loadSrsState();
-      renderCatalog();
-      renderSrsQueue();
-      refreshStats();
-    }
-
-    function switchWindow(winId) {
-      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-      document.getElementById(winId).classList.add("active");
-      document.getElementById("tabCatalog").classList.toggle("active", winId === "catalogWin");
-      document.getElementById("tabActivity").classList.toggle("active", winId === "activityWin");
-      document.getElementById("tabSrs").classList.toggle("active", winId === "srsWin");
-      if (winId === "srsWin") renderSrsQueue();
+      saveSrs();
     }
 
     function speak(text) {
@@ -397,220 +372,147 @@
       window.speechSynthesis.speak(u);
     }
 
-    function populateUnitFilter() {
-      const sel = document.getElementById("unitFilter");
-      for (let u = 1; u <= 10; u++) {
-        const opt = document.createElement("option");
-        opt.value = String(u);
-        opt.textContent = `Unit ${u} (Lessons ${(u - 1) * 10 + 1}–${u * 10})`;
-        sel.appendChild(opt);
-      }
+    function showView(viewId) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById(viewId).classList.add("active");
+      document.getElementById("btnPathView").classList.toggle("active", viewId === "pathView");
+      document.getElementById("btnAll100View").classList.toggle("active", viewId === "all100View");
+      if (viewId === "all100View") render100List();
     }
 
-    function refreshStats() {
-      const dueList = lessons.filter(l => isDue(l.id));
-      const masteredList = lessons.filter(l => isMastered(l.id));
-      document.getElementById("statTotal").textContent = String(lessons.length);
-      document.getElementById("statDue").textContent = String(dueList.length);
-      document.getElementById("statMastered").textContent = String(masteredList.length);
-      document.getElementById("dueCountBadge").textContent = String(dueList.length);
-    }
-
-    function createLessonTile(lesson) {
-      const st = srsState[lesson.id] || { reps: 0 };
-      const due = isDue(lesson.id);
-      const mastered = isMastered(lesson.id);
-
-      const tile = document.createElement("div");
-      tile.className = "lesson-tile" + (mastered ? " mastered" : due ? " due" : "");
-
-      const pillClass = mastered ? "mastered" : due ? "due" : "";
-      const pillText = mastered ? `Mastered (${st.reps})` : due ? "Due Now" : `Reps: ${st.reps}`;
-
-      tile.innerHTML = `
-        <div class="tile-top">
-          <span>${lesson.unitTitle}</span>
-          <span class="srs-pill ${pillClass}">${pillText}</span>
-        </div>
-        <div>
-          <h3>${lesson.title}</h3>
-          <p>Focus: ${lesson.topic}</p>
-        </div>
-        <button class="btn" onclick="openLessonByNumber(${lesson.number})">Start Lesson ▶</button>
-      `;
-      return tile;
-    }
-
-    function renderCatalog() {
-      const unitVal = document.getElementById("unitFilter").value;
-      const statusVal = document.getElementById("statusFilter").value;
-      const grid = document.getElementById("lessonsGrid");
-      grid.innerHTML = "";
-
-      const filtered = lessons.filter(l => {
-        if (unitVal !== "all" && String(l.unitNum) !== unitVal) return false;
-        if (statusVal === "due") return isDue(l.id);
-        if (statusVal === "mastered") return isMastered(l.id);
-        return true;
+    function renderUnitsStrip() {
+      const strip = document.getElementById("unitsStrip");
+      strip.innerHTML = "";
+      unitNames.forEach((name, idx) => {
+        const col = document.createElement("div");
+        col.className = "unit-col" + (idx === activeUnit ? " active" : "");
+        col.textContent = name;
+        col.onclick = () => {
+          activeUnit = idx;
+          activeLessonIndex = idx * 25;
+          renderAll();
+        };
+        strip.appendChild(col);
       });
-
-      filtered.forEach(l => grid.appendChild(createLessonTile(l)));
-      refreshStats();
     }
 
-    function renderSrsQueue() {
-      const grid = document.getElementById("srsQueueGrid");
-      grid.innerHTML = "";
-      const dueLessons = lessons.filter(l => isDue(l.id));
-      if (dueLessons.length === 0) {
-        grid.innerHTML = `<p style="grid-column:1/-1; font-weight:700; color:var(--muted);">No lessons due right now. All scheduled reviews are up to date.</p>`;
-        return;
+    function renderPath() {
+      const l = lessons[activeLessonIndex];
+      document.getElementById("coreLessonNum").textContent = String(l.lessonInUnit);
+      document.getElementById("corePathMeta").textContent = `Unit ${l.uIdx + 1} > Lesson ${l.lessonInUnit} (#${l.num}/100)`;
+      document.getElementById("coreSrsStatus").textContent = isDue(l.id) ? "Due Now (SRS)" : `Reviewed (${srs[l.id]?.reps || 0})`;
+
+      const track = document.getElementById("unitTrack");
+      track.innerHTML = "";
+      const startIdx = activeUnit * 25;
+      for (let k = 0; k < 10; k++) {
+        const idx = startIdx + k;
+        const item = lessons[idx];
+        const btn = document.createElement("button");
+        btn.className = "node-btn";
+        if (idx === activeLessonIndex) btn.classList.add("selected");
+        else if (!isDue(item.id) && (srs[item.id]?.reps || 0) > 0) btn.classList.add("done");
+        btn.textContent = String(k + 1);
+        btn.onclick = () => {
+          activeLessonIndex = idx;
+          renderPath();
+        };
+        track.appendChild(btn);
+
+        if (k < 9) {
+          const sqs = document.createElement("div");
+          sqs.className = "mini-squares";
+          for (let s = 0; s < 4; s++) {
+            const box = document.createElement("span");
+            box.className = "mini-sq" + (!isDue(item.id) && (srs[item.id]?.reps || 0) > 0 ? " done" : "");
+            sqs.appendChild(box);
+          }
+          track.appendChild(sqs);
+        }
       }
-      dueLessons.slice(0, 24).forEach(l => grid.appendChild(createLessonTile(l)));
     }
 
-    function startNextDueLesson() {
-      const due = lessons.find(l => isDue(l.id));
-      if (due) openLessonByNumber(due.number);
+    function render100List() {
+      const grid = document.getElementById("hundredGrid");
+      grid.innerHTML = "";
+      lessons.forEach((l, idx) => {
+        const row = document.createElement("div");
+        row.className = "h-item";
+        row.innerHTML = `
+          <div>
+            <strong>Lesson ${l.num}</strong>
+            <div style="font-size:11px;color:#666;">${isDue(l.id) ? "Due" : "Scheduled"}</div>
+          </div>
+          <button onclick="launchLesson(${idx})">Start ▶</button>
+        `;
+        grid.appendChild(row);
+      });
     }
 
-    function openLessonByNumber(num) {
-      currentLessonIdx = Math.max(0, Math.min(lessons.length - 1, num - 1));
-      currentExIdx = 0;
-      mistakesInLesson = 0;
-      switchWindow("activityWin");
+    function launchLesson(idx) {
+      activeLessonIndex = idx;
+      exStep = 0;
+      showView("exerciseView");
       renderExercise();
     }
 
-    // فتح نافذة متصفح مستقلة للدرس الحالي
-    function popOutLessonWindow() {
-      const lesson = lessons[currentLessonIdx];
-      const w = window.open("", `Lesson_${lesson.id}`, "width=760,height=640");
-      if (!w) return;
-      const ex0 = lesson.exercises[0];
-      w.document.write(`
-        <!DOCTYPE html><html><head><title>${lesson.title}</title>
-        <style>body{font-family:sans-serif;background:#e8e5dc;padding:24px;text-align:center}
-        .box{background:#fff;padding:20px;border-radius:8px;max-width:640px;margin:auto;box-shadow:0 4px 14px rgba(0,0,0,.1)}
-        img{max-width:100%;height:260px;object-fit:cover;border-radius:6px;margin-top:12px}</style></head>
-        <body><div class="box"><h2>${lesson.title}</h2><p>${ex0.prompt || ex0.sentence}</p>
-        <img src="${ex0.images ? ex0.images[0] : ex0.image}"></div></body></html>
-      `);
-      w.document.close();
-    }
-
     function renderExercise() {
-      solvedStep = false;
-      const lesson = lessons[currentLessonIdx];
-      const ex = lesson.exercises[currentExIdx];
+      stepSolved = false;
+      const lesson = lessons[activeLessonIndex];
+      const ex = lesson.exercises[exStep];
 
-      document.getElementById("lessonHeaderInfo").textContent = `${lesson.title} · ${lesson.unitTitle}`;
-      document.getElementById("stepCounter").textContent = `Exercise ${currentExIdx + 1} / ${lesson.exercises.length}`;
-      document.getElementById("feedbackLabel").textContent = "";
-      document.getElementById("feedbackLabel").className = "msg";
+      document.getElementById("exHeaderLabel").textContent = `${lesson.unitLabel} · Lesson ${lesson.num}/100 (Step ${exStep + 1}/${lesson.exercises.length})`;
+      document.getElementById("exFeedback").textContent = "";
+      document.getElementById("exFeedback").className = "msg";
 
-      const promptDisplay = document.getElementById("promptDisplay");
-      const body = document.getElementById("exerciseBody");
-      promptDisplay.innerHTML = "";
-      body.innerHTML = "";
+      const phraseBox = document.getElementById("exPhraseBox");
+      phraseBox.innerHTML = "";
+      const parts = ex.sentence.split("___");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "...";
+      input.addEventListener("input", () => {
+        const ok = input.value.trim().toLowerCase() === ex.answer.toLowerCase();
+        stepSolved = ok;
+        const fb = document.getElementById("exFeedback");
+        fb.textContent = ok ? "Correct." : "";
+        fb.className = ok ? "msg ok" : "msg";
+      });
+      phraseBox.append(parts[0] || "", input, parts[1] || "");
 
-      document.getElementById("speakBtn").onclick = () => speak(ex.speak);
-
-      if (ex.type === "choose_image") {
-        promptDisplay.textContent = ex.prompt;
-        const grid = document.createElement("div");
-        grid.className = "grid-4";
-        const cards = [];
-
-        ex.images.forEach((src, idx) => {
-          const c = document.createElement("div");
-          c.className = "photo-card";
-          const img = document.createElement("img");
-          img.src = src;
-          img.onerror = () => { img.src = FALLBACK; };
-          c.appendChild(img);
-          cards.push(c);
-
-          c.onclick = () => {
-            if (solvedStep) return;
-            const fb = document.getElementById("feedbackLabel");
-            if (idx === ex.correct) {
-              solvedStep = true;
-              cards.forEach(x => x.classList.remove("err"));
-              c.classList.add("ok");
-              fb.textContent = "Correct match.";
-              fb.className = "msg ok";
-            } else {
-              mistakesInLesson++;
-              c.classList.add("err");
-              fb.textContent = "Try another photo.";
-              fb.className = "msg err";
-            }
-          };
-
-          grid.appendChild(c);
-        });
-
-        body.appendChild(grid);
-        speak(ex.speak);
-      } else if (ex.type === "fill_blank") {
-        const parts = ex.sentence.split("___");
-        const input = document.createElement("input");
-        input.type = "text";
-        input.placeholder = "...";
-        input.autocomplete = "off";
-
-        input.addEventListener("input", () => {
-          const ok = input.value.trim().toLowerCase() === ex.answer.toLowerCase();
-          solvedStep = ok;
-          const fb = document.getElementById("feedbackLabel");
-          fb.textContent = ok ? "Correct word." : "";
-          fb.className = ok ? "msg ok" : "msg";
-        });
-
-        promptDisplay.append(parts[0] || "", input, parts[1] || "");
-
-        const single = document.createElement("div");
-        single.className = "single-card";
-        const img = document.createElement("img");
-        img.src = ex.image;
-        img.onerror = () => { img.src = FALLBACK; };
-        single.appendChild(img);
-        body.appendChild(single);
-        speak(ex.speak);
-      }
+      document.getElementById("exImage").src = ex.img;
+      document.getElementById("exAudioBtn").onclick = () => speak(ex.speak);
+      speak(ex.speak);
     }
 
-    function rateCurrentLesson(quality) {
-      const lesson = lessons[currentLessonIdx];
-      updateSrs(lesson.id, quality >= 3 && mistakesInLesson === 0);
-      renderCatalog();
-      switchWindow("catalogWin");
-    }
-
-    function nextExercise() {
-      const lesson = lessons[currentLessonIdx];
-      if (!solvedStep) {
-        mistakesInLesson++;
-        const fb = document.getElementById("feedbackLabel");
-        fb.textContent = "Complete this exercise first or press Hard (Retry Soon).";
+    function nextEx() {
+      const lesson = lessons[activeLessonIndex];
+      if (!stepSolved) {
+        const fb = document.getElementById("exFeedback");
+        fb.textContent = `Answer: "${lesson.exercises[exStep].answer}"`;
         fb.className = "msg err";
+        markSrs(lesson.id, false);
         return;
       }
 
-      if (currentExIdx + 1 < lesson.exercises.length) {
-        currentExIdx++;
+      if (exStep + 1 < lesson.exercises.length) {
+        exStep++;
         renderExercise();
       } else {
-        updateSrs(lesson.id, mistakesInLesson === 0);
-        renderCatalog();
-        switchWindow("catalogWin");
+        markSrs(lesson.id, true);
+        renderAll();
+        showView("pathView");
       }
     }
 
-    populateUnitFilter();
-    renderCatalog();
-    renderSrsQueue();
+    function renderAll() {
+      const dueCount = lessons.filter(l => isDue(l.id)).length;
+      document.getElementById("dueBadge").textContent = String(dueCount);
+      renderUnitsStrip();
+      renderPath();
+    }
+
+    renderAll();
   </script>
 </body>
 </html>
