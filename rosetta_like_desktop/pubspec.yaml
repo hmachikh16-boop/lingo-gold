@@ -1,0 +1,27 @@
+name: rosetta_like_desktop
+description: Rosetta-style desktop replica using only local project photos
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito.ttf
