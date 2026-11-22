@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingo_gold/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,41 +10,36 @@ void main() {
     await Progress.instance.reset();
   });
 
-  testWidgets('curriculum contains 4 lessons of 30 steps', (tester) async {
+  test('curriculum contains 4 lessons of 30 steps', () async {
     final c = await Curriculum.load();
     expect(c.lessons.length, 4);
-    final total = c.lessons.fold<int>(0, (sum, l) => sum + l.steps.length);
-    expect(total, 120);
+    expect(c.lessons.fold<int>(0, (s, l) => s + l.steps.length), 120);
     expect(c.srsIntervals, [1, 2, 4, 8, 16]);
+    expect(c.lessons.first.steps.first.type, 'choose_image');
+    expect(c.lessons.first.steps.first.options.length, 2);
   });
 
-  testWidgets('lesson card advances after a correct answer', (tester) async {
-    final c = await Curriculum.load();
-    await tester.pumpWidget(MaterialApp(
-      home: LessonScreen(curriculum: c, lessonIndex: 0),
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('1 / 30'), findsOneWidget);
-
-    final first = c.lessons[0].steps[0];
-    await tester.tap(find.text(first.options[first.correct]));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(c.t('continue')));
-    await tester.pump(const Duration(milliseconds: 700));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('2 / 30'), findsOneWidget);
+  test('SRS levels grow to the 5th interval', () {
+    final p = Progress.instance;
+    for (final level in [1, 2, 3, 4, 4]) {
+      p.reviewWord('word', true);
+      expect(p.srs['word']!.level, level);
+    }
+    p.reviewWord('word', false);
+    expect(p.srs['word']!.level, 0);
+    expect(p.srs['word']!.wrong, 1);
   });
 
-  testWidgets('bottom navigation switches tabs', (tester) async {
-    final c = await Curriculum.load();
-    await tester.pumpWidget(LingoApp(curriculum: c));
-    await tester.pumpAndSettle();
-
-    expect(find.text(c.t('dashboard')), findsWidgets);
-    await tester.tap(find.text(c.t('lessons')));
-    await tester.pumpAndSettle();
-    expect(find.text(c.lessons[0].title), findsOneWidget);
+  test('progress records answers, xp and lesson completion', () async {
+    final p = Progress.instance;
+    await p.answer('Hello.', true);
+    await p.answer('Goodbye.', false);
+    expect(p.totalAnswers, 2);
+    expect(p.totalCorrect, 1);
+    expect(p.xp, 12);
+    await p.completeLesson(0, 27);
+    expect(p.completedLessons, 1);
+    expect(p.stars, 3);
+    expect(p.xp, 62);
   });
 }

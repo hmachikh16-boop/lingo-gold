@@ -24,7 +24,7 @@ class _LessonScreenState extends State<LessonScreen> with TickerProviderStateMix
   late final Animation<double> _shakeValue;
   final ScrollController _numbers = ScrollController();
   final TextEditingController _write = TextEditingController();
-  final SpeechToText _stt = SpeechToText();
+  SpeechToText? _stt;
 
   int _index = 0;
   int _correctCount = 0;
@@ -82,11 +82,12 @@ class _LessonScreenState extends State<LessonScreen> with TickerProviderStateMix
   Future<void> _listen() async {
     if (_listening) return;
     setState(() => _listening = true);
+    final stt = _stt ??= SpeechToText();
     var ok = false;
     try {
-      ok = await _stt.initialize();
+      ok = await stt.initialize();
     } catch (_) {}
-    if (!ok || !_stt.isAvailable) {
+    if (!ok || !stt.isAvailable) {
       setState(() {
         _listening = false;
         _heard = '🎤 غير مدعوم — استعمل زر الاستماع';
@@ -94,7 +95,7 @@ class _LessonScreenState extends State<LessonScreen> with TickerProviderStateMix
       return;
     }
     final completer = Completer<String?>();
-    await _stt.listen(
+    await stt.listen(
       onResult: (r) {
         if (r.finalResult && !completer.isCompleted) completer.complete(r.recognizedWords);
       },
@@ -105,7 +106,7 @@ class _LessonScreenState extends State<LessonScreen> with TickerProviderStateMix
       const Duration(seconds: 6),
       onTimeout: () => null,
     );
-    await _stt.stop();
+    await stt.stop();
     if (!mounted) return;
     final text = (heard ?? '').trim();
     final want = _step.word.toLowerCase().replaceAll(RegExp(r'[^a-z ]'), '').trim();

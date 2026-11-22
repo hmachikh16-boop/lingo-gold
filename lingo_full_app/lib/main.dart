@@ -37,7 +37,9 @@ class LingoApp extends StatelessWidget {
           style: FilledButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white),
         ),
       ),
-      home: Shell(curriculum: curriculum),
+      home: Uri.base.queryParameters['screen'] == 'lesson'
+          ? LessonScreen(curriculum: curriculum, lessonIndex: 0)
+          : Shell(curriculum: curriculum),
     );
   }
 }
