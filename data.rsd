@@ -1,8 +1,10 @@
 {
+  "title": "Lingo Gold Curriculum",
+  "language": "English (American)",
   "units": [
     {
       "unitId": 1,
-      "title": "Unit 1: Basics",
+      "title": "Unit 1: Language Basics",
       "lessons": [
         {
           "lessonId": 1,
@@ -10,25 +12,104 @@
           "exercises": [
             {
               "type": "fill_blank",
-              "image": "media/images/img_four_boys.jpg",
-              "sentence": "The ___ are reading.",
-              "answer": "men"
+              "image": "media/1.jpg",
+              "sentence": "The ___ is reading.",
+              "answer": "man"
             },
             {
               "type": "choose_image",
-              "audio": "media/hello.mp3",
-              "question": "Hello.",
+              "question": "Goodbye.",
               "options": [
-                "media/images/img_hello.jpg",
-                "media/images/img_one_car.jpg",
-                "media/images/img_one_dog.jpg",
-                "media/images/img_one_apple.jpg"
+                "media/2.jpg",
+                "media/3.jpg",
+                "media/4.jpg",
+                "media/5.jpg",
+                "media/6.jpg",
+                "media/7.jpg",
+                "media/8.jpg",
+                "media/9.jpg"
               ],
-              "answer": "media/images/img_hello.jpg"
+              "answer": "media/3.jpg"
             },
             {
               "type": "choose_text",
-              "image": "media/images/img_one_car.jpg",
+              "image": "media/10.jpg",
+              "options": [
+                "I see a dog.",
+                "The sun is bright.",
+                "She is writing.",
+                "We are happy."
+              ],
+              "answer": "I see a dog."
+            }
+          ]
+        },
+        {
+          "lessonId": 2,
+          "title": "Lesson 2",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/11.jpg",
+              "sentence": "The ___ is red.",
+              "answer": "apple"
+            },
+            {
+              "type": "choose_image",
+              "question": "An apple.",
+              "options": [
+                "media/12.jpg",
+                "media/13.jpg",
+                "media/14.jpg",
+                "media/15.jpg",
+                "media/16.jpg",
+                "media/17.jpg",
+                "media/18.jpg",
+                "media/19.jpg"
+              ],
+              "answer": "media/16.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/20.jpg",
+              "options": [
+                "A cat is sleeping.",
+                "The boy is running.",
+                "This is a house.",
+                "I like milk."
+              ],
+              "answer": "A cat is sleeping."
+            }
+          ]
+        },
+        {
+          "lessonId": 3,
+          "title": "Lesson 3",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/21.jpg",
+              "sentence": "The ___ is reading.",
+              "answer": "man"
+            },
+            {
+              "type": "choose_image",
+              "question": "The cat is sleeping.",
+              "options": [
+                "media/22.jpg",
+                "media/23.jpg",
+                "media/24.jpg",
+                "media/25.jpg",
+                "media/26.jpg",
+                "media/27.jpg",
+                "media/28.jpg",
+                "media/29.jpg"
+              ],
+              "answer": "media/29.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/30.jpg",
               "options": [
                 "The car is red.",
                 "The dog is barking.",
@@ -36,6 +117,360 @@
                 "The men are reading."
               ],
               "answer": "The car is red."
+            }
+          ]
+        },
+        {
+          "lessonId": 4,
+          "title": "Lesson 4",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/31.jpg",
+              "sentence": "The ___ is red.",
+              "answer": "apple"
+            },
+            {
+              "type": "choose_image",
+              "question": "Two boys.",
+              "options": [
+                "media/32.jpg",
+                "media/33.jpg",
+                "media/34.jpg",
+                "media/35.jpg",
+                "media/36.jpg",
+                "media/37.jpg",
+                "media/38.jpg",
+                "media/39.jpg"
+              ],
+              "answer": "media/34.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/40.jpg",
+              "options": [
+                "The book is green.",
+                "He drinks water.",
+                "A bird can fly.",
+                "The door is open."
+              ],
+              "answer": "The book is green."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unitId": 2,
+      "title": "Unit 2: People and Family",
+      "lessons": [
+        {
+          "lessonId": 1,
+          "title": "Lesson 1",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/41.jpg",
+              "sentence": "The ___ is reading.",
+              "answer": "man"
+            },
+            {
+              "type": "choose_image",
+              "question": "Goodbye.",
+              "options": [
+                "media/42.jpg",
+                "media/43.jpg",
+                "media/44.jpg",
+                "media/45.jpg",
+                "media/46.jpg",
+                "media/47.jpg",
+                "media/48.jpg",
+                "media/49.jpg"
+              ],
+              "answer": "media/47.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/50.jpg",
+              "options": [
+                "I see a dog.",
+                "The sun is bright.",
+                "She is writing.",
+                "We are happy."
+              ],
+              "answer": "I see a dog."
+            }
+          ]
+        },
+        {
+          "lessonId": 2,
+          "title": "Lesson 2",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/51.jpg",
+              "sentence": "The ___ is red.",
+              "answer": "apple"
+            },
+            {
+              "type": "choose_image",
+              "question": "An apple.",
+              "options": [
+                "media/52.jpg",
+                "media/53.jpg",
+                "media/54.jpg",
+                "media/55.jpg",
+                "media/56.jpg",
+                "media/57.jpg",
+                "media/58.jpg",
+                "media/59.jpg"
+              ],
+              "answer": "media/52.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/60.jpg",
+              "options": [
+                "A cat is sleeping.",
+                "The boy is running.",
+                "This is a house.",
+                "I like milk."
+              ],
+              "answer": "A cat is sleeping."
+            }
+          ]
+        },
+        {
+          "lessonId": 3,
+          "title": "Lesson 3",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/61.jpg",
+              "sentence": "The ___ is reading.",
+              "answer": "man"
+            },
+            {
+              "type": "choose_image",
+              "question": "The cat is sleeping.",
+              "options": [
+                "media/62.jpg",
+                "media/63.jpg",
+                "media/64.jpg",
+                "media/65.jpg",
+                "media/66.jpg",
+                "media/67.jpg",
+                "media/68.jpg",
+                "media/69.jpg"
+              ],
+              "answer": "media/65.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/70.jpg",
+              "options": [
+                "The car is red.",
+                "The dog is barking.",
+                "I eat an apple.",
+                "The men are reading."
+              ],
+              "answer": "The car is red."
+            }
+          ]
+        },
+        {
+          "lessonId": 4,
+          "title": "Lesson 4",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/71.jpg",
+              "sentence": "The ___ is red.",
+              "answer": "apple"
+            },
+            {
+              "type": "choose_image",
+              "question": "Two boys.",
+              "options": [
+                "media/72.jpg",
+                "media/73.jpg",
+                "media/74.jpg",
+                "media/75.jpg",
+                "media/76.jpg",
+                "media/77.jpg",
+                "media/78.jpg",
+                "media/79.jpg"
+              ],
+              "answer": "media/78.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/80.jpg",
+              "options": [
+                "The book is green.",
+                "He drinks water.",
+                "A bird can fly.",
+                "The door is open."
+              ],
+              "answer": "The book is green."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unitId": 3,
+      "title": "Unit 3: Places and Things",
+      "lessons": [
+        {
+          "lessonId": 1,
+          "title": "Lesson 1",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/81.jpg",
+              "sentence": "The ___ is reading.",
+              "answer": "man"
+            },
+            {
+              "type": "choose_image",
+              "question": "Goodbye.",
+              "options": [
+                "media/82.jpg",
+                "media/83.jpg",
+                "media/84.jpg",
+                "media/85.jpg",
+                "media/86.jpg",
+                "media/87.jpg",
+                "media/88.jpg",
+                "media/89.jpg"
+              ],
+              "answer": "media/83.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/90.jpg",
+              "options": [
+                "I see a dog.",
+                "The sun is bright.",
+                "She is writing.",
+                "We are happy."
+              ],
+              "answer": "I see a dog."
+            }
+          ]
+        },
+        {
+          "lessonId": 2,
+          "title": "Lesson 2",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/91.jpg",
+              "sentence": "The ___ is red.",
+              "answer": "apple"
+            },
+            {
+              "type": "choose_image",
+              "question": "An apple.",
+              "options": [
+                "media/92.jpg",
+                "media/93.jpg",
+                "media/94.jpg",
+                "media/95.jpg",
+                "media/96.jpg",
+                "media/97.jpg",
+                "media/98.jpg",
+                "media/99.jpg"
+              ],
+              "answer": "media/96.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/100.jpg",
+              "options": [
+                "A cat is sleeping.",
+                "The boy is running.",
+                "This is a house.",
+                "I like milk."
+              ],
+              "answer": "A cat is sleeping."
+            }
+          ]
+        },
+        {
+          "lessonId": 3,
+          "title": "Lesson 3",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/101.jpg",
+              "sentence": "The ___ is reading.",
+              "answer": "man"
+            },
+            {
+              "type": "choose_image",
+              "question": "The cat is sleeping.",
+              "options": [
+                "media/102.jpg",
+                "media/103.jpg",
+                "media/104.jpg",
+                "media/105.jpg",
+                "media/106.jpg",
+                "media/107.jpg",
+                "media/108.jpg",
+                "media/109.jpg"
+              ],
+              "answer": "media/109.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/110.jpg",
+              "options": [
+                "The car is red.",
+                "The dog is barking.",
+                "I eat an apple.",
+                "The men are reading."
+              ],
+              "answer": "The car is red."
+            }
+          ]
+        },
+        {
+          "lessonId": 4,
+          "title": "Lesson 4",
+          "exercises": [
+            {
+              "type": "fill_blank",
+              "image": "media/111.jpg",
+              "sentence": "The ___ is red.",
+              "answer": "apple"
+            },
+            {
+              "type": "choose_image",
+              "question": "Two boys.",
+              "options": [
+                "media/112.jpg",
+                "media/113.jpg",
+                "media/114.jpg",
+                "media/115.jpg",
+                "media/116.jpg",
+                "media/117.jpg",
+                "media/118.jpg",
+                "media/119.jpg"
+              ],
+              "answer": "media/114.jpg"
+            },
+            {
+              "type": "choose_text",
+              "image": "media/120.jpg",
+              "options": [
+                "The book is green.",
+                "He drinks water.",
+                "A bird can fly.",
+                "The door is open."
+              ],
+              "answer": "The book is green."
             }
           ]
         }
