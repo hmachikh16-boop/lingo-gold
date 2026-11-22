@@ -3,71 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lingo Gold - Premium</title>
+    <title>Lingo Gold</title>
     <style>
-        /* === 1. التصميم الأساسي (خلفية رمادية فاتحة مثل روزيتا) === */
+        /* === التصميم الأساسي === */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background-color: #e5e5e5; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        .top-bar { background-color: #222; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        .logo { color: #f1c40f; font-weight: bold; font-size: 18px; }
+        .top-bar { background-color: #222; color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; border-bottom: 2px solid #333;}
+        .logo { color: #f1c40f; font-weight: bold; font-size: 20px; letter-spacing: 1px;}
 
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
         .screen.active { display: flex; }
 
-        /* === 2. واجهة المنهج (الوحدات الملونة) === */
-        .curriculum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1000px; width: 100%; }
-        .unit-card { border-radius: 8px; padding: 20px; height: 140px; color: white; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .unit-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .unit-title { font-size: 22px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
+        /* === واجهة المنهج (المربعات) === */
+        .curriculum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1000px; width: 100%; }
+        .unit-card { border-radius: 12px; padding: 30px; height: 180px; color: white; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .unit-card:hover { transform: translateY(-8px); box-shadow: 0 15px 25px rgba(0,0,0,0.2); }
+        .unit-title { font-size: 24px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
 
-        /* === 3. واجهة المسار (الدوائر والصور المائلة) === */
-        .path-container { display: flex; gap: 30px; margin-bottom: 50px; }
-        .node { width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 3px solid #ccc; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 22px; cursor: pointer; transition: 0.2s; color: #666; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* === واجهة المسار (الدوائر والصور) === */
+        .path-container { display: flex; gap: 40px; margin-bottom: 60px; }
+        .node { width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 3px solid #ccc; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 24px; cursor: pointer; transition: 0.2s; color: #666; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .node:hover { transform: scale(1.1); border-color: #2ecc71; color: #2ecc71; }
 
-        .polaroid-container { display: flex; justify-content: center; align-items: center; gap: 20px; height: 200px; }
-        .polaroid { background: white; padding: 10px 10px 35px 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .polaroid-container { display: flex; justify-content: center; align-items: center; gap: 25px; height: 220px; }
+        .polaroid { background: white; padding: 12px 12px 40px 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: transform 0.3s; }
         .polaroid:nth-child(1) { transform: rotate(-6deg); }
-        .polaroid:nth-child(2) { transform: rotate(3deg); }
-        .polaroid:nth-child(3) { transform: rotate(-2deg); }
-        .polaroid:nth-child(4) { transform: rotate(5deg); }
-        .polaroid:nth-child(5) { transform: rotate(-4deg); }
-        .polaroid:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
-        .polaroid img { width: 140px; height: 140px; object-fit: cover; }
+        .polaroid:nth-child(2) { transform: rotate(4deg); }
+        .polaroid:nth-child(3) { transform: rotate(-3deg); }
+        .polaroid:nth-child(4) { transform: rotate(6deg); }
+        .polaroid:nth-child(5) { transform: rotate(-5deg); }
+        .polaroid:hover { transform: scale(1.15) rotate(0deg) !important; z-index: 10; }
+        .polaroid img { width: 160px; height: 160px; object-fit: cover; }
 
-        /* === 4. واجهة التمارين (البطاقات الكبيرة) === */
+        /* === واجهة التمارين (البطاقة الكبيرة) === */
         .exercise-container { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
         
-        /* شكل البطاقة (مربعة الشكل مثل روزيتا) */
-        .card { background: #fdfdfd; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 600px; display: flex; flex-direction: column; border: 3px solid transparent; overflow: hidden; }
+        .card { background: #fff; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); width: 100%; max-width: 700px; display: flex; flex-direction: column; border: 4px solid transparent; overflow: hidden; }
         
-        .card-header { padding: 20px; font-size: 24px; display: flex; justify-content: space-between; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
-        .blank-input { border: 2px solid #ccc; padding: 8px 15px; border-radius: 6px; font-size: 22px; width: 140px; text-align: center; margin: 0 10px; outline: none; }
-        .blank-input:focus { border-color: #3498db; }
+        /* الهيدر (النص) */
+        .card-header { padding: 25px 30px; font-size: 26px; display: flex; justify-content: space-between; align-items: center; background: #fff; border-bottom: 1px solid #eee; font-weight: 500; color: #333;}
+        .blank-input { border: 2px solid #ccc; padding: 10px 15px; border-radius: 8px; font-size: 24px; width: 150px; text-align: center; margin: 0 10px; outline: none; transition: 0.3s; }
+        .blank-input:focus { border-color: #3498db; box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); }
         
-        .audio-icon { color: #3498db; font-size: 28px; cursor: pointer; }
+        .audio-icon { color: #3498db; font-size: 32px; cursor: pointer; transition: 0.2s; }
+        .audio-icon:hover { color: #2980b9; transform: scale(1.1); }
         
-        .card-body { width: 100%; height: 350px; background: #eee; display: flex; justify-content: center; align-items: center; }
-        .card-body img { width: 100%; height: 100%; object-fit: cover; }
+        /* الصورة داخل البطاقة */
+        .card-body { width: 100%; height: 400px; background: #f0f0f0; position: relative; }
+        .card-body img { width: 100%; height: 100%; object-fit: cover; display: block;}
 
-        /* حالات الصح والخطأ (مثل روزيتا) */
+        /* حالات الصح والخطأ */
         .card.correct { border-color: #2ecc71; }
-        .card.correct .check-mark { display: block; }
-        .card.wrong { border-color: #e74c3c; animation: shake 0.4s; }
+        .card.correct .check-mark { display: flex; }
+        .card.wrong { border-color: #e74c3c; animation: shake 0.5s; }
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } 100% { transform: translateX(0); } }
         
-        .check-mark { position: absolute; bottom: 15px; right: 15px; background: #2ecc71; color: white; width: 35px; height: 35px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 20px; }
+        .check-mark { position: absolute; bottom: 20px; right: 20px; background: #2ecc71; color: white; width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.5); }
 
-        /* خيارات متعددة */
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; width: 100%; max-width: 800px; }
-        .option-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 4px solid transparent; transition: 0.2s; }
-        .option-img:hover { transform: scale(1.02); }
-        .option-text { padding: 15px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; font-size: 20px; text-align: center; transition: 0.2s; }
+        /* خيارات متعددة (اختيار صورة أو نص) */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px; width: 100%; max-width: 900px; }
+        .option-img { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 4px solid transparent; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .option-img:hover { transform: scale(1.03); border-color: #3498db; }
+        .option-text { padding: 20px; border: 2px solid #ccc; border-radius: 10px; cursor: pointer; font-size: 22px; text-align: center; transition: 0.2s; background: #fff; }
         .option-text:hover { background: #f0f0f0; border-color: #3498db; }
 
-        .next-btn { margin-top: 30px; padding: 15px 50px; background: #2ecc71; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 20px; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); }
+        .next-btn { margin-top: 30px; padding: 15px 60px; background: #2ecc71; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 22px; font-weight: bold; display: none; box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); transition: 0.2s;}
+        .next-btn:hover { background: #27ae60; transform: translateY(-2px); }
         .next-btn.show { display: block; }
     </style>
 </head>
@@ -82,20 +85,20 @@
     <div class="main-content">
         <!-- شاشة 1: المنهج -->
         <div id="curriculumScreen" class="screen active">
-            <h2 style="margin-bottom: 30px; color: #333; font-size: 28px;">Select a Unit</h2>
+            <h2 style="margin-bottom: 40px; color: #333; font-size: 32px; font-weight: bold;">Select a Unit</h2>
             <div class="curriculum-grid" id="curriculumGrid"></div>
         </div>
 
         <!-- شاشة 2: المسار -->
         <div id="dashboardScreen" class="screen">
-            <h2 id="unitTitleDisplay" style="margin-bottom: 30px; color: #333; font-size: 28px;">Unit Title</h2>
+            <h2 id="unitTitleDisplay" style="margin-bottom: 30px; color: #333; font-size: 32px; font-weight: bold;">Unit Title</h2>
             <div class="path-container" id="pathContainer"></div>
             <div class="polaroid-container">
-                <div class="polaroid"><img src="media/1.jpg" onerror="this.src='https://via.placeholder.com/140'"></div>
-                <div class="polaroid"><img src="media/2.jpg" onerror="this.src='https://via.placeholder.com/140'"></div>
-                <div class="polaroid"><img src="media/3.jpg" onerror="this.src='https://via.placeholder.com/140'"></div>
-                <div class="polaroid"><img src="media/4.jpg" onerror="this.src='https://via.placeholder.com/140'"></div>
-                <div class="polaroid"><img src="media/5.jpg" onerror="this.src='https://via.placeholder.com/140'"></div>
+                <div class="polaroid"><img src="media/1.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
+                <div class="polaroid"><img src="media/2.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
+                <div class="polaroid"><img src="media/3.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
+                <div class="polaroid"><img src="media/4.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
+                <div class="polaroid"><img src="media/5.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
             </div>
         </div>
 
@@ -190,26 +193,33 @@
                         <span class="audio-icon">🔊</span>
                     </div>
                     <div class="card-body">
-                        <img src="${ex.image}" onerror="this.src='https://via.placeholder.com/600x350'">
+                        <img src="${ex.image}" onerror="this.src='https://via.placeholder.com/700x400'">
                         <div class="check-mark">✓</div>
                     </div>
                 `;
             } 
             else if (ex.type === 'choose_image') {
-                let optionsHtml = ex.options.map(img => `<img src="${img}" class="option-img" onclick="checkChoice(this, '${img}', '${ex.answer}')" onerror="this.src='https://via.placeholder.com/200'">`).join('');
+                let optionsHtml = ex.options.map(img => `<img src="${img}" class="option-img" onclick="checkChoice(this, '${img}', '${ex.answer}')" onerror="this.src='https://via.placeholder.com/220'">`).join('');
                 card.innerHTML = `
                     <div class="card-header"><span>🔊 Which one is correct?</span></div>
-                    <div class="options-grid">${optionsHtml}</div>
+                    <div class="options-grid" style="padding: 0; max-width: 100%;">${optionsHtml}</div>
                 `;
+                card.style.maxWidth = '100%';
+                card.style.background = 'transparent';
+                card.style.boxShadow = 'none';
+                card.style.border = 'none';
             }
             else if (ex.type === 'choose_text') {
                 let optionsHtml = ex.options.map(text => `<div class="option-text" onclick="checkChoice(this, '${text}', '${ex.answer}')">${text}</div>`).join('');
                 card.innerHTML = `
-                    <div class="card-body" style="height: 250px;">
-                        <img src="${ex.image}" onerror="this.src='https://via.placeholder.com/600x250'">
+                    <div class="card-body" style="height: 300px; border-radius: 15px; overflow: hidden;">
+                        <img src="${ex.image}" onerror="this.src='https://via.placeholder.com/700x300'">
                     </div>
-                    <div class="options-grid" style="grid-template-columns: 1fr; padding: 15px;">${optionsHtml}</div>
+                    <div class="options-grid" style="grid-template-columns: 1fr; padding: 20px 0;">${optionsHtml}</div>
                 `;
+                card.style.background = 'transparent';
+                card.style.boxShadow = 'none';
+                card.style.border = 'none';
             }
             container.appendChild(card);
         }
@@ -226,14 +236,13 @@
         }
 
         function checkChoice(el, selected, correct) {
-            const card = el.closest('.card');
+            // للتبسيط، سنقوم بتلوين الخيار نفسه
             if (selected === correct) {
-                card.classList.add('correct');
-                card.classList.remove('wrong');
+                el.style.borderColor = '#2ecc71';
                 document.getElementById('nextBtn').classList.add('show');
             } else {
-                card.classList.add('wrong');
-                setTimeout(() => card.classList.remove('wrong'), 500);
+                el.style.borderColor = '#e74c3c';
+                setTimeout(() => el.style.borderColor = 'transparent', 500);
             }
         }
 
