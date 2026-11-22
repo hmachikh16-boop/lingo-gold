@@ -1,52 +1,120 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Immersion Studio — A1 English</title>
-<style>
-:root{--gold:#d9aa21;--gold2:#f3cf65;--ink:#202832;--muted:#687482;--bg:#f4f6f8;--white:#fff;--green:#218653;--red:#c94a4a;--line:#e5e9ee;--nav:#202832;--shadow:0 10px 28px #14202b12}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif;min-height:100vh}.top{height:68px;background:var(--nav);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100vw - 1180px)/2));gap:20px}.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.3px}.logo{width:36px;height:36px;border-radius:10px;background:var(--gold);color:#242a30;display:grid;place-items:center;font-weight:900}.top small{color:#d1d7de}.layout{max-width:1180px;margin:auto;padding:24px;display:grid;grid-template-columns:245px minmax(0,1fr);gap:22px}.sidebar,.main{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.sidebar{padding:18px;height:max-content;position:sticky;top:18px}.levelbox{padding:14px;background:#f7f8fa;border-radius:12px;margin-bottom:18px}.levelbox strong{display:block;margin-bottom:5px}.progress{height:8px;background:#e6e9ed;border-radius:8px;overflow:hidden;margin-top:10px}.progress span{display:block;height:100%;background:var(--gold);width:0;transition:.3s}.navtitle{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:1px;margin:16px 4px 9px}.unitbtn{border:0;background:none;width:100%;text-align:left;padding:10px;border-radius:9px;cursor:pointer;color:var(--ink);font-weight:700;font-size:13px}.unitbtn:hover,.unitbtn.active{background:#fff6dd}.unitbtn .sub{display:block;font-weight:500;font-size:11px;color:var(--muted);margin-top:4px}.main{min-height:650px;overflow:hidden}.view{display:none}.view.active{display:block}.welcome{padding:30px}.welcome h1{font-size:30px;margin:0 0 8px}.welcome p{color:var(--muted);margin:0 0 22px}.unithead{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;border-bottom:1px solid var(--line);gap:10px}.unithead h2{margin:0;font-size:20px}.pill{font-size:12px;font-weight:800;color:#805f08;background:#fff4d4;border-radius:20px;padding:7px 11px}.lessonlist{padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.lessoncard{border:1px solid var(--line);border-radius:13px;overflow:hidden;display:flex;gap:12px;padding:11px;align-items:center;cursor:pointer;transition:.16s;background:#fff}.lessoncard:hover:not(.locked){transform:translateY(-2px);box-shadow:var(--shadow);border-color:#e4c35a}.lessoncard.locked{opacity:.5;cursor:not-allowed;background:#f7f8fa}.thumb{width:90px;height:78px;border-radius:9px;object-fit:cover;background:#e9edf1}.lessoncard h3{font-size:14px;margin:0 0 5px}.lessoncard p{font-size:11px;color:var(--muted);margin:0}.check{color:var(--green);font-weight:900}.lesson{padding:22px}.lessonbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}.back{border:1px solid var(--line);background:white;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer}.stepdots{display:flex;gap:7px}.dot{width:29px;height:29px;border:1px solid #d8dee5;background:white;border-radius:50%;font-weight:800}.dot.active{background:var(--gold);border-color:var(--gold)}.stepname{font-size:12px;color:var(--muted);font-weight:700}.exercise{max-width:780px;margin:auto}.prompt{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7f9fb;border-radius:12px;padding:16px;margin-bottom:16px}.prompt h2{font-size:20px;margin:0}.audio{border:0;border-radius:50%;width:44px;height:44px;background:#e7f5ec;color:var(--green);font-size:18px;cursor:pointer;flex-shrink:0}.photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.photochoice{padding:0;border:3px solid transparent;border-radius:12px;background:white;overflow:hidden;cursor:pointer;text-align:left}.photochoice img{width:100%;height:220px;object-fit:cover;display:block}.photochoice.selected{border-color:var(--gold)}.photochoice.correct{border-color:var(--green)}.photochoice.wrong{border-color:var(--red)}.choicecaption{padding:10px;font-weight:700;font-size:13px}.wordbank,.sentence{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;min-height:55px;padding:12px;border:1px dashed #cbd3db;border-radius:12px;margin:12px 0}.word{border:1px solid #dce2e8;background:#fff;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}.word.used{opacity:.4;pointer-events:none}.word.selected{background:#fff3d1;border-color:var(--gold)}.sentence .word{background:#fff8e4}.speakpanel{border:1px solid var(--line);background:#f8fafb;border-radius:14px;padding:20px;text-align:center}.speakpanel img{width:100%;max-width:460px;height:250px;object-fit:cover;border-radius:12px;margin:0 auto 16px}.mic{border:0;background:#237fd3;color:white;border-radius:30px;padding:12px 22px;font-weight:800;cursor:pointer}.status{font-size:13px;color:var(--muted);min-height:22px;margin:12px}.feedback{font-weight:800;min-height:24px;margin:10px 0}.feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}.bottom{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:10px}.continue{background:var(--gold);border:0;border-radius:9px;padding:12px 20px;font-weight:900;cursor:pointer}.continue:disabled{opacity:.45;cursor:not-allowed}.lessonprogress{height:7px;background:#e8ebef;border-radius:9px;margin:0 22px 18px;overflow:hidden}.lessonprogress span{display:block;height:100%;width:0;background:var(--gold);transition:.2s}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#202832;color:white;padding:12px 18px;border-radius:10px;display:none;z-index:20}.toast.show{display:block}.footnote{padding:18px;color:var(--muted);font-size:12px;text-align:center;border-top:1px solid var(--line)}@media(max-width:800px){.layout{grid-template-columns:1fr;padding:12px}.sidebar{position:static}.unitnav{display:grid;grid-template-columns:repeat(2,1fr)}.lessonlist{grid-template-columns:1fr}.top{padding:0 16px}.main{min-height:unset}.photos{gap:8px}.photochoice img{height:160px}.lesson{padding:14px}.welcome{padding:22px}}@media(max-width:440px){.prompt h2{font-size:16px}.photochoice img{height:130px}.lessoncard{gap:9px}.thumb{width:75px;height:70px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Lingo Gold — تعلم الإنجليزية بالانغماس البصري والصوتي">
+  <title>Lingo Gold — Immersion Studio</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="top"><div class="brand"><div class="logo">IS</div><div>IMMERSION STUDIO<small style="display:block;font-size:11px;font-weight:500">Visual English · A1</small></div></div><small>Learn through context</small></header>
-<div class="layout"><aside class="sidebar"><div class="levelbox"><strong>Level A1 · Beginner</strong><span id="progressText">0 of 12 lessons completed</span><div class="progress"><span id="progressBar"></span></div></div><div class="navtitle">COURSE UNITS</div><div id="unitNav" class="unitnav"></div></aside>
-<main class="main"><section id="homeView" class="view active"><div class="welcome"><h1>Learn English naturally.</h1><p>Look. Listen. Understand. Speak. Learn without translating every word.</p><div class="unithead" style="padding:15px 0;border:0"><h2 id="homeUnitTitle">Unit 1 · Everyday Words</h2><span class="pill" id="homeCount">0 / 12 completed</span></div><div id="lessonList" class="lessonlist"></div></div></section>
-<section id="lessonView" class="view"><div class="lesson"><div class="lessonbar"><button class="back" id="backBtn">← Course</button><div class="stepdots" id="stepDots"></div><span class="stepname" id="stepName"></span></div><div class="lessonprogress"><span id="lessonProgressBar"></span></div><div class="exercise"><div class="prompt"><h2 id="promptText"></h2><button class="audio" id="mainAudio" title="Listen">🔊</button></div><div id="stage"></div><div class="feedback" id="feedback"></div><div class="bottom"><span id="stepHint" class="stepname"></span><button id="nextBtn" class="continue" disabled>Continue →</button></div></div></div></section><div class="footnote">Immersion Studio · Prototype · Lesson progress saved on this device</div></main></div><div id="toast" class="toast"></div>
-<script>
-const img=(id)=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=85`;
-const lessons=[
-{unit:0,title:"People",phrase:"The woman is smiling.",prompt:"Who is smiling?",target:"woman smiling",img:img("photo-1534528741775-53994a69daeb"),alts:[img("photo-1500648767791-00dcc994a43e"),img("photo-1506794778202-cad84cf45f1d"),img("photo-1524504388940-b1c1722653e1")] ,words:["The","woman","is","smiling."]},
-{unit:0,title:"Everyday Objects",phrase:"The phone is on the table.",prompt:"Where is the phone?",target:"phone on table",img:img("photo-1511707171634-5f897ff02aa9"),alts:[img("photo-1513475382585-d06e58bcb0e0"),img("photo-1523275335684-37898b6baf30"),img("photo-1496181133206-80ce9b88a853")],words:["The","phone","is","on","the","table."]},
-{unit:0,title:"Colors",phrase:"The car is red.",prompt:"Which car is red?",target:"red car",img:img("photo-1492144534655-ae79c964c9d7"),alts:[img("photo-1502877338535-766e1452684a"),img("photo-1503376780353-7e6692767b70"),img("photo-1493238792000-8113da705763")],words:["The","car","is","red."]},
-{unit:0,title:"Numbers",phrase:"There are three apples.",prompt:"How many apples?",target:"three apples",img:img("photo-1568702846914-96b305d2aaeb"),alts:[img("photo-1560806887-1e4cd0b6cbd"),img("photo-1570913149827-d2ac84ab3f5b"),img("photo-1567306226416-28f0efdc88ce")],words:["There","are","three","apples."]},
-{unit:0,title:"Animals",phrase:"The dog is running.",prompt:"Which dog is running?",target:"running dog",img:img("photo-1552053831-71594a27632d"),alts:[img("photo-1517849845537-4d257902454a"),img("photo-1537151608828-ea2b2a7a4c3b"),img("photo-1543466835-00a7907e9de1")],words:["The","dog","is","running."]},
-{unit:0,title:"Food",phrase:"She is eating an apple.",prompt:"What is she eating?",target:"eating apple",img:img("photo-1568702846914-96b305d2aaeb"),alts:[img("photo-1547592180-85f173990554"),img("photo-1565299624946-b28f40a0ae38"),img("photo-1546549032-9571cd6b27df")],words:["She","is","eating","an","apple."]},
-{unit:1,title:"Drinks",phrase:"He is drinking coffee.",prompt:"What is he drinking?",target:"drinking coffee",img:img("photo-1495474472287-4d71bcdd2085"),alts:[img("photo-1523362628745-0c100150b504"),img("photo-1517701604599-bb29b565090c"),img("photo-1511920170033-f8396924c348")],words:["He","is","drinking","coffee."]},
-{unit:1,title:"At Home",phrase:"The family is in the living room.",prompt:"Where is the family?",target:"family living room",img:img("photo-1600607687939-ce8a6c25118c"),alts:[img("photo-1600210492486-724fe5c67fb0"),img("photo-1600566753086-00f18fb6b3ea"),img("photo-1600607687920-4e2a09cf159d")],words:["The","family","is","in","the","living","room."]},
-{unit:1,title:"Morning",phrase:"She is getting dressed.",prompt:"What is she doing?",target:"getting dressed",img:img("photo-1483985988355-763728e1935b"),alts:[img("photo-1503342217505-b0a15ec3261c"),img("photo-1529139574466-a303027c1d8b"),img("photo-1515886657613-9f3515b0c78f")],words:["She","is","getting","dressed."]},
-{unit:1,title:"Reading",phrase:"The boy is reading a book.",prompt:"What is the boy doing?",target:"reading book",img:img("photo-1503676260728-1c00da094a0b"),alts:[img("photo-1512820790803-83ca734da794"),img("photo-1503454537195-1dcabb73ffb9"),img("photo-1509062522246-3755977927d7")],words:["The","boy","is","reading","a","book."]},
-{unit:1,title:"Places",phrase:"They are at the park.",prompt:"Where are they?",target:"at park",img:img("photo-1519331379826-f10be4e5b8b3"),alts:[img("photo-1511818966892-d7d671e672a2"),img("photo-1507525428034-b723cf961d3e"),img("photo-1519608487953-e999c86e7455")],words:["They","are","at","the","park."]},
-{unit:1,title:"Review",phrase:"The woman is reading in the park.",prompt:"Find the woman reading outdoors.",target:"reading outdoors",img:img("photo-1528208079124-a9b46e4f7f7a"),alts:[img("photo-1500530855697-b586d89ba3ee"),img("photo-1495446815901-a7297e633e8d"),img("photo-1512820790803-83ca734da794")],words:["The","woman","is","reading","in","the","park."]}
-];
-const units=["Unit 1 · First Words","Unit 2 · Everyday Life"];
-const STORE="immersion_studio_a1_v1";let saved={done:[],review:{}};try{saved=JSON.parse(localStorage.getItem(STORE))||saved}catch(e){};
-let activeUnit=0,currentLesson=0,step=0,passed=[false,false,false,false],selectedWords=[],speechRecognition=null,heard=false;
-const $=id=>document.getElementById(id);function save(){localStorage.setItem(STORE,JSON.stringify(saved));renderNav();renderList()}
-function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2300)}
-function renderNav(){let nav=$("unitNav");nav.innerHTML="";units.forEach((u,i)=>{let b=document.createElement("button");b.className="unitbtn"+(activeUnit===i?" active":"");b.innerHTML=`${u}<span class="sub">${lessons.filter(x=>x.unit===i&&saved.done.includes(lessons.indexOf(x))).length} / 6 completed</span>`;b.onclick=()=>{activeUnit=i;renderNav();renderList()};nav.appendChild(b)});let done=saved.done.length;$(`progressText`).textContent=`${done} of ${lessons.length} lessons completed`;$(`progressBar`).style.width=(done/lessons.length*100)+"%";$(`homeCount`).textContent=`${done} / ${lessons.filter(x=>x.unit===activeUnit).length} completed`;$(`homeUnitTitle`).textContent=units[activeUnit]}
-function renderList(){let list=$("lessonList");list.innerHTML="";lessons.forEach((l,i)=>{if(l.unit!==activeUnit)return;let unlocked=i===0||saved.done.includes(i-1)||saved.done.includes(i);let card=document.createElement("div");card.className="lessoncard"+(unlocked?"":" locked");card.innerHTML=`<img class="thumb" src="${l.img}" alt="Lesson photo"><div><h3>${String(i+1).padStart(2,"0")} · ${l.title} ${saved.done.includes(i)?'<span class="check">✓</span>':unlocked?'':'🔒'}</h3><p>${saved.done.includes(i)?"Completed":"4 learning activities"}</p></div>`;if(unlocked)card.onclick=()=>openLesson(i);list.appendChild(card)});}
-function showView(v){$("homeView").classList.toggle("active",v==="home");$("lessonView").classList.toggle("active",v==="lesson")}
-function openLesson(i){currentLesson=i;step=0;passed=[false,false,false,false];selectedWords=[];showView("lesson");renderStep()}
-function speak(text){if(!window.speechSynthesis)return toast("Speech synthesis isn't supported in this browser.");speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.88;speechSynthesis.speak(u)}
-function renderStep(){let l=lessons[currentLesson];$("stepName").textContent=["Observe & Listen","Picture Match","Build the Sentence","Speak"] [step];$("promptText").textContent=[l.phrase,l.prompt,"Build the sentence from the words.","Say the sentence aloud."][step];$("mainAudio").onclick=()=>speak(l.phrase);$("feedback").textContent="";$("feedback").className="feedback";$("stepHint").textContent=["Listen and look at the scene.","Select the photo that matches.","Tap the words in the correct order.","Use the microphone if supported, or practice aloud."][step];$("nextBtn").disabled=!passed[step];$("lessonProgressBar").style.width=((step+1)/4*100)+"%";let dots=$("stepDots");dots.innerHTML="";for(let n=0;n<4;n++){let d=document.createElement("button");d.className="dot"+(n===step?" active":"");d.textContent=n+1;d.disabled=n>step;d.onclick=()=>{if(n<=step){step=n;renderStep()}};dots.appendChild(d)}let stage=$("stage");stage.innerHTML="";
-if(step===0){let panel=document.createElement("div");panel.className="speakpanel";panel.innerHTML=`<img src="${l.img}" alt="Scene"><div style="font-size:22px;font-weight:800;margin:8px">${l.phrase}</div><p style="color:var(--muted)">Listen a few times and observe the scene. Tap Continue when ready.</p>`;stage.appendChild(panel);passed[0]=true;$("nextBtn").disabled=false;
-}else if(step===1){let grid=document.createElement("div");grid.className="photos";let options=[l.img,...l.alts].sort(()=>Math.random()-.5);options.forEach(src=>{let b=document.createElement("button");b.className="photochoice";b.innerHTML=`<img src="${src}" alt="Choose scene">`;b.onclick=()=>{grid.querySelectorAll("button").forEach(x=>x.classList.remove("selected","correct","wrong"));if(src===l.img){b.classList.add("correct");passed[1]=true;feedback("Correct! The picture matches.",true);$("nextBtn").disabled=false}else{b.classList.add("wrong");feedback("Not quite. Listen again and try another image.",false);passed[1]=false;$("nextBtn").disabled=true}};grid.appendChild(b)});stage.appendChild(grid);}
-else if(step===2){let box=document.createElement("div");box.innerHTML=`<div class="sentence" id="sentence"></div><div class="wordbank" id="bank"></div><div style="text-align:center"><button class="back" id="clearWords">Clear answer</button></div>`;stage.appendChild(box);selectedWords=[];let sentence=$("sentence"),bank=$("bank");let tokens=l.words.slice().sort(()=>Math.random()-.5);tokens.forEach((w,ix)=>{let b=document.createElement("button");b.className="word";b.textContent=w;b.onclick=()=>{selectedWords.push({w,ix});b.classList.add("used");drawSentence();};bank.appendChild(b)});function drawSentence(){sentence.innerHTML="";selectedWords.forEach((item,j)=>{let t=document.createElement("button");t.className="word selected";t.textContent=item.w;t.title="Tap to remove";t.onclick=()=>{selectedWords.splice(j,1);let btn=[...bank.children].find(x=>x.textContent===item.w&&x.classList.contains("used"));if(btn)btn.classList.remove("used");drawSentence()};sentence.appendChild(t)});let attempt=selectedWords.map(x=>x.w).join(" ");if(attempt===l.words.join(" ")){passed[2]=true;feedback("Excellent! Sentence completed.",true);$("nextBtn").disabled=false}else{passed[2]=false;$("nextBtn").disabled=true;if(selectedWords.length===l.words.length)feedback("Check the word order.",false)}}$("clearWords").onclick=()=>{selectedWords=[];bank.querySelectorAll(".used").forEach(x=>x.classList.remove("used"));drawSentence()};}
-else{let p=document.createElement("div");p.className="speakpanel";p.innerHTML=`<img src="${l.img}" alt="Practice speaking"><div style="font-size:22px;font-weight:800">${l.phrase}</div><button class="mic" id="speakBtn">🎙 Start speaking</button><div class="status" id="speechStatus">Speak the sentence above. If speech recognition isn't available, practice aloud and use self-practice confirmation.</div><button class="back" id="selfPractice">I practiced aloud</button>`;stage.appendChild(p);$("selfPractice").onclick=()=>{heard=true;passed[3]=true;feedback("Self-practice recorded. (Pronunciation was not automatically scored.)",true);$("nextBtn").disabled=false};$("speakBtn").onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$("speechStatus").textContent="Speech recognition unavailable in this browser. Practice aloud, then select self-practice.";return}try{speechRecognition=new SR();speechRecognition.lang="en-US";speechRecognition.interimResults=false;speechRecognition.onresult=e=>{let transcript=e.results[0][0].transcript;$("speechStatus").textContent="Heard: "+transcript;let norm=x=>x.toLowerCase().replace(/[.,!?]/g,"").trim();if(norm(transcript)===norm(l.phrase)){passed[3]=true;feedback("Great! Exact phrase recognized.",true);$("nextBtn").disabled=false}else{passed[3]=false;feedback("Try again. Listen to the model first.",false);$("nextBtn").disabled=true}};speechRecognition.onerror=e=>{$("speechStatus").textContent="Recognition error ("+e.error+"). You can retry or use self-practice."};speechRecognition.start()}catch(e){$("speechStatus").textContent="Could not start speech recognition. Try self-practice."}};}
-}
-function feedback(msg,ok){let el=$("feedback");el.textContent=msg;el.className="feedback "+(ok?"good":"bad")}
-$("nextBtn").onclick=()=>{if(!passed[step])return;if(step<3){step++;renderStep()}else{if(!saved.done.includes(currentLesson))saved.done.push(currentLesson);saved.done.sort((a,b)=>a-b);saved.review[currentLesson]=Date.now();save();toast("Lesson completed! Progress saved.");activeUnit=lessons[currentLesson].unit;showView("home");renderNav();renderList()}};
-$("backBtn").onclick=()=>{showView("home");renderNav();renderList()};renderNav();renderList();
-</script>
+
+  <div class="loading" id="loading">
+    <div style="text-align:center">
+      <div class="wave">🌊</div>
+      <p>جارٍ تجهيز الدروس...</p>
+    </div>
+  </div>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark">LG</div>
+      <div>
+        <div class="brand-title">Lingo Gold</div>
+        <div class="brand-sub">Immersion Studio · English A1 → B2</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span title="نقاط الخبرة">✦ <b id="xpVal">0</b></span>
+      <span title="سلسلة التعلّم">🔥 <b id="streakVal">0</b></span>
+      <button class="icon-btn" id="themeBtn" title="تبديل المظهر" aria-label="تبديل المظهر">☾</button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="panel sidebar">
+      <div class="mini-progress">
+        <div class="mini-progress-top"><span>تقدّمك</span><span id="achCount">0 / 10</span></div>
+        <div class="track-line"><span id="profileBar" style="width:0%"></span></div>
+        <small id="profileText">0 / 48 درسًا متقنًا</small>
+      </div>
+      <div class="side-label">المستويات</div>
+      <div id="levelNav"></div>
+      <div class="side-links">
+        <button class="side-link active" id="navHome">⌂ المسار الدراسي</button>
+        <button class="side-link" id="navReview">↻ المراجعة <span class="cnt" id="reviewCount">0</span></button>
+        <button class="side-link" id="navAch">✧ الإنجازات</button>
+        <button class="side-link" id="resetBtn">↺ إعادة ضبط التقدم</button>
+      </div>
+    </aside>
+
+    <main class="panel main">
+      <div class="error" id="errorBanner"></div>
+
+      <!-- Course path -->
+      <section id="dashboardView" class="view active">
+        <div class="view-head">
+          <div>
+            <h1 id="dashTitle">الوحدة</h1>
+            <p id="dashSub">تعلّم بالصورة والاستماع والسياق</p>
+          </div>
+          <span class="tag" id="levelBadge">A1</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:18px" id="crumbLevel">A1</div>
+        <div class="sec-head"><h2>دروس الوحدة</h2><span>تعلّم بالصورة والسياق</span></div>
+        <div class="lesson-grid" id="lessonGrid"></div>
+        <div class="sec-head"><h2>الاختبارات</h2><span>75% للنجاح</span></div>
+        <div class="test-row" id="testStrip"></div>
+      </section>
+
+      <!-- Lesson -->
+      <section id="lessonView" class="view">
+        <div class="lesson-top">
+          <div>
+            <div class="lesson-name" id="lessonTitle">الدرس</div>
+            <div class="stage-label" id="stageLabel">1 / 8</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div class="stage-track" id="stageDots"></div>
+            <button class="btn-soft" id="backBtn">← عودة</button>
+          </div>
+        </div>
+        <div id="stageArea"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="stage-foot">
+          <span class="stage-label" id="stepHint"></span>
+          <button class="continue" id="nextBtn" disabled>متابعة ←</button>
+        </div>
+      </section>
+
+      <!-- Review -->
+      <section id="reviewView" class="view">
+        <div class="view-head">
+          <div><h1>المراجعة المتباعدة</h1><p id="reviewSub">0 درس مستحق</p></div>
+          <span class="tag">🔁</span>
+        </div>
+        <div id="reviewList"></div>
+      </section>
+
+      <!-- Achievements -->
+      <section id="achView" class="view">
+        <div class="view-head">
+          <div><h1>الإنجازات</h1><p>عناصر ثانوية — التعلّم هو الأساس</p></div>
+        </div>
+        <div class="ach-grid" id="achGrid"></div>
+      </section>
+
+      <!-- Test -->
+      <section id="testView" class="view">
+        <div class="view-head"><div><h1 id="testTitle">الاختبار</h1></div></div>
+        <div id="testBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="curriculum.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
