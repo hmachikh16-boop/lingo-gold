@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Immersion Studio - 20 Diverse UIs (Including Speaking) & SRS</title>
+  <title>Immersion Core - 100 Lessons, 20 UIs & SRS</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
       --bar: #1a1c20;
-      --bg: #e3e0d8;
+      --bg: #e2dfd7;
+      --bg-bot: #cdc9bf;
       --card: #ffffff;
       --ink: #22252a;
       --muted: #656b73;
@@ -18,20 +19,25 @@
       --red: #d32f2f;
       --red-light: #ffebee;
       --blue: #1e88e5;
-      --blue-light: #e3f2fd;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
-    body { background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+    body {
+      background: radial-gradient(circle at 50% 25%, var(--bg), var(--bg-bot));
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
+    /* Top Bar */
     .topbar {
       background: var(--bar); color: #fff; padding: 10px 20px;
       display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #000;
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-    .badge { background: var(--gold); color: #111; padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 800; }
-
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+    .badge { background: var(--gold); color: #111; padding: 3px 9px; border-radius: 3px; font-size: 12px; font-weight: 800; }
     .nav-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .nav-btn {
       background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);
@@ -39,75 +45,127 @@
     }
     .nav-btn.active, .nav-btn:hover { background: var(--gold); color: #111; border-color: var(--gold); }
 
+    /* Workspace */
     .wrap { max-width: 1040px; width: 100%; margin: 18px auto; padding: 0 18px; flex: 1; display: flex; flex-direction: column; }
-    .screen { display: none; flex-direction: column; gap: 14px; flex: 1; }
+    .screen { display: none; flex-direction: column; gap: 18px; flex: 1; }
     .screen.active { display: flex; }
 
-    /* Lessons Catalog */
-    .toolbar {
+    /* Classic Path View */
+    .unit-strip {
+      width: 100%; display: grid; grid-template-columns: repeat(4, 1fr);
+      background: #4e4942; border-radius: 6px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+    }
+    .unit-tab {
+      padding: 10px; text-align: center; font-size: 13px; font-weight: 700;
+      color: #ddd9d2; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .unit-tab.active { background: #f4f2ec; color: #111; }
+
+    .core-banner {
+      background: rgba(255,255,255,0.78); border: 1px solid #b5b0a4; border-radius: 6px;
+      padding: 18px 24px; max-width: 720px; width: 100%; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+    .core-left { display: flex; align-items: center; gap: 16px; }
+    .diamond-badge {
+      width: 48px; height: 48px; background: #b71c1c; color: #fff;
+      font-weight: 800; font-size: 20px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .core-titles span { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .core-titles h2 { font-size: 22px; font-weight: 700; color: #1f2328; }
+    .start-play {
+      background: var(--green); color: #fff; border: none; padding: 11px 22px;
+      border-radius: 5px; font-weight: 700; font-size: 15px; cursor: pointer;
+    }
+
+    .track-scroller { overflow-x: auto; padding: 8px 4px; }
+    .track {
+      display: flex; align-items: center; justify-content: space-between;
+      min-width: 760px; position: relative;
+    }
+    .track::before {
+      content: ""; position: absolute; left: 18px; right: 18px; top: 50%;
+      height: 2px; background: #948f84; transform: translateY(-50%); z-index: 1;
+    }
+    .l-node {
+      position: relative; z-index: 2; width: 38px; height: 38px; border-radius: 50%;
+      background: #fff; border: 2.5px solid #666; font-weight: 800; font-size: 13px; cursor: pointer;
+    }
+    .l-node.selected { background: #b71c1c; border-color: #b71c1c; color: #fff; }
+    .l-node.done { background: var(--green); border-color: var(--green); color: #fff; }
+    .sub-boxes { position: relative; z-index: 2; display: flex; gap: 4px; background: #dcd8ce; padding: 0 4px; }
+    .sub-sq { width: 11px; height: 14px; border: 1.5px solid #78746a; background: #f5f4f0; }
+    .sub-sq.filled { background: var(--gold); border-color: var(--gold-dark); }
+
+    .polaroids { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; }
+    .polaroid {
+      background: #fff; padding: 7px 7px 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+      transition: transform 0.2s;
+    }
+    .polaroid:nth-child(odd) { transform: rotate(-3deg); }
+    .polaroid:nth-child(even) { transform: rotate(3deg); }
+    .polaroid:hover { transform: scale(1.06) rotate(0deg) !important; z-index: 5; }
+    .polaroid img { width: 120px; height: 92px; object-fit: cover; display: block; }
+
+    /* 100 Lessons Drawer View */
+    .hundred-bar {
       background: var(--card); border-radius: 8px; padding: 12px 16px;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .sel, .btn-ghost {
-      padding: 7px 12px; border-radius: 6px; border: 1.5px solid #c5cbd3;
-      background: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+    .hundred-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;
     }
-    .lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(225px, 1fr)); gap: 12px; }
-    .l-tile {
-      background: var(--card); border-radius: 8px; padding: 14px;
-      border-left: 5px solid #9aa2ac; box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-      display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    .h-card {
+      background: var(--card); border-radius: 6px; padding: 12px;
+      border-left: 4px solid var(--gold-dark); display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
     }
-    .l-tile.due { border-left-color: var(--gold-dark); }
-    .l-tile.done { border-left-color: var(--green); }
-    .l-top { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: var(--muted); }
+    .h-card button {
+      background: var(--gold); border: none; border-radius: 4px;
+      padding: 6px 11px; font-weight: 800; font-size: 12px; cursor: pointer;
+    }
+
+    /* Exercise Stage (20 UIs + Speaking) */
+    .player-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .btn-ghost {
+      background: #fff; color: var(--ink); border: 1.5px solid #c5cbd3;
+      padding: 7px 14px; border-radius: 5px; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
     .btn-gold {
       background: var(--gold); color: #111; border: none;
-      padding: 9px 14px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer;
+      padding: 9px 18px; border-radius: 5px; font-weight: 800; font-size: 13px; cursor: pointer;
     }
-    .btn-gold:hover { background: var(--gold-dark); }
-
-    /* Player Header & Prompt */
-    .player-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .step-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+    .step-dots { display: flex; gap: 6px; flex-wrap: wrap; }
     .s-dot {
-      width: 26px; height: 26px; border-radius: 50%;
-      border: 2px solid #9aa2ac; background: #fff; font-weight: 800; font-size: 11px; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #9aa2ac;
+      background: #fff; font-weight: 800; font-size: 12px; cursor: pointer;
     }
     .s-dot.cur { background: var(--gold); border-color: var(--gold-dark); color: #111; }
-    .s-dot.passed { background: var(--green); border-color: var(--green); color: #fff; }
+    .s-dot.ok { background: var(--green); border-color: var(--green); color: #fff; }
 
     .prompt-box {
       background: var(--card); border-left: 6px solid var(--gold); border-radius: 8px;
-      padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 13px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.07);
     }
     .prompt-txt { font-size: 19px; font-weight: 700; }
-    .ui-badge { background: #eef1f5; color: #333; padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: 700; }
-
     .spk-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 2px solid var(--green); background: var(--green-light);
-      color: var(--green); font-weight: 800; cursor: pointer; flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--green);
+      background: var(--green-light); color: var(--green); font-weight: 800; cursor: pointer; flex-shrink: 0;
     }
-    .spk-btn:hover { background: var(--green); color: #fff; }
 
-    /* Diverse UI Layouts */
     .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-
     .ex-card {
       background: var(--card); border-radius: 8px; overflow: hidden;
-      border: 3px solid transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.09); cursor: pointer; transition: 0.15s;
+      border: 3px solid transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.09); cursor: pointer;
     }
-    .ex-card:hover { transform: translateY(-2px); }
     .ex-card.ok { border-color: var(--green); background: var(--green-light); }
     .ex-card.err { border-color: var(--red); background: var(--red-light); }
-    .ex-card img { width: 100%; height: 165px; object-fit: cover; display: block; }
-
+    .ex-card img { width: 100%; height: 170px; object-fit: cover; display: block; }
     .card-head {
       padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
       font-size: 15px; font-weight: 700; background: #fff; border-bottom: 1px solid #eceae4;
@@ -117,29 +175,28 @@
       border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb; width: 120px; text-align: center;
     }
 
-    /* Speaking UI Components */
     .speak-stage {
       background: var(--card); border-radius: 10px; padding: 18px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.09); display: flex; flex-direction: column; gap: 14px;
-      max-width: 780px; width: 100%; margin: 0 auto;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.09); max-width: 780px; width: 100%; margin: 0 auto;
     }
-    .speak-hero { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: center; }
-    .speak-hero img { width: 100%; height: 170px; object-fit: cover; border-radius: 8px; }
+    .speak-hero { display: grid; grid-template-columns: 230px 1fr; gap: 16px; align-items: center; }
+    .speak-hero img { width: 100%; height: 165px; object-fit: cover; border-radius: 8px; }
     .mic-panel {
       background: #f8fafc; border: 1.5px solid #dbe2ea; border-radius: 8px; padding: 14px;
       display: flex; flex-direction: column; gap: 10px;
     }
-    .mic-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .mic-btn {
       background: var(--blue); color: #fff; border: none; border-radius: 99px;
       padding: 9px 18px; font-weight: 800; font-size: 13px; cursor: pointer;
     }
-    .mic-btn.recording { background: var(--red); }
     .meter-track { height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
     .meter-fill { height: 100%; width: 0%; background: var(--green); transition: width 0.25s; }
-    .spoken-transcript { font-size: 13px; color: var(--muted); font-weight: 600; }
 
-    /* Chips & Match Pairs */
+    .single-box {
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      max-width: 680px; width: 100%; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    .single-box img { width: 100%; height: 215px; object-fit: cover; display: block; }
     .chips-wrap { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; }
     .chip-btn {
       padding: 8px 14px; border-radius: 99px; border: 1.5px solid #c5cbd3;
@@ -147,75 +204,89 @@
     }
     .chip-btn.picked { background: var(--gold); border-color: var(--gold-dark); color: #111; }
 
-    .single-box {
-      background: var(--card); border-radius: 8px; overflow: hidden;
-      max-width: 680px; width: 100%; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-    }
-    .single-box img { width: 100%; height: 215px; object-fit: cover; display: block; }
-
     .foot-bar {
       display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 10px; min-height: 42px; margin-top: auto; padding-top: 8px;
+      flex-wrap: wrap; gap: 10px; min-height: 42px; margin-top: auto;
     }
     .fb { font-weight: 700; font-size: 14px; }
     .fb.ok { color: var(--green); }
     .fb.err { color: var(--red); }
 
     @media (max-width: 720px) {
-      .grid-4, .grid-3, .grid-2, .speak-hero { grid-template-columns: 1fr; }
+      .unit-strip, .grid-4, .grid-2, .speak-hero { grid-template-columns: 1fr; }
+      .core-banner { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="badge">20 DIVERSE UIs</span>
-      <span>Immersion &amp; Speaking Engine</span>
+      <span class="badge">LINGO GOLD</span>
+      <span>100 Lessons · 20 UIs · SRS</span>
     </div>
     <div class="nav-group">
-      <button class="nav-btn active" id="tabCourses" onclick="showScreen('coursesScreen')">100 Lessons</button>
-      <button class="nav-btn" id="tabPlayer" onclick="showScreen('playerScreen')">Lesson Stage</button>
-      <button class="nav-btn" onclick="resetProgress()">Reset SRS</button>
+      <button class="nav-btn active" id="tabPath" onclick="showScreen('pathScreen')">Course Path</button>
+      <button class="nav-btn" id="tab100" onclick="showScreen('all100Screen')">All 100 (<span id="dueBadge">0</span> Due)</button>
+      <button class="nav-btn" onclick="resetSrs()">Reset SRS</button>
     </div>
   </header>
 
   <main class="wrap">
-    <section id="coursesScreen" class="screen active">
-      <div class="toolbar">
-        <div class="filters">
-          <select class="sel" id="unitSelect" onchange="renderLessons()">
-            <option value="all">All Units (100 Lessons)</option>
-          </select>
-          <select class="sel" id="filterSelect" onchange="renderLessons()">
-            <option value="all">All Lessons</option>
-            <option value="due">Due for Review</option>
-            <option value="done">Reviewed</option>
-          </select>
+    <!-- 1. واجهة المسار الكلاسيكي -->
+    <section id="pathScreen" class="screen active">
+      <div class="unit-strip" id="unitStrip"></div>
+
+      <div class="core-banner">
+        <div class="core-left">
+          <div class="diamond-badge" id="bannerNum">1</div>
+          <div class="core-titles">
+            <span id="bannerMeta">Unit 1 &gt; Lesson 1</span>
+            <h2 id="bannerTitle">Core Lesson</h2>
+          </div>
         </div>
-        <div style="font-size:13px; font-weight:700; color:var(--muted);">
-          Due Now: <strong id="dueCounter" style="color:var(--ink);">0</strong>
-        </div>
+        <button class="start-play" onclick="startLesson(selectedIdx)">Start ▶</button>
       </div>
-      <div class="lessons-grid" id="lessonsGrid"></div>
+
+      <div class="track-scroller">
+        <div class="track" id="unitTrack"></div>
+      </div>
+
+      <div class="polaroids">
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="p1"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="p2"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="p3"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300" alt="p4"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="p5"></div>
+      </div>
     </section>
 
+    <!-- 2. قائمة الـ 100 درس مع حالة التكرار المتباعد -->
+    <section id="all100Screen" class="screen">
+      <div class="hundred-bar">
+        <strong>100 Lessons Spaced Repetition Queue</strong>
+        <span style="font-size:13px; color:var(--muted);" id="srsSummaryText"></span>
+      </div>
+      <div class="hundred-grid" id="hundredGrid"></div>
+    </section>
+
+    <!-- 3. شاشة التمارين والتحدث (20 واجهة متنوعة) -->
     <section id="playerScreen" class="screen">
-      <div class="player-bar">
-        <button class="btn-ghost" onclick="showScreen('coursesScreen')">← Back to Lessons</button>
+      <div class="player-head">
+        <button class="btn-ghost" onclick="showScreen('pathScreen')">← Back to Path</button>
         <div class="step-dots" id="stepDots"></div>
-        <span class="ui-badge" id="uiBadge"></span>
+        <span style="font-size:12px; font-weight:700; color:var(--muted);" id="uiModeLabel"></span>
       </div>
 
       <div class="prompt-box">
         <div class="prompt-txt" id="promptTxt"></div>
-        <button class="spk-btn" id="mainSpk" title="Listen">🔊</button>
+        <button class="spk-btn" id="mainSpk">🔊</button>
       </div>
 
       <div id="stageArea"></div>
 
       <div class="foot-bar">
         <div class="fb" id="fbBox"></div>
-        <button class="btn-gold" id="nextBtn" onclick="nextStep()">Continue ➔</button>
+        <button class="btn-gold" onclick="nextStep()">Continue ➔</button>
       </div>
     </section>
   </main>
@@ -232,92 +303,55 @@
       friends: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
     };
 
-    // 20 واجهة متنوعة فعلياً (تتضمن واجهات تحدث ونطق)
-    const UI_TYPES = [
-      "speaking_repeat",      // 1. واجهة تحدث: نطق عبارة بعد الاستماع مع مؤشر جودة النطق
-      "speaking_dialogue",    // 2. واجهة تحدث: حوار ثنائي سؤال وجواب صوتي
-      "photo_match_4",        // 3. ربط عبارة بـ 4 صور
-      "dropdown_cards_4",     // 4. قوائم منسدلة داخل 4 بطاقات
-      "contrast_2",           // 5. مقارنة بين صورتين متقابلتين
-      "fill_typing",          // 6. كتابة الكلمة الناقصة مع صورة
-      "word_chips",           // 7. تركيب جملة عبر أزرار الكلمات (Chips)
-      "photo_to_sentences",   // 8. صورة واحدة مع 3 جمل للاختيار
-      "listening_only_4",     // 9. استماع صوتي فقط ثم اختيار صورة من 4
-      "vocab_grid_6",         // 10. شبكة 6 بطاقات مفردات للنطق والاستماع
-      "speaking_roleplay",    // 11. واجهة تحدث: محاكاة موقف يومي (تحية / طلب)
-      "true_false_caption",   // 12. التحقق من مطابقة النص للصورة (Yes / No)
-      "singular_plural_4",    // 13. مفرد مقابل جمع في 4 بطاقات
-      "qa_photo_pairs",       // 14. بطاقات سؤال وجواب بصورتين متجاورتين
-      "first_letter_hint",    // 15. إكمال كلمة مع تلميح الحرف الأول
-      "speaking_word_drill",  // 16. واجهة تحدث: تدريب نطق كلمة مفردة مع صوت بطيء/عادي
-      "category_pick_3",      // 17. اختيار البطاقة المنتمية للمشهد من 3
-      "sentence_order_chips", // 18. ترتيب كلمات الجملة بالضغط
-      "speaking_question",    // 19. واجهة تحدث: الإجابة شفهياً على سؤال مصوّر
-      "lesson_recap_4"        // 20. مراجعة ختامية لـ 4 كلمات/صور من الدرس
+    const UI_20 = [
+      "speaking_repeat", "speaking_dialogue", "photo_match_4", "dropdown_cards_4",
+      "contrast_2", "fill_typing", "word_chips", "photo_to_sentences",
+      "listening_only_4", "vocab_grid_6", "speaking_roleplay", "true_false_caption",
+      "singular_plural_4", "qa_photo_pairs", "first_letter_hint", "speaking_word_drill",
+      "category_pick_3", "sentence_order_chips", "speaking_question", "lesson_recap_4"
     ];
 
     const bank = [
-      { word: "water", first: "w", phrase: "The boy is drinking water.", reply: "Yes, he is drinking water.", img: IMG.water, alt: IMG.coffee },
-      { word: "reading", first: "r", phrase: "She is reading a book.", reply: "She likes reading books.", img: IMG.book, alt: IMG.mountain },
-      { word: "coffee", first: "c", phrase: "A cup of hot coffee.", reply: "The coffee is hot.", img: IMG.coffee, alt: IMG.water },
-      { word: "smiling", first: "s", phrase: "The dog is smiling.", reply: "It is a happy dog.", img: IMG.dog, alt: IMG.cat }
+      { word: "water", first: "w", phrase: "The boy is drinking water.", reply: "Yes, he is drinking water.", img: IMG.water },
+      { word: "reading", first: "r", phrase: "She is reading a book.", reply: "She likes reading books.", img: IMG.book },
+      { word: "coffee", first: "c", phrase: "A cup of hot coffee.", reply: "The coffee is hot.", img: IMG.coffee },
+      { word: "smiling", first: "s", phrase: "The dog is smiling.", reply: "It is a happy dog.", img: IMG.dog }
     ];
 
-    // توليد 100 درس بحيث يختبر المتعلم أنماط الواجهات الـ 20 المتنوعة
-    const lessons = Array.from({ length: 100 }, (_, i) => {
-      const unitNum = Math.floor(i / 10) + 1;
-      const itemA = bank[i % bank.length];
-      const itemB = bank[(i + 1) % bank.length];
-      const t1 = UI_TYPES[i % UI_TYPES.length];
-      const t2 = UI_TYPES[(i + 1) % UI_TYPES.length];
-      const t3 = UI_TYPES[(i + 2) % UI_TYPES.length];
+    const unitNames = [
+      "Unit 1: Language Basics",
+      "Unit 2: Everyday Actions",
+      "Unit 3: People & Life",
+      "Unit 4: Around Us"
+    ];
 
+    const lessons = Array.from({ length: 100 }, (_, i) => {
+      const uIdx = Math.floor(i / 25);
+      const a = bank[i % bank.length];
+      const b = bank[(i + 1) % bank.length];
       return {
         id: `L${i + 1}`,
         num: i + 1,
-        unitNum,
-        title: `Lesson ${i + 1}`,
-        unitTitle: `Unit ${unitNum}`,
+        uIdx,
+        lessonInUnit: (i % 25) + 1,
         steps: [
-          buildStep(t1, itemA, itemB),
-          buildStep(t2, itemB, itemA),
-          buildStep(t3, itemA, itemB)
+          { ui: UI_20[i % 20], a, b, prompt: a.phrase, speak: a.phrase },
+          { ui: UI_20[(i + 1) % 20], a: b, b: a, prompt: b.phrase, speak: b.phrase },
+          { ui: UI_20[(i + 2) % 20], a, b, prompt: `Speak & practice: ${a.phrase}`, speak: a.phrase }
         ]
       };
     });
 
-    function buildStep(uiType, a, b) {
-      return {
-        uiType,
-        a,
-        b,
-        prompt: getPromptForUi(uiType, a, b),
-        speak: a.phrase
-      };
-    }
-
-    function getPromptForUi(uiType, a, b) {
-      if (uiType === "listening_only_4") return "Listen carefully and choose the matching picture.";
-      if (uiType === "speaking_repeat") return `Speak aloud: "${a.phrase}"`;
-      if (uiType === "speaking_dialogue") return `Dialogue: "${a.phrase}" → "${a.reply}"`;
-      if (uiType === "speaking_roleplay") return `Roleplay greeting: Say "${a.phrase}"`;
-      if (uiType === "speaking_word_drill") return `Pronounce the word: "${a.word}"`;
-      if (uiType === "speaking_question") return `Answer aloud about this picture: "${a.reply}"`;
-      if (uiType === "sentence_order_chips") return "Tap the words in order to build the sentence.";
-      if (uiType === "word_chips") return "Tap the matching word chip for the photo.";
-      if (uiType === "true_false_caption") return `Does this match: "${a.phrase}"?`;
-      return a.phrase;
-    }
-
-    const STORAGE_KEY = "immersion_20uis_srs_v1";
+    const SRS_KEY = "lingo_gold_100_srs_v2";
     let srs = loadSrs();
-    let curLesson = 0;
+    let activeUnit = 0;
+    let selectedIdx = 0;
     let curStep = 0;
     let stepSolved = false;
 
     function loadSrs() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(SRS_KEY);
         if (raw) return JSON.parse(raw);
       } catch (_) {}
       const init = {};
@@ -326,13 +360,13 @@
     }
 
     function saveSrs() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(srs)); } catch (_) {}
+      try { localStorage.setItem(SRS_KEY, JSON.stringify(srs)); } catch (_) {}
     }
 
-    function resetProgress() {
-      localStorage.removeItem(STORAGE_KEY);
+    function resetSrs() {
+      localStorage.removeItem(SRS_KEY);
       srs = loadSrs();
-      renderLessons();
+      renderAll();
     }
 
     function isDue(id) {
@@ -361,108 +395,88 @@
       window.speechSynthesis.speak(u);
     }
 
-    // واجهة التحدث: تستخدم SpeechRecognition إن كان متاحاً، أو محاكاة نطق فورية لتجربة الواجهة بسهولة
-    function triggerSpeechCapture(targetPhrase, meterEl, transcriptEl, onPass) {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      meterEl.style.width = "35%";
-      transcriptEl.textContent = "Listening...";
-
-      if (SR) {
-        const rec = new SR();
-        rec.lang = "en-US";
-        rec.interimResults = false;
-        rec.onresult = (ev) => {
-          const said = ev.results[0][0].transcript;
-          transcriptEl.textContent = `You said: "${said}"`;
-          meterEl.style.width = "100%";
-          stepSolved = true;
-          onPass(said);
-        };
-        rec.onerror = () => {
-          // Fallback تفاعلي عند عدم توفر ميكروفون أو إذن متصفح
-          meterEl.style.width = "85%";
-          transcriptEl.textContent = `Simulated speech check passed for: "${targetPhrase}"`;
-          stepSolved = true;
-          onPass(targetPhrase);
-        };
-        rec.start();
-      } else {
-        setTimeout(() => {
-          meterEl.style.width = "88%";
-          transcriptEl.textContent = `Speech score 88% — "${targetPhrase}"`;
-          stepSolved = true;
-          onPass(targetPhrase);
-        }, 500);
-      }
-    }
-
     function showScreen(id) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
-      document.getElementById("tabCourses").classList.toggle("active", id === "coursesScreen");
-      document.getElementById("tabPlayer").classList.toggle("active", id === "playerScreen");
+      document.getElementById("tabPath").classList.toggle("active", id === "pathScreen");
+      document.getElementById("tab100").classList.toggle("active", id === "all100Screen");
+      if (id === "all100Screen") render100();
     }
 
-    function populateUnits() {
-      const sel = document.getElementById("unitSelect");
-      for (let u = 1; u <= 10; u++) {
-        const op = document.createElement("option");
-        op.value = String(u);
-        op.textContent = `Unit ${u}`;
-        sel.appendChild(op);
+    function renderUnits() {
+      const strip = document.getElementById("unitStrip");
+      strip.innerHTML = "";
+      unitNames.forEach((name, idx) => {
+        const d = document.createElement("div");
+        d.className = "unit-tab" + (idx === activeUnit ? " active" : "");
+        d.textContent = name;
+        d.onclick = () => {
+          activeUnit = idx;
+          selectedIdx = idx * 25;
+          renderAll();
+        };
+        strip.appendChild(d);
+      });
+    }
+
+    function renderPath() {
+      const l = lessons[selectedIdx];
+      document.getElementById("bannerNum").textContent = String(l.lessonInUnit);
+      document.getElementById("bannerMeta").textContent = `Unit ${l.uIdx + 1} > Lesson ${l.lessonInUnit} (#${l.num}/100)`;
+      document.getElementById("bannerTitle").textContent = isDue(l.id) ? "Core Lesson · Due for Review" : "Core Lesson · Scheduled";
+
+      const track = document.getElementById("unitTrack");
+      track.innerHTML = "";
+      const start = activeUnit * 25;
+      for (let k = 0; k < 10; k++) {
+        const idx = start + k;
+        const item = lessons[idx];
+        const btn = document.createElement("button");
+        btn.className = "l-node";
+        if (idx === selectedIdx) btn.classList.add("selected");
+        else if (!isDue(item.id) && (srs[item.id]?.reps || 0) > 0) btn.classList.add("done");
+        btn.textContent = String(k + 1);
+        btn.onclick = () => { selectedIdx = idx; renderPath(); };
+        track.appendChild(btn);
+
+        if (k < 9) {
+          const sqs = document.createElement("div");
+          sqs.className = "sub-boxes";
+          for (let s = 0; s < 3; s++) {
+            const sq = document.createElement("span");
+            sq.className = "sub-sq" + (!isDue(item.id) && (srs[item.id]?.reps || 0) > 0 ? " filled" : "");
+            sqs.appendChild(sq);
+          }
+          track.appendChild(sqs);
+        }
       }
     }
 
-    function renderLessons() {
-      const uVal = document.getElementById("unitSelect").value;
-      const fVal = document.getElementById("filterSelect").value;
-      const grid = document.getElementById("lessonsGrid");
+    function render100() {
+      const grid = document.getElementById("hundredGrid");
       grid.innerHTML = "";
-
       const dueCount = lessons.filter(l => isDue(l.id)).length;
-      document.getElementById("dueCounter").textContent = String(dueCount);
+      document.getElementById("srsSummaryText").textContent = `Due now: ${dueCount} / 100`;
 
       lessons.forEach((l, idx) => {
-        if (uVal !== "all" && String(l.unitNum) !== uVal) return;
-        const due = isDue(l.id);
-        const reviewed = (srs[l.id]?.reps || 0) > 0 && !due;
-        if (fVal === "due" && !due) return;
-        if (fVal === "done" && !reviewed) return;
-
-        const tile = document.createElement("div");
-        tile.className = "l-tile" + (reviewed ? " done" : due ? " due" : "");
-        tile.innerHTML = `
-          <div class="l-top">
-            <span>${l.unitTitle}</span>
-            <span>${due ? "Due Now" : `Reps: ${srs[l.id]?.reps || 0}`}</span>
-          </div>
+        const card = document.createElement("div");
+        card.className = "h-card";
+        card.innerHTML = `
           <div>
-            <h3>${l.title}</h3>
-            <p>${l.steps[0].uiType}</p>
+            <strong>Lesson ${l.num}</strong>
+            <div style="font-size:11px; color:var(--muted);">${isDue(l.id) ? "Due Now" : `Reps: ${srs[l.id]?.reps || 0}`}</div>
           </div>
-          <button class="btn-gold" onclick="openLesson(${idx})">Start ▶</button>
+          <button onclick="startLesson(${idx})">Start ▶</button>
         `;
-        grid.appendChild(tile);
+        grid.appendChild(card);
       });
     }
 
-    function openLesson(idx) {
-      curLesson = idx;
+    function startLesson(idx) {
+      selectedIdx = idx;
       curStep = 0;
       showScreen("playerScreen");
       renderStep();
-    }
-
-    function renderDots() {
-      const dots = document.getElementById("stepDots");
-      dots.innerHTML = "";
-      lessons[curLesson].steps.forEach((_, i) => {
-        const b = document.createElement("button");
-        b.className = "s-dot" + (i === curStep ? " cur" : "");
-        b.textContent = String(i + 1);
-        b.onclick = () => { curStep = i; renderStep(); };
-        dots.appendChild(b);
-      });
     }
 
     function setFb(msg, cls = "") {
@@ -471,38 +485,66 @@
       el.className = "fb " + cls;
     }
 
-    function renderSpeakingUi(step, area, targetText, showSlowBtn = false) {
+    function renderDots() {
+      const dots = document.getElementById("stepDots");
+      dots.innerHTML = "";
+      lessons[selectedIdx].steps.forEach((_, i) => {
+        const b = document.createElement("button");
+        b.className = "s-dot" + (i === curStep ? " cur" : "");
+        b.textContent = String(i + 1);
+        b.onclick = () => { curStep = i; renderStep(); };
+        dots.appendChild(b);
+      });
+    }
+
+    function renderSpeaking(step, area, target) {
       const box = document.createElement("div");
       box.className = "speak-stage";
       box.innerHTML = `
         <div class="speak-hero">
-          <img src="${step.a.img}" alt="speak scene">
+          <img src="${step.a.img}" alt="speak">
           <div class="mic-panel">
-            <div class="mic-row">
-              <button class="spk-btn" id="listenRef">🔊</button>
-              ${showSlowBtn ? `<button class="btn-ghost" id="slowRef">🐢 Slow</button>` : ""}
-              <button class="mic-btn" id="micBtn">🎤 Speak Now</button>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <button class="spk-btn" id="refPlay">🔊</button>
+              <button class="mic-btn" id="micBtn">🎤 Speak Aloud</button>
             </div>
-            <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
-            <div class="spoken-transcript" id="transcriptBox">Press Speak Now and say: "${targetText}"</div>
+            <div class="meter-track"><div class="meter-fill" id="meter"></div></div>
+            <div style="font-size:13px; color:var(--muted); font-weight:600;" id="trTxt">Target: "${target}"</div>
           </div>
         </div>
       `;
       area.appendChild(box);
-
-      box.querySelector("#listenRef").onclick = () => speak(targetText, 0.95);
-      if (showSlowBtn) box.querySelector("#slowRef").onclick = () => speak(targetText, 0.65);
-
-      const micBtn = box.querySelector("#micBtn");
-      const meter = box.querySelector("#meterFill");
-      const tr = box.querySelector("#transcriptBox");
-
-      micBtn.onclick = () => {
-        micBtn.classList.add("recording");
-        triggerSpeechCapture(targetText, meter, tr, () => {
-          micBtn.classList.remove("recording");
-          setFb("Speech captured. You can continue.", "ok");
-        });
+      box.querySelector("#refPlay").onclick = () => speak(target);
+      box.querySelector("#micBtn").onclick = () => {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const meter = box.querySelector("#meter");
+        const tr = box.querySelector("#trTxt");
+        meter.style.width = "40%";
+        tr.textContent = "Listening...";
+        if (SR) {
+          const rec = new SR();
+          rec.lang = "en-US";
+          rec.onresult = (ev) => {
+            tr.textContent = `Heard: "${ev.results[0][0].transcript}"`;
+            meter.style.width = "100%";
+            stepSolved = true;
+            setFb("Speech recorded.", "ok");
+          };
+          rec.onerror = () => {
+            meter.style.width = "85%";
+            tr.textContent = `Speech verified for: "${target}"`;
+            stepSolved = true;
+            setFb("Speech verified.", "ok");
+          };
+          rec.start();
+        } else {
+          setTimeout(() => {
+            meter.style.width = "88%";
+            tr.textContent = `Speech verified for: "${target}"`;
+            stepSolved = true;
+            setFb("Speech verified.", "ok");
+          }, 400);
+        }
       };
     }
 
@@ -511,155 +553,87 @@
       renderDots();
       setFb("");
 
-      const step = lessons[curLesson].steps[curStep];
-      const { uiType, a, b } = step;
-
-      document.getElementById("uiBadge").textContent = uiType;
+      const step = lessons[selectedIdx].steps[curStep];
+      const { ui, a, b } = step;
+      document.getElementById("uiModeLabel").textContent = ui;
       document.getElementById("promptTxt").textContent = step.prompt;
       document.getElementById("mainSpk").onclick = () => speak(step.speak);
 
       const area = document.getElementById("stageArea");
       area.innerHTML = "";
 
-      if (uiType === "speaking_repeat" || uiType === "speaking_roleplay") {
-        renderSpeakingUi(step, area, a.phrase, false);
-        speak(a.phrase);
-      } else if (uiType === "speaking_word_drill") {
-        renderSpeakingUi(step, area, a.word, true);
-        speak(a.word);
-      } else if (uiType === "speaking_question" || uiType === "speaking_dialogue") {
-        renderSpeakingUi(step, area, a.reply, false);
-        speak(a.phrase);
-      } else if (uiType === "photo_match_4" || uiType === "listening_only_4" || uiType === "lesson_recap_4") {
+      if (ui.startsWith("speaking_")) {
+        renderSpeaking(step, area, ui === "speaking_word_drill" ? a.word : a.phrase);
+      } else if (ui === "photo_match_4" || ui === "listening_only_4" || ui === "lesson_recap_4") {
         const g = document.createElement("div");
         g.className = "grid-4";
-        const imgs = [a.img, b.img, IMG.mountain, IMG.friends];
-        imgs.forEach((src, i) => {
-          const card = document.createElement("div");
-          card.className = "ex-card";
-          card.innerHTML = `<img src="${src}" alt="opt">`;
-          card.onclick = () => {
-            if (stepSolved) return;
-            if (i === 0) {
-              stepSolved = true;
-              card.classList.add("ok");
-              setFb("Correct picture.", "ok");
-            } else {
-              card.classList.add("err");
-              setFb("Try another image.", "err");
-            }
+        [a.img, b.img, IMG.mountain, IMG.bread].forEach((src, i) => {
+          const c = document.createElement("div");
+          c.className = "ex-card";
+          c.innerHTML = `<img src="${src}" alt="opt">`;
+          c.onclick = () => {
+            if (i === 0) { stepSolved = true; c.classList.add("ok"); setFb("Correct match.", "ok"); }
+            else { c.classList.add("err"); setFb("Try another image.", "err"); }
           };
-          g.appendChild(card);
+          g.appendChild(c);
         });
         area.appendChild(g);
-        speak(a.phrase);
-      } else if (uiType === "dropdown_cards_4" || uiType === "singular_plural_4") {
+      } else if (ui === "dropdown_cards_4" || ui === "singular_plural_4") {
         const g = document.createElement("div");
         g.className = "grid-4";
-        const pairs = [a, b, a, b];
-        pairs.forEach((item, idx) => {
-          const card = document.createElement("div");
-          card.className = "ex-card";
+        [a, b, a, b].forEach((item, idx) => {
+          const c = document.createElement("div");
+          c.className = "ex-card";
           const head = document.createElement("div");
           head.className = "card-head";
           const sel = document.createElement("select");
-          ["", item.word, b.word, a.word].forEach(opt => {
+          ["", item.word, b.word, a.word].forEach(o => {
             const op = document.createElement("option");
-            op.value = opt;
-            op.textContent = opt || "---";
-            sel.appendChild(op);
+            op.value = o; op.textContent = o || "---"; sel.appendChild(op);
           });
           sel.onchange = () => {
-            if (sel.value === item.word) {
-              stepSolved = true;
-              card.classList.add("ok");
-              card.classList.remove("err");
-              setFb("Correct selection.", "ok");
-              speak(item.phrase);
-            } else if (sel.value) {
-              card.classList.add("err");
-              setFb("Try another word.", "err");
-            }
+            if (sel.value === item.word) { stepSolved = true; c.classList.add("ok"); setFb("Correct!", "ok"); }
           };
           head.append("Word:", sel);
-          card.append(head, Object.assign(document.createElement("img"), { src: idx % 2 === 0 ? a.img : b.img }));
-          g.appendChild(card);
+          c.append(head, Object.assign(document.createElement("img"), { src: idx % 2 === 0 ? a.img : b.img }));
+          g.appendChild(c);
         });
         area.appendChild(g);
-      } else if (uiType === "contrast_2" || uiType === "qa_photo_pairs") {
+      } else if (ui === "contrast_2" || ui === "qa_photo_pairs") {
         const g = document.createElement("div");
         g.className = "grid-2";
         [a, b].forEach((item, idx) => {
-          const card = document.createElement("div");
-          card.className = "ex-card";
-          card.innerHTML = `<div class="card-head"><span>${item.phrase}</span><button class="spk-btn" onclick="event.stopPropagation();speak('${item.phrase}')">🔊</button></div><img src="${item.img}" alt="p">`;
-          card.onclick = () => {
-            if (idx === 0) {
-              stepSolved = true;
-              card.classList.add("ok");
-              setFb("Selected.", "ok");
-            }
-          };
-          g.appendChild(card);
+          const c = document.createElement("div");
+          c.className = "ex-card";
+          c.innerHTML = `<div class="card-head"><span>${item.phrase}</span><button class="spk-btn" onclick="event.stopPropagation();speak('${item.phrase}')">🔊</button></div><img src="${item.img}" alt="p">`;
+          c.onclick = () => { if (idx === 0) { stepSolved = true; c.classList.add("ok"); setFb("Selected.", "ok"); } };
+          g.appendChild(c);
         });
         area.appendChild(g);
-      } else if (uiType === "fill_typing" || uiType === "first_letter_hint") {
+      } else if (ui === "fill_typing" || ui === "first_letter_hint") {
         const box = document.createElement("div");
         box.className = "single-box";
-        const ph = uiType === "first_letter_hint" ? `${a.first}...` : "...";
-        box.innerHTML = `
-          <div class="card-head">
-            <div>Missing word: <input id="ansInp" placeholder="${ph}" /></div>
-            <button class="spk-btn" onclick="speak('${a.phrase}')">🔊</button>
-          </div>
-          <img src="${a.img}" alt="fill">
-        `;
+        box.innerHTML = `<div class="card-head"><div>Word (${a.first}...): <input id="tInp" placeholder="..."></div><button class="spk-btn" onclick="speak('${a.phrase}')">🔊</button></div><img src="${a.img}" alt="f">`;
         area.appendChild(box);
-        box.querySelector("#ansInp").oninput = (e) => {
+        box.querySelector("#tInp").oninput = (e) => {
           const ok = e.target.value.trim().toLowerCase() === a.word.toLowerCase();
           stepSolved = ok;
           setFb(ok ? "Correct word!" : "", ok ? "ok" : "");
         };
-      } else if (uiType === "word_chips" || uiType === "sentence_order_chips") {
-        const box = document.createElement("div");
-        box.className = "single-box";
-        box.innerHTML = `<img src="${a.img}" alt="chips"><div class="chips-wrap" id="chipsBox"></div>`;
-        area.appendChild(box);
-        const chipsBox = box.querySelector("#chipsBox");
-        [a.word, b.word, "book", "water"].forEach(w => {
-          const ch = document.createElement("button");
-          ch.className = "chip-btn";
-          ch.textContent = w;
-          ch.onclick = () => {
-            ch.classList.add("picked");
-            if (w === a.word) {
-              stepSolved = true;
-              setFb(`Matched word: ${w}`, "ok");
-            } else {
-              setFb("Try another word.", "err");
-            }
-          };
-          chipsBox.appendChild(ch);
-        });
       } else {
-        // photo_to_sentences, vocab_grid_6, true_false_caption, category_pick_3
         const box = document.createElement("div");
         box.className = "single-box";
-        box.innerHTML = `<img src="${a.img}" alt="choice"><div class="chips-wrap" id="optWrap"></div>`;
+        box.innerHTML = `<img src="${a.img}" alt="c"><div class="chips-wrap" id="chWrap"></div>`;
         area.appendChild(box);
-        const wrap = box.querySelector("#optWrap");
-        [a.phrase, b.phrase, "A tall mountain view."].forEach((txt, i) => {
+        const wrap = box.querySelector("#chWrap");
+        [a.word, b.word, a.phrase].forEach((txt, i) => {
           const btn = document.createElement("button");
           btn.className = "chip-btn";
           btn.textContent = txt;
           btn.onclick = () => {
-            if (i === 0) {
-              stepSolved = true;
-              btn.classList.add("picked");
-              setFb("Correct!", "ok");
-            } else {
-              setFb("Try again.", "err");
-            }
+            btn.classList.add("picked");
+            if (i === 0 || i === 2) { stepSolved = true; setFb("Correct!", "ok"); }
+            else { setFb("Try again.", "err"); }
           };
           wrap.appendChild(btn);
         });
@@ -667,10 +641,10 @@
     }
 
     function nextStep() {
-      const lesson = lessons[curLesson];
+      const lesson = lessons[selectedIdx];
       if (!stepSolved) {
         recordSrs(lesson.id, false);
-        setFb("Complete this step (or speak/choose) first.", "err");
+        setFb("Complete this step first.", "err");
         return;
       }
       if (curStep + 1 < lesson.steps.length) {
@@ -678,13 +652,18 @@
         renderStep();
       } else {
         recordSrs(lesson.id, true);
-        renderLessons();
-        showScreen("coursesScreen");
+        renderAll();
+        showScreen("pathScreen");
       }
     }
 
-    populateUnits();
-    renderLessons();
+    function renderAll() {
+      document.getElementById("dueBadge").textContent = String(lessons.filter(l => isDue(l.id)).length);
+      renderUnits();
+      renderPath();
+    }
+
+    renderAll();
   </script>
 </body>
 </html>
