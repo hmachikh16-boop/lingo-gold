@@ -3,308 +3,488 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Immersion Lessons - Curriculum & Activities</title>
+  <title>Classic Course Path - Inspired UI</title>
   <style>
     :root {
       --gold: #f4c414;
-      --gold-dark: #d4a606;
-      --dark: #1e2024;
-      --surface: #e9e6de;
-      --card: #ffffff;
-      --ink: #22252a;
-      --muted: #656b73;
-      --ok: #28a745;
-      --err: #dc3545;
+      --gold-dark: #cfa306;
+      --bar-bg: #1c1f24;
+      --canvas-bg: #dcdad2;
+      --panel-bg: #ebe8e0;
+      --card-bg: #ffffff;
+      --ink: #22262b;
+      --muted: #666c75;
+      --green: #28a745;
+      --red: #dc3545;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
-    body { background: var(--surface); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+    body { background: var(--canvas-bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Top Header */
-    .topbar {
-      background: var(--dark);
+    /* Top Course Bar */
+    .course-bar {
+      background: var(--bar-bg);
       color: #fff;
-      padding: 12px 24px;
+      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-    .badge { background: var(--gold); color: #111; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 800; }
-    .header-sub { color: #cfd6de; font-size: 14px; font-weight: 600; }
 
-    /* Layout */
-    .wrap { max-width: 980px; width: 100%; margin: 24px auto; padding: 0 18px; flex: 1; }
-    .view { display: none; }
-    .view.active { display: block; }
-
-    /* Curriculum & Lesson Path */
-    .unit-header {
-      background: linear-gradient(135deg, #2d333b, #1c2026);
-      color: #fff;
-      padding: 22px 26px;
-      border-radius: 8px;
-      border-left: 6px solid var(--gold);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-    .unit-header h1 { font-size: 22px; margin-bottom: 4px; }
-    .unit-header p { color: #c9d1d9; font-size: 14px; }
-
-    .btn {
+    .course-left { display: flex; align-items: center; gap: 14px; }
+    .course-badge {
       background: var(--gold);
       color: #111;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .course-lang { font-weight: 700; font-size: 16px; }
+
+    .levels-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .level-pill {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: #ddd;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .level-pill.active {
+      background: var(--gold);
+      color: #111;
+      border-color: var(--gold);
+    }
+
+    /* Main Stage */
+    .stage {
+      flex: 1;
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .view { display: none; }
+    .view.active { display: flex; flex-direction: column; gap: 22px; flex: 1; }
+
+    .unit-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .unit-banner h1 { font-size: 28px; font-weight: 700; color: var(--ink); }
+    .explore-link {
+      background: none;
       border: none;
-      padding: 11px 22px;
-      border-radius: 6px;
+      color: #3b4958;
       font-weight: 700;
       font-size: 14px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* Linear Track with Nodes & Sub-steps */
+    .track-wrap {
+      position: relative;
+      padding: 18px 10px;
+      overflow-x: auto;
+    }
+    .track-line {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 760px;
+    }
+    .track-line::before {
+      content: "";
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      top: 50%;
+      height: 3px;
+      background: #9aa0a8;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    .lesson-node {
+      position: relative;
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #222;
       cursor: pointer;
       transition: 0.2s;
     }
-    .btn:hover { background: var(--gold-dark); }
-    .btn-ghost {
+    .lesson-node.active {
+      border-color: #b42318;
+      background: #b42318;
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.2);
+    }
+    .lesson-node.done {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+
+    .sub-ticks {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--canvas-bg);
+      padding: 0 6px;
+    }
+    .tick {
+      width: 12px;
+      height: 16px;
+      border: 2px solid #7d8590;
+      background: #f4f3ef;
+      border-radius: 2px;
+    }
+    .tick.done { background: var(--gold); border-color: var(--gold-dark); }
+
+    /* Center Core Lesson Card */
+    .core-panel {
+      background: var(--panel-bg);
+      border: 1px solid #c9c4b8;
+      border-radius: 8px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+    .core-left { display: flex; align-items: center; gap: 16px; }
+    .core-diamond {
+      width: 48px;
+      height: 48px;
+      background: #b42318;
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .core-meta h2 { font-size: 20px; margin-bottom: 4px; }
+    .core-meta p { font-size: 13px; color: var(--muted); }
+    .core-status {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .status-text { text-align: right; font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .status-text strong { display: block; color: var(--ink); font-size: 13px; }
+    .play-green {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      border: none;
+      background: var(--green);
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .play-green:hover { filter: brightness(1.06); }
+
+    /* Bottom Polaroids */
+    .polaroid-strip {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-top: 6px;
+    }
+    .polaroid {
+      background: var(--card-bg);
+      padding: 8px 8px 22px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+      border-radius: 2px;
+      transition: transform 0.25s;
+    }
+    .polaroid:nth-child(1) { transform: rotate(-4deg); }
+    .polaroid:nth-child(2) { transform: rotate(3deg); }
+    .polaroid:nth-child(3) { transform: rotate(-2deg); }
+    .polaroid:nth-child(4) { transform: rotate(4deg); }
+    .polaroid:nth-child(5) { transform: rotate(-3deg); }
+    .polaroid:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 5; }
+    .polaroid img { width: 130px; height: 110px; object-fit: cover; display: block; }
+
+    /* Multi-Screen Activity Styles */
+    .activity-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .back-btn {
       background: #fff;
-      color: var(--ink);
-      border: 1px solid #cfd4dc;
-      padding: 9px 16px;
+      border: 1px solid #c5cbd3;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .mode-switch { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mode-btn {
+      background: #fff;
+      border: 1px solid #c5cbd3;
+      padding: 8px 14px;
       border-radius: 6px;
       font-weight: 700;
       font-size: 13px;
       cursor: pointer;
     }
+    .mode-btn.active { background: var(--gold); border-color: var(--gold-dark); color: #111; }
 
-    .lessons-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
-    .lesson-card {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 18px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 2px solid transparent;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: 0.2s;
-    }
-    .lesson-card:hover { border-color: var(--gold); transform: translateY(-2px); }
-    .lesson-card h3 { font-size: 17px; margin-bottom: 4px; }
-    .lesson-card span { font-size: 13px; color: var(--muted); }
-    .pill { background: #fff6d1; color: #7a5c00; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-
-    /* Activity Stage */
-    .stage-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .prompt-card {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 18px 22px;
+    .prompt-bar {
+      background: var(--card-bg);
       border-left: 6px solid var(--gold);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border-radius: 8px;
+      padding: 16px 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 14px;
-      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    .prompt-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .audio-btn {
+    .prompt-main { display: flex; align-items: center; gap: 12px; font-size: 21px; font-weight: 700; flex-wrap: wrap; }
+    .audio-circle {
       width: 42px; height: 42px; border-radius: 50%;
-      border: 2px solid var(--gold-dark); background: #fff9e6;
-      font-weight: 700; cursor: pointer; flex-shrink: 0;
+      border: 2px solid var(--gold-dark); background: #fff8dc;
+      font-weight: 800; cursor: pointer;
     }
-    .audio-btn:hover { background: var(--gold); }
-    .prompt-text { font-size: 22px; font-weight: 700; }
-    .prompt-text input {
-      font-size: 20px; padding: 6px 12px; width: 160px;
-      border: 2px solid #c5cbd3; border-radius: 6px; text-align: center;
+    .prompt-main input {
+      font-size: 19px; padding: 6px 12px; width: 160px;
+      border: 2px solid #bcc3cc; border-radius: 6px; text-align: center;
     }
 
-    /* Type 1 & 3: Image Grids */
     .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-
-    .img-option {
-      background: var(--card);
+    .photo-tile {
+      background: var(--card-bg);
       border-radius: 8px;
       overflow: hidden;
       border: 4px solid transparent;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       cursor: pointer;
-      transition: 0.18s;
     }
-    .img-option:hover { transform: translateY(-2px); }
-    .img-option img { width: 100%; height: 210px; object-fit: cover; display: block; }
-    .img-option.ok { border-color: var(--ok); }
-    .img-option.err { border-color: var(--err); opacity: 0.75; }
+    .photo-tile img { width: 100%; height: 210px; object-fit: cover; display: block; }
+    .photo-tile.ok { border-color: var(--green); }
+    .photo-tile.err { border-color: var(--red); opacity: 0.75; }
 
-    /* Type 2: Fill Blank Showcase */
-    .single-card {
-      background: var(--card);
+    .single-photo-box {
+      background: var(--card-bg);
       border-radius: 8px;
       overflow: hidden;
-      max-width: 720px;
+      max-width: 700px;
       margin: 0 auto;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.09);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
-    .single-card img { width: 100%; height: 320px; object-fit: cover; display: block; }
+    .single-photo-box img { width: 100%; height: 300px; object-fit: cover; display: block; }
 
-    .stage-footer {
-      margin-top: 20px;
+    .footer-action {
       display: flex;
       justify-content: space-between;
       align-items: center;
       min-height: 44px;
     }
-    .msg { font-weight: 700; font-size: 15px; }
-    .msg.ok { color: var(--ok); }
-    .msg.err { color: var(--err); }
-    .next-btn { display: none; }
-    .next-btn.show { display: inline-block; }
+    .feedback { font-weight: 700; font-size: 15px; }
+    .feedback.ok { color: var(--green); }
+    .feedback.err { color: var(--red); }
+    .btn-gold {
+      background: var(--gold); color: #111; border: none;
+      padding: 11px 24px; border-radius: 6px; font-weight: 800;
+      cursor: pointer; display: none;
+    }
+    .btn-gold.show { display: inline-block; }
 
     @media (max-width: 680px) {
-      .lessons-list, .grid-4, .grid-2 { grid-template-columns: 1fr; }
-      .unit-header { flex-direction: column; align-items: flex-start; }
+      .grid-4, .grid-2 { grid-template-columns: 1fr; }
+      .core-panel { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="badge">IMMERSION</span>
-      <span>Visual Curriculum Studio</span>
+  <header class="course-bar">
+    <div class="course-left">
+      <span class="course-badge">COURSE</span>
+      <span class="course-lang">English (American)</span>
     </div>
-    <div class="header-sub" id="topSub">Unit 1: Language Basics</div>
+    <div class="levels-row" id="levelsRow"></div>
   </header>
 
-  <main class="wrap">
-    <!-- شاشة اختيار الدرس -->
+  <main class="stage">
+    <!-- واجهة المسار المستوحاة -->
     <section id="pathView" class="view active">
-      <div class="unit-header">
-        <div>
-          <h1>Unit 1: Language Basics</h1>
-          <p>Progressive visual lessons: 4-photo association, contextual completion, and contrast.</p>
-        </div>
-        <button class="btn" onclick="openLesson(0)">Start Unit ▶</button>
+      <div class="unit-banner">
+        <h1 id="unitHeading">Language Basics</h1>
+        <button class="explore-link" onclick="openActivity(0, 'match')">Explore all activities for Unit 1</button>
       </div>
 
-      <div class="lessons-list" id="lessonsList"></div>
+      <div class="track-wrap">
+        <div class="track-line" id="trackLine"></div>
+      </div>
+
+      <div class="core-panel">
+        <div class="core-left">
+          <div class="core-diamond" id="coreNum">4</div>
+          <div class="core-meta">
+            <h2 id="coreTitle">Core Lesson</h2>
+            <p id="coreSub">Unit 1, Lesson 4</p>
+          </div>
+        </div>
+        <div class="core-status">
+          <div class="status-text">
+            <strong>In Progress</strong>
+            <span>November 22, 2026</span><br />
+            <span>About 30 minutes</span>
+          </div>
+          <button class="play-green" onclick="openActivity(selectedLesson, 'match')" title="Start">▶</button>
+        </div>
+      </div>
+
+      <div class="polaroid-strip">
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="p1"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="p2"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="p3"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300" alt="p4"></div>
+        <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="p5"></div>
+      </div>
     </section>
 
-    <!-- شاشة تنفيذ الدرس -->
+    <!-- ثانياً: واجهات المنهج المتعددة -->
     <section id="activityView" class="view">
-      <div class="stage-top">
-        <button class="btn-ghost" onclick="backToPath()">← Lessons</button>
-        <strong id="stepCounter" style="color: var(--muted);"></strong>
-      </div>
-
-      <div class="prompt-card">
-        <div class="prompt-left">
-          <button class="audio-btn" id="playAudioBtn" title="Listen">▶</button>
-          <div class="prompt-text" id="promptArea"></div>
+      <div class="activity-top">
+        <button class="back-btn" onclick="backToPath()">← Back to Course</button>
+        <div class="mode-switch">
+          <button class="mode-btn active" id="modeMatch" onclick="setMode('match')">1. 4-Photo Match</button>
+          <button class="mode-btn" id="modeFill" onclick="setMode('fill')">2. Fill Blank</button>
+          <button class="mode-btn" id="modeContrast" onclick="setMode('contrast')">3. 2-Photo Contrast</button>
         </div>
-        <span id="modeTag" class="pill"></span>
       </div>
 
-      <div id="contentArea"></div>
+      <div class="prompt-bar">
+        <div class="prompt-main" id="promptBox"></div>
+        <button class="audio-circle" id="audioTrigger" title="Listen">▶</button>
+      </div>
 
-      <div class="stage-footer">
-        <div class="msg" id="feedbackMsg"></div>
-        <button class="btn next-btn" id="continueBtn" onclick="nextStep()">Continue ➔</button>
+      <div id="activityBody"></div>
+
+      <div class="footer-action">
+        <div class="feedback" id="feedbackBox"></div>
+        <button class="btn-gold" id="nextActionBtn" onclick="advanceActivity()">Continue ➔</button>
       </div>
     </section>
   </main>
 
   <script>
     const FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="#dcdad1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="20">Image Preview</text></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="#dcdad1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="20">Image Unavailable</text></svg>`
     );
 
-    const curriculum = {
-      unitTitle: "Unit 1: Language Basics",
-      lessons: [
+    const levels = [
+      { id: 1, label: "Level 1", unit: "Language Basics", lessons: 4 },
+      { id: 2, label: "Level 2", unit: "Everyday Life", lessons: 4 },
+      { id: 3, label: "Level 3", unit: "Around Town", lessons: 4 }
+    ];
+
+    const multiScreensData = {
+      match: [
         {
-          title: "Lesson 1 · Core Actions",
-          tag: "4-Photo Match",
-          steps: [
-            {
-              type: "choose_4",
-              prompt: "The boy is drinking water.",
-              speak: "The boy is drinking water.",
-              correct: 0,
-              images: [
-                "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
-                "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
-                "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600",
-                "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600"
-              ]
-            },
-            {
-              type: "choose_4",
-              prompt: "She is reading a book.",
-              speak: "She is reading a book.",
-              correct: 1,
-              images: [
-                "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600",
-                "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
-                "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600",
-                "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600"
-              ]
-            }
+          phrase: "The boy is drinking water.",
+          speak: "The boy is drinking water.",
+          correct: 0,
+          images: [
+            "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
+            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
+            "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600",
+            "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600"
           ]
         },
         {
-          title: "Lesson 2 · Contextual Completion",
-          tag: "Fill Blank",
-          steps: [
-            {
-              type: "fill_blank",
-              before: "A cup of hot ",
-              after: ".",
-              answer: "coffee",
-              speak: "A cup of hot coffee.",
-              image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"
-            },
-            {
-              type: "fill_blank",
-              before: "The dog is ",
-              after: ".",
-              answer: "smiling",
-              speak: "The dog is smiling.",
-              image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800"
-            }
+          phrase: "She is reading a book.",
+          speak: "She is reading a book.",
+          correct: 1,
+          images: [
+            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600",
+            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
+            "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600",
+            "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600"
           ]
+        }
+      ],
+      fill: [
+        {
+          before: "A cup of hot ",
+          after: ".",
+          answer: "coffee",
+          speak: "A cup of hot coffee.",
+          image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"
         },
         {
-          title: "Lesson 3 · Contrast & Pairs",
-          tag: "2-Photo Contrast",
-          steps: [
-            {
-              type: "contrast_2",
-              prompt: "Nature landscape vs. Reading a book — choose the landscape.",
-              speak: "Choose the nature landscape.",
-              correct: 0,
-              images: [
-                "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700",
-                "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700"
-              ]
-            }
+          before: "The dog is ",
+          after: ".",
+          answer: "smiling",
+          speak: "The dog is smiling.",
+          image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800"
+        }
+      ],
+      contrast: [
+        {
+          phrase: "Choose the outdoor mountain view.",
+          speak: "Choose the outdoor mountain view.",
+          correct: 0,
+          images: [
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700",
+            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700"
           ]
         }
       ]
     };
 
-    let activeLesson = 0;
-    let activeStep = 0;
-    let locked = false;
+    let currentLevel = 0;
+    let selectedLesson = 3; // Lesson 4 index
+    let currentMode = "match";
+    let stepIdx = 0;
+    let answered = false;
 
     function speak(text) {
       if (!("speechSynthesis" in window) || !text) return;
@@ -315,132 +495,174 @@
       window.speechSynthesis.speak(u);
     }
 
-    function renderLessons() {
-      const list = document.getElementById("lessonsList");
-      list.innerHTML = "";
-      curriculum.lessons.forEach((lesson, i) => {
-        const card = document.createElement("div");
-        card.className = "lesson-card";
-        card.innerHTML = `
-          <div>
-            <h3>${lesson.title}</h3>
-            <span>${lesson.steps.length} activities</span>
-          </div>
-          <span class="pill">${lesson.tag}</span>
-        `;
-        card.onclick = () => openLesson(i);
-        list.appendChild(card);
+    function renderLevels() {
+      const row = document.getElementById("levelsRow");
+      row.innerHTML = "";
+      levels.forEach((lvl, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "level-pill" + (idx === currentLevel ? " active" : "");
+        btn.textContent = lvl.label;
+        btn.onclick = () => {
+          currentLevel = idx;
+          selectedLesson = 0;
+          renderLevels();
+          renderTrack();
+        };
+        row.appendChild(btn);
       });
     }
 
-    function openLesson(idx) {
-      activeLesson = idx;
-      activeStep = 0;
+    function renderTrack() {
+      const lvl = levels[currentLevel];
+      document.getElementById("unitHeading").textContent = lvl.unit;
+      document.getElementById("coreNum").textContent = selectedLesson + 1;
+      document.getElementById("coreSub").textContent = `Unit ${lvl.id}, Lesson ${selectedLesson + 1}`;
+
+      const line = document.getElementById("trackLine");
+      line.innerHTML = "";
+
+      for (let i = 0; i < lvl.lessons; i++) {
+        const node = document.createElement("button");
+        node.className = "lesson-node" + (i === selectedLesson ? " active" : "");
+        node.textContent = i + 1;
+        node.onclick = () => {
+          selectedLesson = i;
+          renderTrack();
+        };
+        line.appendChild(node);
+
+        if (i < lvl.lessons - 1) {
+          const ticks = document.createElement("div");
+          ticks.className = "sub-ticks";
+          for (let t = 0; t < 4; t++) {
+            const box = document.createElement("span");
+            box.className = "tick" + (i < selectedLesson ? " done" : "");
+            ticks.appendChild(box);
+          }
+          line.appendChild(ticks);
+        }
+      }
+    }
+
+    function openActivity(lessonIndex, mode) {
+      selectedLesson = lessonIndex;
+      currentMode = mode;
+      stepIdx = 0;
       document.getElementById("pathView").classList.remove("active");
       document.getElementById("activityView").classList.add("active");
-      document.getElementById("topSub").textContent = curriculum.lessons[idx].title;
-      renderStep();
+      syncModeButtons();
+      renderActivityStep();
     }
 
     function backToPath() {
       document.getElementById("activityView").classList.remove("active");
       document.getElementById("pathView").classList.add("active");
-      document.getElementById("topSub").textContent = curriculum.unitTitle;
     }
 
-    function renderStep() {
-      locked = false;
-      const lesson = curriculum.lessons[activeLesson];
-      const step = lesson.steps[activeStep];
+    function setMode(mode) {
+      currentMode = mode;
+      stepIdx = 0;
+      syncModeButtons();
+      renderActivityStep();
+    }
 
-      document.getElementById("stepCounter").textContent = `Step ${activeStep + 1} / ${lesson.steps.length}`;
-      document.getElementById("modeTag").textContent = lesson.tag;
-      document.getElementById("feedbackMsg").textContent = "";
-      document.getElementById("feedbackMsg").className = "msg";
-      document.getElementById("continueBtn").classList.remove("show");
+    function syncModeButtons() {
+      document.getElementById("modeMatch").classList.toggle("active", currentMode === "match");
+      document.getElementById("modeFill").classList.toggle("active", currentMode === "fill");
+      document.getElementById("modeContrast").classList.toggle("active", currentMode === "contrast");
+    }
 
-      const promptArea = document.getElementById("promptArea");
-      const contentArea = document.getElementById("contentArea");
-      promptArea.innerHTML = "";
-      contentArea.innerHTML = "";
+    function renderActivityStep() {
+      answered = false;
+      const list = multiScreensData[currentMode];
+      const item = list[stepIdx];
+      const promptBox = document.getElementById("promptBox");
+      const body = document.getElementById("activityBody");
+      const fb = document.getElementById("feedbackBox");
+      const nextBtn = document.getElementById("nextActionBtn");
 
-      document.getElementById("playAudioBtn").onclick = () => speak(step.speak);
+      promptBox.innerHTML = "";
+      body.innerHTML = "";
+      fb.textContent = "";
+      fb.className = "feedback";
+      nextBtn.classList.remove("show");
 
-      if (step.type === "choose_4" || step.type === "contrast_2") {
-        promptArea.textContent = step.prompt;
+      document.getElementById("audioTrigger").onclick = () => speak(item.speak);
+
+      if (currentMode === "match" || currentMode === "contrast") {
+        promptBox.textContent = item.phrase;
         const grid = document.createElement("div");
-        grid.className = step.type === "choose_4" ? "grid-4" : "grid-2";
+        grid.className = currentMode === "match" ? "grid-4" : "grid-2";
 
         const cards = [];
-        step.images.forEach((src, idx) => {
-          const box = document.createElement("div");
-          box.className = "img-option";
+        item.images.forEach((src, idx) => {
+          const tile = document.createElement("div");
+          tile.className = "photo-tile";
           const img = document.createElement("img");
           img.src = src;
           img.onerror = () => { img.src = FALLBACK; };
-          box.appendChild(img);
-          cards.push(box);
+          tile.appendChild(img);
+          cards.push(tile);
 
-          box.onclick = () => {
-            if (locked) return;
-            const msg = document.getElementById("feedbackMsg");
-            if (idx === step.correct) {
-              locked = true;
+          tile.onclick = () => {
+            if (answered) return;
+            if (idx === item.correct) {
+              answered = true;
               cards.forEach(c => c.classList.remove("err"));
-              box.classList.add("ok");
-              msg.textContent = "Matched.";
-              msg.className = "msg ok";
-              document.getElementById("continueBtn").classList.add("show");
+              tile.classList.add("ok");
+              fb.textContent = "Correct match.";
+              fb.className = "feedback ok";
+              nextBtn.classList.add("show");
             } else {
-              box.classList.add("err");
-              msg.textContent = "Try another image.";
-              msg.className = "msg err";
+              tile.classList.add("err");
+              fb.textContent = "Try another image.";
+              fb.className = "feedback err";
             }
           };
 
-          grid.appendChild(box);
+          grid.appendChild(tile);
         });
 
-        contentArea.appendChild(grid);
-        speak(step.speak);
-      } else if (step.type === "fill_blank") {
+        body.appendChild(grid);
+        speak(item.speak);
+      } else if (currentMode === "fill") {
         const input = document.createElement("input");
         input.type = "text";
         input.placeholder = "...";
         input.autocomplete = "off";
 
         input.addEventListener("input", () => {
-          const ok = input.value.trim().toLowerCase() === step.answer.toLowerCase();
-          const msg = document.getElementById("feedbackMsg");
-          msg.textContent = ok ? "Correct." : "";
-          msg.className = ok ? "msg ok" : "msg";
-          document.getElementById("continueBtn").classList.toggle("show", ok);
+          const ok = input.value.trim().toLowerCase() === item.answer.toLowerCase();
+          fb.textContent = ok ? "Correct." : "";
+          fb.className = ok ? "feedback ok" : "feedback";
+          nextBtn.classList.toggle("show", ok);
         });
 
-        promptArea.append(step.before, input, step.after);
+        promptBox.append(item.before, input, item.after);
 
-        const card = document.createElement("div");
-        card.className = "single-card";
+        const box = document.createElement("div");
+        box.className = "single-photo-box";
         const img = document.createElement("img");
-        img.src = step.image;
+        img.src = item.image;
         img.onerror = () => { img.src = FALLBACK; };
-        card.appendChild(img);
-        contentArea.appendChild(card);
-        speak(step.speak);
+        box.appendChild(img);
+        body.appendChild(box);
+        speak(item.speak);
       }
     }
 
-    function nextStep() {
-      const lesson = curriculum.lessons[activeLesson];
-      if (activeStep + 1 < lesson.steps.length) {
-        activeStep++;
-        renderStep();
+    function advanceActivity() {
+      const list = multiScreensData[currentMode];
+      if (stepIdx + 1 < list.length) {
+        stepIdx++;
+        renderActivityStep();
       } else {
         backToPath();
       }
     }
 
-    renderLessons();
+    renderLevels();
+    renderTrack();
   </script>
 </body>
 </html>
