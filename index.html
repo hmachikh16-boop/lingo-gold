@@ -3,109 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lingo Gold</title>
+    <title>Lingo Gold - Complete App</title>
     <style>
-        /* === التصميم الأساسي === */
+        /* ================= 1. التصميم الأساسي ================= */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background-color: #e5e5e5; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        .top-bar { background-color: #222; color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; border-bottom: 2px solid #333;}
-        .logo { color: #f1c40f; font-weight: bold; font-size: 20px; letter-spacing: 1px;}
+        .header { background: #222; color: #ccc; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .header-logo { color: #f1c40f; font-weight: bold; font-size: 18px; }
 
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
         .screen.active { display: flex; }
 
-        /* === واجهة المنهج (المربعات) === */
-        .curriculum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1000px; width: 100%; }
-        .unit-card { border-radius: 12px; padding: 30px; height: 180px; color: white; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .unit-card:hover { transform: translateY(-8px); box-shadow: 0 15px 25px rgba(0,0,0,0.2); }
-        .unit-title { font-size: 24px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        /* ================= 2. واجهة المنهج (Curriculum) ================= */
+        .curriculum-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; max-width: 1200px; width: 100%; padding: 20px; }
+        .unit-card { border-radius: 6px; padding: 15px; height: 120px; color: white; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .unit-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .unit-num { font-size: 12px; opacity: 0.9; text-transform: uppercase; }
+        .unit-title { font-size: 18px; font-weight: bold; line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
 
-        /* === واجهة المسار (الدوائر والصور) === */
-        .path-container { display: flex; gap: 40px; margin-bottom: 60px; }
-        .node { width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 3px solid #ccc; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 24px; cursor: pointer; transition: 0.2s; color: #666; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .node:hover { transform: scale(1.1); border-color: #2ecc71; color: #2ecc71; }
+        /* ================= 3. واجهة المسار (Dashboard) ================= */
+        .dashboard-area { background-color: #dcdad1; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .core-card { background: #b3a898; border-radius: 8px; padding: 10px 20px; display: flex; align-items: center; width: 600px; margin-bottom: 40px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .core-icon { background: #a83928; color: #fff; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; border-radius: 4px; }
+        .core-text { flex: 1; margin-left: 15px; }
+        .core-text h2 { font-size: 18px; color: #fff; font-weight: normal; margin-bottom: 3px; }
+        .core-text p { font-size: 12px; color: #eee; }
+        .start-btn { background: transparent; border: none; color: #fff; font-size: 16px; cursor: pointer; }
+        
+        .progress-bar { display: flex; align-items: center; width: 85%; max-width: 1000px; position: relative; margin-bottom: 50px; }
+        .progress-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #a09a8f; z-index: 1; }
+        .node { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #999; z-index: 2; margin: 0 auto; display: flex; justify-content: center; align-items: center; font-size: 10px; color: #999; cursor: pointer; transition: 0.2s;}
+        .node:hover { transform: scale(1.2); border-color: #f1c40f; }
+        .node.done { border-color: #8bc34a; color: #8bc34a; }
+        .node.current { border-color: #f1c40f; color: #f1c40f; box-shadow: 0 0 8px rgba(241, 196, 15, 0.6); }
 
-        .polaroid-container { display: flex; justify-content: center; align-items: center; gap: 25px; height: 220px; }
-        .polaroid { background: white; padding: 12px 12px 40px 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: transform 0.3s; }
-        .polaroid:nth-child(1) { transform: rotate(-6deg); }
+        .polaroids { display: flex; justify-content: center; gap: 30px; margin-top: 20px; height: 180px; }
+        .polaroid { background: #fff; padding: 8px 8px 25px 8px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .polaroid:nth-child(1) { transform: rotate(-7deg); }
         .polaroid:nth-child(2) { transform: rotate(4deg); }
-        .polaroid:nth-child(3) { transform: rotate(-3deg); }
+        .polaroid:nth-child(3) { transform: rotate(-2deg); }
         .polaroid:nth-child(4) { transform: rotate(6deg); }
         .polaroid:nth-child(5) { transform: rotate(-5deg); }
-        .polaroid:hover { transform: scale(1.15) rotate(0deg) !important; z-index: 10; }
-        .polaroid img { width: 160px; height: 160px; object-fit: cover; }
+        .polaroid:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
+        .polaroid img { width: 130px; height: 130px; object-fit: cover; background: #eee; }
 
-        /* === واجهة التمارين (البطاقة الكبيرة) === */
-        .exercise-container { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        
-        .card { background: #fff; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); width: 100%; max-width: 700px; display: flex; flex-direction: column; border: 4px solid transparent; overflow: hidden; }
-        
-        /* الهيدر (النص) */
-        .card-header { padding: 25px 30px; font-size: 26px; display: flex; justify-content: space-between; align-items: center; background: #fff; border-bottom: 1px solid #eee; font-weight: 500; color: #333;}
-        .blank-input { border: 2px solid #ccc; padding: 10px 15px; border-radius: 8px; font-size: 24px; width: 150px; text-align: center; margin: 0 10px; outline: none; transition: 0.3s; }
-        .blank-input:focus { border-color: #3498db; box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); }
-        
-        .audio-icon { color: #3498db; font-size: 32px; cursor: pointer; transition: 0.2s; }
-        .audio-icon:hover { color: #2980b9; transform: scale(1.1); }
-        
-        /* الصورة داخل البطاقة */
-        .card-body { width: 100%; height: 400px; background: #f0f0f0; position: relative; }
-        .card-body img { width: 100%; height: 100%; object-fit: cover; display: block;}
-
-        /* حالات الصح والخطأ */
+        /* ================= 4. واجهة التمارين (Exercises) ================= */
+        .exercise-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 40px; max-width: 1000px; margin: auto; width: 100%; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; position: relative; border: 2px solid transparent; }
         .card.correct { border-color: #2ecc71; }
-        .card.correct .check-mark { display: flex; }
-        .card.wrong { border-color: #e74c3c; animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } 100% { transform: translateX(0); } }
         
-        .check-mark { position: absolute; bottom: 20px; right: 20px; background: #2ecc71; color: white; width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.5); }
+        .card-top { padding: 15px 20px; font-size: 20px; color: #333; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .card-top input { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 18px; width: 110px; text-align: center; background: #f9f9f9; outline: none; }
+        .card-top input:focus { border-color: #3498db; background: #fff; }
+        
+        .audio-btn { color: #3498db; font-size: 18px; border: 2px solid #3498db; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        .card-img { width: 100%; height: 250px; object-fit: cover; display: block; }
+        
+        .check-mark { position: absolute; bottom: 10px; right: 10px; background: #2ecc71; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; opacity: 0; }
+        .card.correct .check-mark { opacity: 1; }
 
-        /* خيارات متعددة (اختيار صورة أو نص) */
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px; width: 100%; max-width: 900px; }
-        .option-img { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 4px solid transparent; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .option-img:hover { transform: scale(1.03); border-color: #3498db; }
-        .option-text { padding: 20px; border: 2px solid #ccc; border-radius: 10px; cursor: pointer; font-size: 22px; text-align: center; transition: 0.2s; background: #fff; }
-        .option-text:hover { background: #f0f0f0; border-color: #3498db; }
-
-        .next-btn { margin-top: 30px; padding: 15px 60px; background: #2ecc71; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 22px; font-weight: bold; display: none; box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); transition: 0.2s;}
-        .next-btn:hover { background: #27ae60; transform: translateY(-2px); }
+        /* أزرار التنقل */
+        .back-btn { position: absolute; top: 20px; left: 20px; background: #fff; border: none; padding: 10px 20px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; color: #333; }
+        .next-btn { margin-top: 20px; padding: 12px 40px; background: #2ecc71; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 18px; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4); }
         .next-btn.show { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="logo">Lingo Gold</div>
+    <div class="header">
+        <div class="header-logo">Lingo Gold</div>
         <div id="headerInfo">Select a Unit</div>
-        <div>Sign Out</div>
     </div>
 
     <div class="main-content">
         <!-- شاشة 1: المنهج -->
         <div id="curriculumScreen" class="screen active">
-            <h2 style="margin-bottom: 40px; color: #333; font-size: 32px; font-weight: bold;">Select a Unit</h2>
+            <h2 style="margin-bottom: 20px; color: #333;">Select a Unit</h2>
             <div class="curriculum-grid" id="curriculumGrid"></div>
         </div>
 
         <!-- شاشة 2: المسار -->
         <div id="dashboardScreen" class="screen">
-            <h2 id="unitTitleDisplay" style="margin-bottom: 30px; color: #333; font-size: 32px; font-weight: bold;">Unit Title</h2>
-            <div class="path-container" id="pathContainer"></div>
-            <div class="polaroid-container">
-                <div class="polaroid"><img src="media/1.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
-                <div class="polaroid"><img src="media/2.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
-                <div class="polaroid"><img src="media/3.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
-                <div class="polaroid"><img src="media/4.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
-                <div class="polaroid"><img src="media/5.jpg" onerror="this.src='https://via.placeholder.com/160'"></div>
+            <div class="dashboard-area">
+                <button class="back-btn" onclick="showScreen('curriculumScreen')">← Back</button>
+                <h2 id="unitTitleDisplay" style="margin-bottom: 20px; color: #333; font-size: 28px;">Unit Title</h2>
+                
+                <div class="core-card">
+                    <div class="core-icon">!</div>
+                    <div class="core-text">
+                        <h2>Core Lesson</h2>
+                        <p>About 30 minutes</p>
+                    </div>
+                    <button class="start-btn" onclick="startLesson(0)">Start ▶</button>
+                </div>
+
+                <div class="progress-bar" id="pathContainer">
+                    <div class="progress-line"></div>
+                </div>
+
+                <div class="polaroids">
+                    <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="img"></div>
+                    <div class="polaroid"><img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300" alt="img"></div>
+                    <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="img"></div>
+                    <div class="polaroid"><img src="https://images.unsplash.com/photo-1508704019882-f9cf40e475b4?w=300" alt="img"></div>
+                    <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="img"></div>
+                </div>
             </div>
         </div>
 
         <!-- شاشة 3: التمارين -->
         <div id="exerciseScreen" class="screen">
-            <div class="exercise-container" id="exerciseContainer"></div>
-            <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next</button>
+            <button class="back-btn" onclick="showScreen('dashboardScreen')">← Back to Path</button>
+            <div class="exercise-grid" id="exerciseContainer"></div>
+            <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➔</button>
         </div>
     </div>
 
@@ -129,21 +142,23 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        // بناء المنهج
+        // 1. بناء المنهج
         function buildCurriculum() {
             const grid = document.getElementById('curriculumGrid');
             grid.innerHTML = '';
+            const colors = ['#f1c40f', '#f39c12', '#e74c3c', '#c0392b', '#3498db', '#2ecc71', '#e67e22', '#d4ac0d'];
+            
             appData.units.forEach((unit, index) => {
                 const card = document.createElement('div');
                 card.className = 'unit-card';
-                card.style.backgroundColor = unit.color || '#3498db';
-                card.innerHTML = `<div class="unit-title">${unit.title}</div>`;
+                card.style.backgroundColor = colors[index % colors.length];
+                card.innerHTML = `<div class="unit-num">Unit ${unit.unitId}</div><div class="unit-title">${unit.title}</div>`;
                 card.onclick = () => openUnit(index);
                 grid.appendChild(card);
             });
         }
 
-        // فتح المسار
+        // 2. فتح المسار
         function openUnit(unitIndex) {
             currentUnitIndex = unitIndex;
             const unit = appData.units[unitIndex];
@@ -151,10 +166,11 @@
             document.getElementById('headerInfo').innerText = unit.title;
 
             const pathContainer = document.getElementById('pathContainer');
-            pathContainer.innerHTML = '';
+            pathContainer.innerHTML = '<div class="progress-line"></div>'; // إعادة رسم الخط
+            
             unit.lessons.forEach((lesson, index) => {
                 const node = document.createElement('div');
-                node.className = 'node';
+                node.className = index === 0 ? 'node current' : 'node';
                 node.innerText = index + 1;
                 node.onclick = () => startLesson(index);
                 pathContainer.appendChild(node);
@@ -163,7 +179,7 @@
             showScreen('dashboardScreen');
         }
 
-        // بدء الدرس
+        // 3. بدء الدرس
         function startLesson(lessonIndex) {
             currentLessonIndex = lessonIndex;
             currentExerciseIndex = 0;
@@ -171,84 +187,68 @@
             renderExercise();
         }
 
-        // عرض التمرين
+        // 4. عرض التمرين
         function renderExercise() {
             const container = document.getElementById('exerciseContainer');
             container.innerHTML = '';
             document.getElementById('nextBtn').classList.remove('show');
 
             const lesson = appData.units[currentUnitIndex].lessons[currentLessonIndex];
-            document.getElementById('headerInfo').innerText = lesson.title;
-            
             const ex = lesson.exercises[currentExerciseIndex];
             if(!ex) return;
 
-            const card = document.createElement('div');
-            card.className = 'card';
-
-            if (ex.type === 'fill_blank') {
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div>${ex.sentence.replace('___', `<input type="text" class="blank-input" oninput="checkFill(this, '${ex.answer}')">`)}</div>
-                        <span class="audio-icon">🔊</span>
-                    </div>
-                    <div class="card-body">
-                        <img src="${ex.image}" onerror="this.src='https://via.placeholder.com/700x400'">
-                        <div class="check-mark">✓</div>
-                    </div>
-                `;
-            } 
+            // توليد البطاقة (نوع Fill in the blank)
+            if (ex.type === 'fill_blank' || ex.type === 'choose_text') {
+                 const card = document.createElement('div');
+                 card.className = 'card';
+                 card.innerHTML = `
+                     <div class="card-top">
+                         <div>${ex.sentence ? ex.sentence.replace('___', `<input type="text" oninput="checkFill(this, '${ex.answer}')">`) : ''}</div>
+                         <div class="audio-btn">▶</div>
+                     </div>
+                     <img class="card-img" src="${ex.image}" onerror="this.src='https://via.placeholder.com/600x250'">
+                     <div class="check-mark">✓</div>
+                 `;
+                 container.appendChild(card);
+            }
+            // توليد البطاقة (نوع Choose Image)
             else if (ex.type === 'choose_image') {
-                let optionsHtml = ex.options.map(img => `<img src="${img}" class="option-img" onclick="checkChoice(this, '${img}', '${ex.answer}')" onerror="this.src='https://via.placeholder.com/220'">`).join('');
-                card.innerHTML = `
-                    <div class="card-header"><span>🔊 Which one is correct?</span></div>
-                    <div class="options-grid" style="padding: 0; max-width: 100%;">${optionsHtml}</div>
-                `;
-                card.style.maxWidth = '100%';
-                card.style.background = 'transparent';
-                card.style.boxShadow = 'none';
-                card.style.border = 'none';
+                // في هذا النوع نعرض 4 صور كبطاقات
+                ex.options.forEach((imgUrl, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <img class="card-img" src="${imgUrl}" onclick="checkChoice(this, '${imgUrl}', '${ex.answer}')" onerror="this.src='https://via.placeholder.com/600x250'">
+                        <div class="check-mark">✓</div>
+                    `;
+                    container.appendChild(card);
+                });
             }
-            else if (ex.type === 'choose_text') {
-                let optionsHtml = ex.options.map(text => `<div class="option-text" onclick="checkChoice(this, '${text}', '${ex.answer}')">${text}</div>`).join('');
-                card.innerHTML = `
-                    <div class="card-body" style="height: 300px; border-radius: 15px; overflow: hidden;">
-                        <img src="${ex.image}" onerror="this.src='https://via.placeholder.com/700x300'">
-                    </div>
-                    <div class="options-grid" style="grid-template-columns: 1fr; padding: 20px 0;">${optionsHtml}</div>
-                `;
-                card.style.background = 'transparent';
-                card.style.boxShadow = 'none';
-                card.style.border = 'none';
-            }
-            container.appendChild(card);
         }
 
         function checkFill(input, answer) {
             const card = input.closest('.card');
             if (input.value.trim().toLowerCase() === answer.toLowerCase()) {
                 card.classList.add('correct');
-                card.classList.remove('wrong');
                 document.getElementById('nextBtn').classList.add('show');
             } else {
                 card.classList.remove('correct');
             }
         }
 
-        function checkChoice(el, selected, correct) {
-            // للتبسيط، سنقوم بتلوين الخيار نفسه
+        function checkChoice(imgElement, selected, correct) {
+            const card = imgElement.closest('.card');
             if (selected === correct) {
-                el.style.borderColor = '#2ecc71';
+                card.classList.add('correct');
                 document.getElementById('nextBtn').classList.add('show');
-            } else {
-                el.style.borderColor = '#e74c3c';
-                setTimeout(() => el.style.borderColor = 'transparent', 500);
             }
         }
 
+        // 5. التمرين التالي
         function nextExercise() {
             const lesson = appData.units[currentUnitIndex].lessons[currentLessonIndex];
             currentExerciseIndex++;
+            
             if (currentExerciseIndex < lesson.exercises.length) {
                 renderExercise();
             } else {
