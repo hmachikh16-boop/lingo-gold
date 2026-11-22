@@ -5,6 +5,7 @@
     {
       "unitId": 1,
       "title": "Unit 1: Language Basics",
+      "color": "#f4d03f",
       "lessons": [
         {
           "lessonId": 1,
@@ -163,6 +164,7 @@
     {
       "unitId": 2,
       "title": "Unit 2: People and Family",
+      "color": "#5dade2",
       "lessons": [
         {
           "lessonId": 1,
@@ -321,6 +323,7 @@
     {
       "unitId": 3,
       "title": "Unit 3: Places and Things",
+      "color": "#e74c3c",
       "lessons": [
         {
           "lessonId": 1,
@@ -475,6 +478,561 @@
           ]
         }
       ]
+    }
+  ],
+  "courseTitle": "English (American)",
+  "levels": [
+    {
+      "id": 1,
+      "label": "Level 1",
+      "unit": "Language Basics",
+      "lessons": 4,
+      "activities": {
+        "match": [
+          {
+            "phrase": "Goodbye.",
+            "speak": "Goodbye.",
+            "correct": 1,
+            "images": [
+              "media/2.jpg",
+              "media/3.jpg",
+              "media/4.jpg",
+              "media/5.jpg",
+              "media/6.jpg",
+              "media/7.jpg",
+              "media/8.jpg",
+              "media/9.jpg"
+            ]
+          },
+          {
+            "phrase": "An apple.",
+            "speak": "An apple.",
+            "correct": 4,
+            "images": [
+              "media/12.jpg",
+              "media/13.jpg",
+              "media/14.jpg",
+              "media/15.jpg",
+              "media/16.jpg",
+              "media/17.jpg",
+              "media/18.jpg",
+              "media/19.jpg"
+            ]
+          },
+          {
+            "phrase": "The cat is sleeping.",
+            "speak": "The cat is sleeping.",
+            "correct": 7,
+            "images": [
+              "media/22.jpg",
+              "media/23.jpg",
+              "media/24.jpg",
+              "media/25.jpg",
+              "media/26.jpg",
+              "media/27.jpg",
+              "media/28.jpg",
+              "media/29.jpg"
+            ]
+          },
+          {
+            "phrase": "Two boys.",
+            "speak": "Two boys.",
+            "correct": 2,
+            "images": [
+              "media/32.jpg",
+              "media/33.jpg",
+              "media/34.jpg",
+              "media/35.jpg",
+              "media/36.jpg",
+              "media/37.jpg",
+              "media/38.jpg",
+              "media/39.jpg"
+            ]
+          }
+        ],
+        "fill": [
+          {
+            "before": "The ",
+            "after": " is reading.",
+            "answer": "man",
+            "speak": "The man is reading.",
+            "image": "media/1.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is red.",
+            "answer": "apple",
+            "speak": "The apple is red.",
+            "image": "media/11.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is reading.",
+            "answer": "man",
+            "speak": "The man is reading.",
+            "image": "media/21.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is red.",
+            "answer": "apple",
+            "speak": "The apple is red.",
+            "image": "media/31.jpg"
+          }
+        ],
+        "contrast": [
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "I see a dog.",
+            "correct": 0,
+            "images": [
+              "media/10.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "A cat is sleeping.",
+            "correct": 0,
+            "images": [
+              "media/20.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "The car is red.",
+            "correct": 0,
+            "images": [
+              "media/30.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "The book is green.",
+            "correct": 0,
+            "images": [
+              "media/40.jpg",
+              "media/2.jpg"
+            ]
+          }
+        ],
+        "phrase_choice": [
+          {
+            "image": "media/10.jpg",
+            "speak": "I see a dog.",
+            "correct": 0,
+            "choices": [
+              "I see a dog.",
+              "The sun is bright.",
+              "She is writing.",
+              "We are happy."
+            ]
+          },
+          {
+            "image": "media/20.jpg",
+            "speak": "A cat is sleeping.",
+            "correct": 0,
+            "choices": [
+              "A cat is sleeping.",
+              "The boy is running.",
+              "This is a house.",
+              "I like milk."
+            ]
+          },
+          {
+            "image": "media/30.jpg",
+            "speak": "The car is red.",
+            "correct": 0,
+            "choices": [
+              "The car is red.",
+              "The dog is barking.",
+              "I eat an apple.",
+              "The men are reading."
+            ]
+          },
+          {
+            "image": "media/40.jpg",
+            "speak": "The book is green.",
+            "correct": 0,
+            "choices": [
+              "The book is green.",
+              "He drinks water.",
+              "A bird can fly.",
+              "The door is open."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "label": "Level 2",
+      "unit": "Everyday Life",
+      "lessons": 4,
+      "activities": {
+        "match": [
+          {
+            "phrase": "Goodbye.",
+            "speak": "Goodbye.",
+            "correct": 5,
+            "images": [
+              "media/42.jpg",
+              "media/43.jpg",
+              "media/44.jpg",
+              "media/45.jpg",
+              "media/46.jpg",
+              "media/47.jpg",
+              "media/48.jpg",
+              "media/49.jpg"
+            ]
+          },
+          {
+            "phrase": "An apple.",
+            "speak": "An apple.",
+            "correct": 0,
+            "images": [
+              "media/52.jpg",
+              "media/53.jpg",
+              "media/54.jpg",
+              "media/55.jpg",
+              "media/56.jpg",
+              "media/57.jpg",
+              "media/58.jpg",
+              "media/59.jpg"
+            ]
+          },
+          {
+            "phrase": "The cat is sleeping.",
+            "speak": "The cat is sleeping.",
+            "correct": 3,
+            "images": [
+              "media/62.jpg",
+              "media/63.jpg",
+              "media/64.jpg",
+              "media/65.jpg",
+              "media/66.jpg",
+              "media/67.jpg",
+              "media/68.jpg",
+              "media/69.jpg"
+            ]
+          },
+          {
+            "phrase": "Two boys.",
+            "speak": "Two boys.",
+            "correct": 6,
+            "images": [
+              "media/72.jpg",
+              "media/73.jpg",
+              "media/74.jpg",
+              "media/75.jpg",
+              "media/76.jpg",
+              "media/77.jpg",
+              "media/78.jpg",
+              "media/79.jpg"
+            ]
+          }
+        ],
+        "fill": [
+          {
+            "before": "The ",
+            "after": " is reading.",
+            "answer": "man",
+            "speak": "The man is reading.",
+            "image": "media/41.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is red.",
+            "answer": "apple",
+            "speak": "The apple is red.",
+            "image": "media/51.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is reading.",
+            "answer": "man",
+            "speak": "The man is reading.",
+            "image": "media/61.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is red.",
+            "answer": "apple",
+            "speak": "The apple is red.",
+            "image": "media/71.jpg"
+          }
+        ],
+        "contrast": [
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "I see a dog.",
+            "correct": 0,
+            "images": [
+              "media/50.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "A cat is sleeping.",
+            "correct": 0,
+            "images": [
+              "media/60.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "The car is red.",
+            "correct": 0,
+            "images": [
+              "media/70.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "The book is green.",
+            "correct": 0,
+            "images": [
+              "media/80.jpg",
+              "media/2.jpg"
+            ]
+          }
+        ],
+        "phrase_choice": [
+          {
+            "image": "media/50.jpg",
+            "speak": "I see a dog.",
+            "correct": 0,
+            "choices": [
+              "I see a dog.",
+              "The sun is bright.",
+              "She is writing.",
+              "We are happy."
+            ]
+          },
+          {
+            "image": "media/60.jpg",
+            "speak": "A cat is sleeping.",
+            "correct": 0,
+            "choices": [
+              "A cat is sleeping.",
+              "The boy is running.",
+              "This is a house.",
+              "I like milk."
+            ]
+          },
+          {
+            "image": "media/70.jpg",
+            "speak": "The car is red.",
+            "correct": 0,
+            "choices": [
+              "The car is red.",
+              "The dog is barking.",
+              "I eat an apple.",
+              "The men are reading."
+            ]
+          },
+          {
+            "image": "media/80.jpg",
+            "speak": "The book is green.",
+            "correct": 0,
+            "choices": [
+              "The book is green.",
+              "He drinks water.",
+              "A bird can fly.",
+              "The door is open."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "label": "Level 3",
+      "unit": "Around Town",
+      "lessons": 4,
+      "activities": {
+        "match": [
+          {
+            "phrase": "Goodbye.",
+            "speak": "Goodbye.",
+            "correct": 1,
+            "images": [
+              "media/82.jpg",
+              "media/83.jpg",
+              "media/84.jpg",
+              "media/85.jpg",
+              "media/86.jpg",
+              "media/87.jpg",
+              "media/88.jpg",
+              "media/89.jpg"
+            ]
+          },
+          {
+            "phrase": "An apple.",
+            "speak": "An apple.",
+            "correct": 4,
+            "images": [
+              "media/92.jpg",
+              "media/93.jpg",
+              "media/94.jpg",
+              "media/95.jpg",
+              "media/96.jpg",
+              "media/97.jpg",
+              "media/98.jpg",
+              "media/99.jpg"
+            ]
+          },
+          {
+            "phrase": "The cat is sleeping.",
+            "speak": "The cat is sleeping.",
+            "correct": 7,
+            "images": [
+              "media/102.jpg",
+              "media/103.jpg",
+              "media/104.jpg",
+              "media/105.jpg",
+              "media/106.jpg",
+              "media/107.jpg",
+              "media/108.jpg",
+              "media/109.jpg"
+            ]
+          },
+          {
+            "phrase": "Two boys.",
+            "speak": "Two boys.",
+            "correct": 2,
+            "images": [
+              "media/112.jpg",
+              "media/113.jpg",
+              "media/114.jpg",
+              "media/115.jpg",
+              "media/116.jpg",
+              "media/117.jpg",
+              "media/118.jpg",
+              "media/119.jpg"
+            ]
+          }
+        ],
+        "fill": [
+          {
+            "before": "The ",
+            "after": " is reading.",
+            "answer": "man",
+            "speak": "The man is reading.",
+            "image": "media/81.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is red.",
+            "answer": "apple",
+            "speak": "The apple is red.",
+            "image": "media/91.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is reading.",
+            "answer": "man",
+            "speak": "The man is reading.",
+            "image": "media/101.jpg"
+          },
+          {
+            "before": "The ",
+            "after": " is red.",
+            "answer": "apple",
+            "speak": "The apple is red.",
+            "image": "media/111.jpg"
+          }
+        ],
+        "contrast": [
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "I see a dog.",
+            "correct": 0,
+            "images": [
+              "media/90.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "A cat is sleeping.",
+            "correct": 0,
+            "images": [
+              "media/100.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "The car is red.",
+            "correct": 0,
+            "images": [
+              "media/110.jpg",
+              "media/2.jpg"
+            ]
+          },
+          {
+            "phrase": "Choose the correct sentence for the photo.",
+            "speak": "The book is green.",
+            "correct": 0,
+            "images": [
+              "media/120.jpg",
+              "media/2.jpg"
+            ]
+          }
+        ],
+        "phrase_choice": [
+          {
+            "image": "media/90.jpg",
+            "speak": "I see a dog.",
+            "correct": 0,
+            "choices": [
+              "I see a dog.",
+              "The sun is bright.",
+              "She is writing.",
+              "We are happy."
+            ]
+          },
+          {
+            "image": "media/100.jpg",
+            "speak": "A cat is sleeping.",
+            "correct": 0,
+            "choices": [
+              "A cat is sleeping.",
+              "The boy is running.",
+              "This is a house.",
+              "I like milk."
+            ]
+          },
+          {
+            "image": "media/110.jpg",
+            "speak": "The car is red.",
+            "correct": 0,
+            "choices": [
+              "The car is red.",
+              "The dog is barking.",
+              "I eat an apple.",
+              "The men are reading."
+            ]
+          },
+          {
+            "image": "media/120.jpg",
+            "speak": "The book is green.",
+            "correct": 0,
+            "choices": [
+              "The book is green.",
+              "He drinks water.",
+              "A bird can fly.",
+              "The door is open."
+            ]
+          }
+        ]
+      }
     }
   ]
 }

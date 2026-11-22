@@ -398,6 +398,7 @@
           <button class="mode-btn active" id="modeMatch" onclick="setMode('match')">1. 4-Photo Match</button>
           <button class="mode-btn" id="modeFill" onclick="setMode('fill')">2. Fill Blank</button>
           <button class="mode-btn" id="modeContrast" onclick="setMode('contrast')">3. 2-Photo Contrast</button>
+          <button class="mode-btn" id="modePhrase" onclick="setMode('phrase_choice')">4. Phrase Choice</button>
         </div>
       </div>
 
@@ -425,6 +426,11 @@
       { id: 2, label: "Level 2", unit: "Everyday Life", lessons: 4 },
       { id: 3, label: "Level 3", unit: "Around Town", lessons: 4 }
     ];
+
+    const DEFAULT_DATA = {
+      courseTitle: "English (American)",
+      levels: levels // يستخدم مصفوفة levels المعرفة مسبقاً
+    };
 
     const multiScreensData = {
       match: [
@@ -479,6 +485,20 @@
         }
       ]
     };
+
+    // دمج الواجهة الرابعة مع البيانات
+    multiScreensData.phrase_choice = [
+      {
+        image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700",
+        speak: "The dog is smiling.",
+        correct: 1,
+        choices: [
+          "The boy is reading a book.",
+          "The dog is smiling.",
+          "A cup of hot coffee."
+        ]
+      }
+    ];
 
     let currentLevel = 0;
     let selectedLesson = 3; // Lesson 4 index
@@ -570,6 +590,7 @@
       document.getElementById("modeMatch").classList.toggle("active", currentMode === "match");
       document.getElementById("modeFill").classList.toggle("active", currentMode === "fill");
       document.getElementById("modeContrast").classList.toggle("active", currentMode === "contrast");
+      document.getElementById("modePhrase").classList.toggle("active", currentMode === "phrase_choice");
     }
 
     function renderActivityStep() {
@@ -648,6 +669,8 @@
         box.appendChild(img);
         body.appendChild(box);
         speak(item.speak);
+      } else if (currentMode === "phrase_choice") {
+        renderPhraseChoice(item, promptBox, body, fb, nextBtn);
       }
     }
 
@@ -661,8 +684,89 @@
       }
     }
 
-    renderLevels();
-    renderTrack();
+    function loadProjectData() {
+      fetch("data.rsd")
+        .then(res => {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(json => {
+          if (Array.isArray(json.levels) && json.levels.length > 0) {
+            levels.length = 0;
+            json.levels.forEach(lvl => levels.push(lvl));
+
+            const firstActivities = json.levels[0].activities;
+            if (firstActivities) {
+              if (firstActivities.match?.length) multiScreensData.match = firstActivities.match;
+              if (firstActivities.fill?.length) multiScreensData.fill = firstActivities.fill;
+              if (firstActivities.contrast?.length) multiScreensData.contrast = firstActivities.contrast;
+              if (firstActivities.phrase_choice?.length) multiScreensData.phrase_choice = firstActivities.phrase_choice;
+            }
+          }
+          renderLevels();
+          renderTrack();
+        })
+        .catch(() => {
+          // يبقى على البيانات الافتراضية ويعرض المسار دون توقف
+          renderLevels();
+          renderTrack();
+        });
+    }
+
+    function renderPhraseChoice(item, promptBox, body, fb, nextBtn) {
+      promptBox.textContent = "Listen and choose the matching sentence:";
+
+      const box = document.createElement("div");
+      box.className = "single-photo-box";
+      box.style.marginBottom = "18px";
+
+      const img = document.createElement("img");
+      img.src = item.image;
+      img.onerror = () => { img.src = FALLBACK; };
+      box.appendChild(img);
+      body.appendChild(box);
+
+      const list = document.createElement("div");
+      list.style.display = "grid";
+      list.style.gap = "10px";
+      list.style.maxWidth = "700px";
+      list.style.margin = "0 auto";
+
+      const buttons = [];
+      item.choices.forEach((text, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "btn-ghost";
+        btn.style.textAlign = "left";
+        btn.style.padding = "12px 16px";
+        btn.style.fontSize = "16px";
+        btn.textContent = text;
+        buttons.push(btn);
+
+        btn.onclick = () => {
+          if (answered) return;
+          if (idx === item.correct) {
+            answered = true;
+            btn.style.borderColor = "var(--green)";
+            btn.style.background = "#eafaf1";
+            fb.textContent = "Correct sentence.";
+            fb.className = "feedback ok";
+            nextBtn.classList.add("show");
+          } else {
+            btn.style.borderColor = "var(--red)";
+            btn.style.background = "#fdedec";
+            fb.textContent = "Try another sentence.";
+            fb.className = "feedback err";
+          }
+        };
+
+        list.appendChild(btn);
+      });
+
+      body.appendChild(list);
+      speak(item.speak);
+    }
+
+    loadProjectData();
   </script>
 </body>
 </html>
