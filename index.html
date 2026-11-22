@@ -3,117 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Lingo Gold — تعلم الإنجليزية بالانغماس البصري والصوتي">
-  <title>Lingo Gold — Immersion Studio</title>
+  <title>Lingo Gold — Immersion</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <div class="loading" id="loading">
     <div style="text-align:center">
-      <div class="wave">🌊</div>
-      <p>جارٍ تجهيز الدروس...</p>
+      <div style="font-size:38px">🌊</div>
+      <p class="prompt" style="margin-top:10px">جارٍ تجهيز الدروس...</p>
     </div>
   </div>
 
-  <header class="app-header">
-    <div class="brand">
-      <div class="brand-mark">LG</div>
-      <div>
-        <div class="brand-title">Lingo Gold</div>
-        <div class="brand-sub">Immersion Studio · English A1 → B2</div>
-      </div>
+  <!-- ============ HOME ============ -->
+  <div id="home">
+    <header class="home-top">
+      <div class="hbrand"><span class="hmark">LG</span><span>Lingo Gold</span></div>
+      <div class="hmeta">تقدّمك: <span id="homeProgress">0 / 48</span></div>
+    </header>
+    <div class="home">
+      <aside class="side">
+        <h4>المستويات</h4>
+        <div id="sideLevels"></div>
+        <h4 style="margin-top:18px">أدوات</h4>
+        <button class="lv" id="reviewBtn">↻ مراجعة</button>
+      </aside>
+      <main class="main">
+        <h1 id="homeTitle">الوحدة</h1>
+        <p class="lead" id="homeLead">تعلّم بالصورة والسياق</p>
+        <div class="section-t">دروس الوحدة <span>9 تمارين متتابعة</span></div>
+        <div class="path" id="pathGrid"></div>
+        <div class="section-t">الاختبارات <span>75% للنجاح</span></div>
+        <div class="tests" id="testRow"></div>
+      </main>
     </div>
-    <div class="header-meta">
-      <span title="نقاط الخبرة">✦ <b id="xpVal">0</b></span>
-      <span title="سلسلة التعلّم">🔥 <b id="streakVal">0</b></span>
-      <button class="icon-btn" id="themeBtn" title="تبديل المظهر" aria-label="تبديل المظهر">☾</button>
-    </div>
-  </header>
-
-  <div class="app-shell">
-    <aside class="panel sidebar">
-      <div class="mini-progress">
-        <div class="mini-progress-top"><span>تقدّمك</span><span id="achCount">0 / 10</span></div>
-        <div class="track-line"><span id="profileBar" style="width:0%"></span></div>
-        <small id="profileText">0 / 48 درسًا متقنًا</small>
-      </div>
-      <div class="side-label">المستويات</div>
-      <div id="levelNav"></div>
-      <div class="side-links">
-        <button class="side-link active" id="navHome">⌂ المسار الدراسي</button>
-        <button class="side-link" id="navReview">↻ المراجعة <span class="cnt" id="reviewCount">0</span></button>
-        <button class="side-link" id="navAch">✧ الإنجازات</button>
-        <button class="side-link" id="resetBtn">↺ إعادة ضبط التقدم</button>
-      </div>
-    </aside>
-
-    <main class="panel main">
-      <div class="error" id="errorBanner"></div>
-
-      <!-- Course path -->
-      <section id="dashboardView" class="view active">
-        <div class="view-head">
-          <div>
-            <h1 id="dashTitle">الوحدة</h1>
-            <p id="dashSub">تعلّم بالصورة والاستماع والسياق</p>
-          </div>
-          <span class="tag" id="levelBadge">A1</span>
-        </div>
-        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:18px" id="crumbLevel">A1</div>
-        <div class="sec-head"><h2>دروس الوحدة</h2><span>تعلّم بالصورة والسياق</span></div>
-        <div class="lesson-grid" id="lessonGrid"></div>
-        <div class="sec-head"><h2>الاختبارات</h2><span>75% للنجاح</span></div>
-        <div class="test-row" id="testStrip"></div>
-      </section>
-
-      <!-- Lesson -->
-      <section id="lessonView" class="view">
-        <div class="lesson-top">
-          <div>
-            <div class="lesson-name" id="lessonTitle">الدرس</div>
-            <div class="stage-label" id="stageLabel">1 / 8</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px">
-            <div class="stage-track" id="stageDots"></div>
-            <button class="btn-soft" id="backBtn">← عودة</button>
-          </div>
-        </div>
-        <div id="stageArea"></div>
-        <div class="feedback" id="feedback"></div>
-        <div class="stage-foot">
-          <span class="stage-label" id="stepHint"></span>
-          <button class="continue" id="nextBtn" disabled>متابعة ←</button>
-        </div>
-      </section>
-
-      <!-- Review -->
-      <section id="reviewView" class="view">
-        <div class="view-head">
-          <div><h1>المراجعة المتباعدة</h1><p id="reviewSub">0 درس مستحق</p></div>
-          <span class="tag">🔁</span>
-        </div>
-        <div id="reviewList"></div>
-      </section>
-
-      <!-- Achievements -->
-      <section id="achView" class="view">
-        <div class="view-head">
-          <div><h1>الإنجازات</h1><p>عناصر ثانوية — التعلّم هو الأساس</p></div>
-        </div>
-        <div class="ach-grid" id="achGrid"></div>
-      </section>
-
-      <!-- Test -->
-      <section id="testView" class="view">
-        <div class="view-head"><div><h1 id="testTitle">الاختبار</h1></div></div>
-        <div id="testBody"></div>
-      </section>
-    </main>
   </div>
+
+  <!-- ============ FULL-SCREEN LESSON ============ -->
+  <section class="lesson" id="lesson">
+    <div class="l-top">
+      <button class="x" id="exitBtn" title="خروج">✕</button>
+      <div class="segs" id="segBar"></div>
+      <span class="l-count" id="lCount">1/9</span>
+    </div>
+    <div class="l-body">
+      <div class="l-inner">
+        <div class="prompt" id="lPrompt">الملاحظة</div>
+        <div id="lStage" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"></div>
+      </div>
+    </div>
+    <div class="l-foot">
+      <div class="note" id="lNote"></div>
+      <button class="go" id="goBtn" disabled>متابعة ←</button>
+    </div>
+  </section>
+
+  <!-- ============ TEST MODAL ============ -->
+  <section class="lesson" id="testModal" style="background:#fafaf9">
+    <div class="l-top">
+      <button class="x" id="testCloseX">✕</button>
+      <div class="segs"></div>
+      <span class="l-count">TEST</span>
+    </div>
+    <div class="l-body">
+      <div class="l-inner" id="testArea"></div>
+    </div>
+  </section>
+
+  <!-- ============ REVIEW MODAL ============ -->
+  <section class="lesson" id="reviewModal" style="background:#fafaf9">
+    <div class="l-top">
+      <button class="x" id="reviewCloseX">✕</button>
+      <div class="segs"></div>
+      <span class="l-count">↻</span>
+    </div>
+    <div class="l-body">
+      <div class="l-inner" id="reviewArea"></div>
+    </div>
+  </section>
 
   <div class="toast" id="toast"></div>
-
   <script src="curriculum.js"></script>
   <script src="app.js"></script>
 </body>
