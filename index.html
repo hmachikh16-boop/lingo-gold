@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>20 Lesson Display Interfaces - Immersion UI</title>
+  <title>Immersion App - Integrated Lessons & SRS</title>
   <style>
     :root {
       --gold: #f4c414;
@@ -22,6 +22,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
     body { background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
 
+    /* Header */
     .topbar {
       background: var(--bar);
       color: #fff;
@@ -31,130 +32,196 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
     }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
     .badge { background: var(--gold); color: #111; padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 800; }
 
-    .switcher-bar {
-      background: #d3cfc4;
-      padding: 10px 18px;
-      border-bottom: 1px solid #b8b3a6;
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
+    .nav-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .nav-btn {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .w-btn {
-      background: #fff; border: 1px solid #b5b0a4; color: #222;
-      padding: 6px 11px; border-radius: 4px; font-size: 12px; font-weight: 700;
-      cursor: pointer; white-space: nowrap;
-    }
-    .w-btn.active { background: var(--gold); border-color: var(--gold-dark); color: #111; }
+    .nav-btn.active, .nav-btn:hover { background: var(--gold); color: #111; border-color: var(--gold); }
 
-    .stage {
-      flex: 1; max-width: 980px; width: 100%; margin: 20px auto; padding: 0 18px;
-      display: flex; flex-direction: column; gap: 14px;
-    }
+    /* Main Container */
+    .wrap { max-width: 1020px; width: 100%; margin: 20px auto; padding: 0 18px; flex: 1; display: flex; flex-direction: column; }
+    .screen { display: none; flex-direction: column; gap: 16px; flex: 1; }
+    .screen.active { display: flex; }
 
-    .meta-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .meta-head h1 { font-size: 19px; }
-    .meta-head span { font-size: 13px; color: var(--muted); font-weight: 600; }
-
-    .lesson-canvas {
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid #c5c0b4;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      min-height: 360px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 16px;
-    }
-
-    .prompt-strip {
+    /* Course & Lessons List */
+    .toolbar {
       background: var(--card);
       border-radius: 8px;
-      padding: 12px 18px;
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
-      border-left: 5px solid var(--gold);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    .prompt-title { font-size: 20px; font-weight: 700; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .sel, .btn-ghost {
+      padding: 7px 12px; border-radius: 6px; border: 1.5px solid #c5cbd3;
+      background: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+
+    .lessons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+      gap: 14px;
+    }
+    .l-tile {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 14px;
+      border-left: 5px solid #9aa2ac;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    }
+    .l-tile.due { border-left-color: var(--gold-dark); }
+    .l-tile.done { border-left-color: var(--green); }
+    .l-top { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: var(--muted); }
+    .l-tile h3 { font-size: 15px; }
+    .l-tile p { font-size: 12px; color: var(--muted); }
+
+    .btn-gold {
+      background: var(--gold); color: #111; border: none;
+      padding: 9px 14px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer;
+    }
+    .btn-gold:hover { background: var(--gold-dark); }
+
+    /* Integrated Lesson Player */
+    .player-bar {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .step-dots { display: flex; gap: 6px; flex-wrap: wrap; }
+    .s-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid #9aa2ac; background: #fff; font-weight: 800; font-size: 12px; cursor: pointer;
+    }
+    .s-dot.cur { background: var(--gold); border-color: var(--gold-dark); color: #111; }
+    .s-dot.ok { background: var(--green); border-color: var(--green); color: #fff; }
+
+    .prompt-box {
+      background: var(--card); border-left: 6px solid var(--gold); border-radius: 8px;
+      padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+    .prompt-txt { font-size: 20px; font-weight: 700; }
 
     .spk-btn {
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       border: 2px solid var(--green); background: var(--green-light);
       color: var(--green); font-weight: 800; cursor: pointer; flex-shrink: 0;
     }
     .spk-btn:hover { background: var(--green); color: #fff; }
 
     .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 
-    .l-card {
+    .ex-card {
       background: var(--card); border-radius: 8px; overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.09); border: 3px solid transparent;
-      cursor: pointer; transition: 0.15s;
+      border: 3px solid transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.09); cursor: pointer;
     }
-    .l-card:hover { transform: translateY(-2px); }
-    .l-card.ok { border-color: var(--green); background: var(--green-light); }
-    .l-card.err { border-color: var(--red); background: var(--red-light); }
-    .l-card img { width: 100%; height: 155px; object-fit: cover; display: block; }
+    .ex-card.ok { border-color: var(--green); background: var(--green-light); }
+    .ex-card.err { border-color: var(--red); background: var(--red-light); }
+    .ex-card img { width: 100%; height: 175px; object-fit: cover; display: block; }
 
-    .card-top {
-      padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
-      gap: 8px; font-size: 16px; font-weight: 700; background: #fff; border-bottom: 1px solid #eceae4;
+    .card-head {
+      padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 16px; font-weight: 700; background: #fff; border-bottom: 1px solid #eceae4;
     }
-    .card-top select, .card-top input {
+    .card-head select {
       padding: 4px 8px; font-size: 15px; font-weight: 700;
-      border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb; width: 120px; text-align: center;
+      border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb;
     }
 
-    .single-stage {
+    .single-box {
       background: var(--card); border-radius: 8px; overflow: hidden;
       max-width: 660px; width: 100%; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
-    .single-stage img { width: 100%; height: 230px; object-fit: cover; display: block; }
-
-    .choices-col { display: grid; gap: 8px; padding: 12px; }
-    .choice-btn {
+    .single-box img { width: 100%; height: 240px; object-fit: cover; display: block; }
+    .choices-list { display: grid; gap: 8px; padding: 14px; }
+    .opt-btn {
       text-align: left; padding: 10px 14px; border-radius: 6px;
       border: 1.5px solid #c5cbd3; background: #fff; font-weight: 700; cursor: pointer;
     }
-    .choice-btn:hover { border-color: var(--gold-dark); background: #fffdf5; }
+    .opt-btn:hover { border-color: var(--gold-dark); background: #fffdf5; }
 
-    .foot-note { font-size: 14px; font-weight: 700; min-height: 22px; color: var(--muted); }
-    .foot-note.ok { color: var(--green); }
-    .foot-note.err { color: var(--red); }
+    .foot-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px; min-height: 42px; margin-top: auto; padding-top: 8px;
+    }
+    .fb { font-weight: 700; font-size: 14px; }
+    .fb.ok { color: var(--green); }
+    .fb.err { color: var(--red); }
 
-    @media (max-width: 720px) {
-      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    @media (max-width: 700px) {
+      .grid-4, .grid-2 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="badge">20 LESSONS</span>
-      <span>Lesson Display Interfaces</span>
+      <span class="badge">INTEGRATED</span>
+      <span>100-Lesson Immersion App</span>
     </div>
-    <span style="font-size:13px; color:#d1d5db;">Click any number (1–20) to preview lesson layout</span>
+    <div class="nav-group">
+      <button class="nav-btn active" id="tabCourses" onclick="showScreen('coursesScreen')">Courses &amp; Lessons</button>
+      <button class="nav-btn" id="tabPlayer" onclick="showScreen('playerScreen')">Active Lesson</button>
+      <button class="nav-btn" onclick="resetProgress()">Reset SRS</button>
+    </div>
   </header>
 
-  <nav class="switcher-bar" id="switcherBar"></nav>
+  <main class="wrap">
+    <!-- Screen 1: Lessons Catalog -->
+    <section id="coursesScreen" class="screen active">
+      <div class="toolbar">
+        <div class="filters">
+          <select class="sel" id="unitSelect" onchange="renderLessons()">
+            <option value="all">All Units (100 Lessons)</option>
+          </select>
+          <select class="sel" id="filterSelect" onchange="renderLessons()">
+            <option value="all">All Lessons</option>
+            <option value="due">Due for Review</option>
+            <option value="done">Reviewed</option>
+          </select>
+        </div>
+        <div style="font-size:13px; font-weight:700; color:var(--muted);">
+          Due Now: <strong id="dueCounter" style="color:var(--ink);">0</strong>
+        </div>
+      </div>
+      <div class="lessons-grid" id="lessonsGrid"></div>
+    </section>
 
-  <main class="stage">
-    <div class="meta-head">
-      <h1 id="lessonUiTitle">1. 4-Photo Sentence Match</h1>
-      <span id="lessonUiDesc">Phrase prompt with four photo cards in a 2x2 grid</span>
-    </div>
-    <div class="lesson-canvas" id="lessonCanvas"></div>
-    <div class="foot-note" id="lessonFeedback"></div>
+    <!-- Screen 2: Integrated Lesson Player -->
+    <section id="playerScreen" class="screen">
+      <div class="player-bar">
+        <button class="btn-ghost" onclick="showScreen('coursesScreen')">← Back to Lessons</button>
+        <div class="step-dots" id="stepDots"></div>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-txt" id="promptTxt"></div>
+        <button class="spk-btn" id="mainSpk">🔊</button>
+      </div>
+
+      <div id="stageArea"></div>
+
+      <div class="foot-bar">
+        <div class="fb" id="fbBox"></div>
+        <button class="btn-gold" id="nextBtn" onclick="nextStep()">Continue ➔</button>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -169,30 +236,95 @@
       friends: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
     };
 
-    const lessonUis = [
-      { title: "1. 4-Photo Sentence Match", desc: "Listen and select the matching photo among four cards" },
-      { title: "2. 4-Card Dropdown Grammar", desc: "Select the missing word from a dropdown inside each card" },
-      { title: "3. Paired Q&A Photo Cards", desc: "Question and answer with two side-by-side images" },
-      { title: "4. Greeting & Speech Cards", desc: "Conversational phrases with audio playback" },
-      { title: "5. Single Photo + Text Choices", desc: "One clear photo with multiple sentence choices below" },
-      { title: "6. Single Photo + Fill Input", desc: "Type the missing word while viewing the scene" },
-      { title: "7. 2-Photo Contrast Pair", desc: "Compare two contrasting scenes side by side" },
-      { title: "8. 6-Card Vocabulary Grid (3x2)", desc: "Six vocabulary cards arranged in a three-column grid" },
-      { title: "9. Listening-First Photo Match", desc: "Audio prompt with four visual options" },
-      { title: "10. Verb Conjugation Cards", desc: "Choose verb forms matching singular or plural subjects" },
-      { title: "11. Number & Age Dialogue", desc: "Questions and answers showing ages and numbers" },
-      { title: "12. Food & Drink Visual Set", desc: "Everyday food and drink association cards" },
-      { title: "13. Nature vs. Indoor Contrast", desc: "Outdoor scenery compared with indoor activity" },
-      { title: "14. Sentence Completion Strip", desc: "Complete two related sentences with a shared visual cue" },
-      { title: "15. Word Bank Tap Selection", desc: "Tap word chips to complete a sentence" },
-      { title: "16. Picture Caption Verification", desc: "Confirm whether each card caption fits its photo" },
-      { title: "17. Mini Dialogue Bubble Cards", desc: "Short spoken exchanges with audio buttons" },
-      { title: "18. Plural vs. Singular Cards", desc: "Compare singular and plural subjects in 2x2 cards" },
-      { title: "19. Action Verb Spotlight", desc: "Focus on one core action with four options" },
-      { title: "20. Lesson Summary Review Grid", desc: "Quick visual recap of key words from the lesson" }
+    const sampleBank = [
+      { phrase: "The boy is drinking water.", img: IMG.water, word: "water", before: "A bottle of ", after: ".", opts: ["water", "bread", "coffee"] },
+      { phrase: "She is reading a book.", img: IMG.book, word: "reading", before: "She is ", after: " a book.", opts: ["reading", "smiling", "sleeping"] },
+      { phrase: "A cup of hot coffee.", img: IMG.coffee, word: "coffee", before: "A cup of hot ", after: ".", opts: ["coffee", "water", "milk"] },
+      { phrase: "The dog is smiling.", img: IMG.dog, word: "smiling", before: "The dog is ", after: ".", opts: ["smiling", "reading", "cooking"] }
     ];
 
-    let activeIdx = 0;
+    // 100 درس مدمجة بأنماط واجهات متنوعة تلقائياً
+    const lessons = Array.from({ length: 100 }, (_, i) => {
+      const unitNum = Math.floor(i / 10) + 1;
+      const a = sampleBank[i % sampleBank.length];
+      const b = sampleBank[(i + 1) % sampleBank.length];
+      return {
+        id: `L${i + 1}`,
+        num: i + 1,
+        unitNum,
+        title: `Lesson ${i + 1}`,
+        unitTitle: `Unit ${unitNum}`,
+        steps: [
+          {
+            uiType: "photo_4",
+            prompt: a.phrase,
+            speak: a.phrase,
+            correct: 0,
+            images: [a.img, IMG.book, IMG.coffee, IMG.dog]
+          },
+          {
+            uiType: "dropdown_2",
+            prompt: "Select the matching word for each card.",
+            speak: "Select the matching word for each card.",
+            items: [
+              { before: a.before, after: a.after, options: ["", ...a.opts], answer: a.word, img: a.img },
+              { before: b.before, after: b.after, options: ["", ...b.opts], answer: b.word, img: b.img }
+            ]
+          },
+          {
+            uiType: "photo_choice_text",
+            prompt: "Choose the sentence that matches the photo.",
+            speak: b.phrase,
+            image: b.img,
+            correct: 0,
+            choices: [b.phrase, a.phrase, "A tall mountain view."]
+          }
+        ]
+      };
+    });
+
+    const STORAGE_KEY = "immersion_app_srs_v1";
+    let srs = loadSrs();
+    let curLesson = 0;
+    let curStep = 0;
+    let stepSolved = false;
+
+    function loadSrs() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+      const init = {};
+      lessons.forEach(l => { init[l.id] = { reps: 0, dueAt: Date.now() }; });
+      return init;
+    }
+
+    function saveSrs() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(srs)); } catch (_) {}
+    }
+
+    function resetProgress() {
+      localStorage.removeItem(STORAGE_KEY);
+      srs = loadSrs();
+      renderLessons();
+    }
+
+    function isDue(id) {
+      return (srs[id]?.dueAt ?? 0) <= Date.now();
+    }
+
+    function recordSrs(id, success) {
+      const prev = srs[id] || { reps: 0, dueAt: Date.now() };
+      const intervals = [60, 300, 1800, 86400];
+      if (success) {
+        const reps = prev.reps + 1;
+        const sec = intervals[Math.min(prev.reps, intervals.length - 1)];
+        srs[id] = { reps, dueAt: Date.now() + sec * 1000 };
+      } else {
+        srs[id] = { reps: 0, dueAt: Date.now() + 30 * 1000 };
+      }
+      saveSrs();
+    }
 
     function speak(text) {
       if (!("speechSynthesis" in window) || !text) return;
@@ -203,263 +335,211 @@
       window.speechSynthesis.speak(u);
     }
 
-    function setFb(msg, cls = "") {
-      const el = document.getElementById("lessonFeedback");
-      el.textContent = msg;
-      el.className = "foot-note " + cls;
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      document.getElementById("tabCourses").classList.toggle("active", id === "coursesScreen");
+      document.getElementById("tabPlayer").classList.toggle("active", id === "playerScreen");
     }
 
-    function renderSwitcher() {
-      const bar = document.getElementById("switcherBar");
-      bar.innerHTML = "";
-      lessonUis.forEach((u, i) => {
-        const b = document.createElement("button");
-        b.className = "w-btn" + (i === activeIdx ? " active" : "");
-        b.textContent = `${i + 1}`;
-        b.title = u.title;
-        b.onclick = () => {
-          activeIdx = i;
-          renderSwitcher();
-          renderLessonUi();
-        };
-        bar.appendChild(b);
-      });
-    }
-
-    function render4Photos(phrase, imgs, correctIdx) {
-      const c = document.getElementById("lessonCanvas");
-      c.innerHTML = `
-        <div class="prompt-strip">
-          <div class="prompt-title">${phrase}</div>
-          <button class="spk-btn" onclick="speak('${phrase.replace(/'/g, "\\'")}')">🔊</button>
-        </div>
-        <div class="grid-4" id="g4"></div>
-      `;
-      const g4 = document.getElementById("g4");
-      let solved = false;
-      imgs.forEach((src, idx) => {
-        const card = document.createElement("div");
-        card.className = "l-card";
-        card.innerHTML = `<img src="${src}" alt="opt">`;
-        card.onclick = () => {
-          if (solved) return;
-          if (idx === correctIdx) {
-            solved = true;
-            card.classList.add("ok");
-            setFb("Correct photo match.", "ok");
-          } else {
-            card.classList.add("err");
-            setFb("Try another image.", "err");
-          }
-        };
-        g4.appendChild(card);
-      });
-    }
-
-    function renderDropdown4(items) {
-      const c = document.getElementById("lessonCanvas");
-      c.innerHTML = `<div class="grid-4" id="gd4"></div>`;
-      const gd4 = document.getElementById("gd4");
-      items.forEach(it => {
-        const card = document.createElement("div");
-        card.className = "l-card";
-        const top = document.createElement("div");
-        top.className = "card-top";
-        const wrap = document.createElement("div");
-        const sel = document.createElement("select");
-        ["", ...it.opts].forEach(o => {
-          const op = document.createElement("option");
-          op.value = o;
-          op.textContent = o || "---";
-          sel.appendChild(op);
-        });
-        sel.onchange = () => {
-          if (!sel.value) { card.classList.remove("ok", "err"); return; }
-          if (sel.value === it.ans) {
-            card.classList.add("ok"); card.classList.remove("err");
-            setFb("Correct word selected.", "ok");
-            speak(it.before + sel.value + it.after);
-          } else {
-            card.classList.add("err"); card.classList.remove("ok");
-            setFb("Check the word choice.", "err");
-          }
-        };
-        wrap.append(it.before, sel, it.after);
-        const spk = document.createElement("button");
-        spk.className = "spk-btn";
-        spk.textContent = "🔊";
-        spk.onclick = (e) => { e.stopPropagation(); speak(it.before + it.ans + it.after); };
-        top.append(wrap, spk);
-        card.append(top);
-        const img = document.createElement("img");
-        img.src = it.img;
-        card.append(img);
-        gd4.appendChild(card);
-      });
-    }
-
-    function renderPairs(pairs) {
-      const c = document.getElementById("lessonCanvas");
-      c.innerHTML = `<div class="grid-2">${pairs.map(p => `
-        <div class="l-card">
-          <div class="card-top">
-            <span>${p.q}</span>
-            <button class="spk-btn" onclick="event.stopPropagation(); speak('${p.q}')">🔊</button>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#ddd;">
-            <img src="${p.i1}" alt="q">
-            <img src="${p.i2}" alt="a">
-          </div>
-          <div class="card-top" style="border-top:1px solid #eceae4;border-bottom:none;">
-            <span>${p.a}</span>
-            <button class="spk-btn" onclick="event.stopPropagation(); speak('${p.a}')">🔊</button>
-          </div>
-        </div>
-      `).join("")}</div>`;
-    }
-
-    function renderLessonUi() {
-      const meta = lessonUis[activeIdx];
-      document.getElementById("lessonUiTitle").textContent = meta.title;
-      document.getElementById("lessonUiDesc").textContent = meta.desc;
-      setFb("");
-      const c = document.getElementById("lessonCanvas");
-
-      switch (activeIdx) {
-        case 0:
-          render4Photos("The boy is drinking water.", [IMG.water, IMG.book, IMG.coffee, IMG.dog], 0);
-          break;
-        case 1:
-          renderDropdown4([
-            { before: "The ", after: " are reading.", opts: ["man", "men"], ans: "men", img: IMG.friends },
-            { before: "The ", after: " is reading.", opts: ["woman", "man"], ans: "woman", img: IMG.book },
-            { before: "A hot ", after: ".", opts: ["coffee", "dog"], ans: "coffee", img: IMG.coffee },
-            { before: "A smiling ", after: ".", opts: ["dog", "cat"], ans: "dog", img: IMG.dog }
-          ]);
-          break;
-        case 2:
-          renderPairs([
-            { q: "How old is he?", a: "He is twelve years old.", i1: IMG.friends, i2: IMG.book },
-            { q: "How old are you?", a: "I am five years old.", i1: IMG.dog, i2: IMG.cat }
-          ]);
-          break;
-        case 3:
-          render4Photos("Hello.", [IMG.friends, IMG.dog, IMG.coffee, IMG.mountain], 0);
-          break;
-        case 4:
-          c.innerHTML = `<div class="single-stage">
-            <div class="card-top"><span>Choose the matching sentence</span><button class="spk-btn" onclick="speak('The dog is smiling.')">🔊</button></div>
-            <img src="${IMG.dog}" alt="dog">
-            <div class="choices-col">
-              ${["The dog is smiling.", "A cup of hot coffee.", "She is reading a book."].map((txt, i) =>
-                `<button class="choice-btn" onclick="setFb('${i === 0 ? "Correct." : "Try again."}', '${i === 0 ? "ok" : "err"}')">${txt}</button>`
-              ).join("")}
-            </div>
-          </div>`;
-          break;
-        case 5:
-          c.innerHTML = `<div class="single-stage">
-            <div class="card-top">
-              <div>A cup of hot <input id="fillInp" placeholder="..." />.</div>
-              <button class="spk-btn" onclick="speak('A cup of hot coffee.')">🔊</button>
-            </div>
-            <img src="${IMG.coffee}" alt="coffee">
-          </div>`;
-          document.getElementById("fillInp").oninput = (e) => {
-            const ok = e.target.value.trim().toLowerCase() === "coffee";
-            setFb(ok ? "Correct word: coffee" : "", ok ? "ok" : "");
-          };
-          break;
-        case 6:
-          c.innerHTML = `<div class="prompt-strip"><div class="prompt-title">Outdoor mountain vs. Indoor book</div><button class="spk-btn" onclick="speak('Outdoor mountain')">🔊</button></div>
-            <div class="grid-2">
-              <div class="l-card" onclick="this.classList.add('ok');setFb('Selected outdoor scene.','ok')"><img src="${IMG.mountain}" alt="m"></div>
-              <div class="l-card" onclick="this.classList.add('err');setFb('Try the outdoor scene.','err')"><img src="${IMG.book}" alt="b"></div>
-            </div>`;
-          break;
-        case 7:
-          c.innerHTML = `<div class="grid-3">${[IMG.water, IMG.book, IMG.coffee, IMG.dog, IMG.cat, IMG.bread].map((src, i) =>
-            `<div class="l-card" onclick="this.classList.toggle('ok');setFb('Item ${i + 1} selected.','ok')"><img src="${src}" alt="item"></div>`
-          ).join("")}</div>`;
-          break;
-        case 8:
-          render4Photos("Listen and pick the book.", [IMG.cat, IMG.book, IMG.bread, IMG.mountain], 1);
-          break;
-        case 9:
-          renderDropdown4([
-            { before: "She ", after: " a book.", opts: ["reads", "read"], ans: "reads", img: IMG.book },
-            { before: "They ", after: " bread.", opts: ["eat", "eats"], ans: "eat", img: IMG.bread },
-            { before: "He ", after: " water.", opts: ["drinks", "drink"], ans: "drinks", img: IMG.water },
-            { before: "We ", after: " coffee.", opts: ["drink", "drinks"], ans: "drink", img: IMG.coffee }
-          ]);
-          break;
-        case 10:
-          renderPairs([
-            { q: "One cup.", a: "Two cups.", i1: IMG.coffee, i2: IMG.water },
-            { q: "One dog.", a: "One cat.", i1: IMG.dog, i2: IMG.cat }
-          ]);
-          break;
-        case 11:
-          render4Photos("Fresh bread on the table.", [IMG.bread, IMG.dog, IMG.book, IMG.cat], 0);
-          break;
-        case 12:
-          c.innerHTML = `<div class="grid-2">
-            <div class="l-card"><div class="card-top"><span>Outside</span></div><img src="${IMG.mountain}" alt="out"></div>
-            <div class="l-card"><div class="card-top"><span>Inside</span></div><img src="${IMG.book}" alt="in"></div>
-          </div>`;
-          break;
-        case 13:
-          c.innerHTML = `<div class="single-stage">
-            <div class="card-top"><span>The boy is drinking <input id="s13" placeholder="..." />.</span></div>
-            <img src="${IMG.water}" alt="water">
-          </div>`;
-          document.getElementById("s13").oninput = (e) => {
-            if (e.target.value.trim().toLowerCase() === "water") setFb("Correct!", "ok");
-          };
-          break;
-        case 14:
-          c.innerHTML = `<div class="single-stage">
-            <div class="card-top"><span id="chipTarget">She is ___ a book.</span></div>
-            <img src="${IMG.book}" alt="read">
-            <div class="choices-col" style="grid-template-columns:repeat(3,1fr);">
-              ${["reading", "running", "cooking"].map(w =>
-                `<button class="choice-btn" onclick="document.getElementById('chipTarget').textContent='She is '+this.textContent+' a book.';setFb(this.textContent==='reading'?'Correct!':'Try reading',this.textContent==='reading'?'ok':'err')">${w}</button>`
-              ).join("")}
-            </div>
-          </div>`;
-          break;
-        case 15:
-          render4Photos("The cat is resting.", [IMG.dog, IMG.cat, IMG.bread, IMG.water], 1);
-          break;
-        case 16:
-          renderPairs([
-            { q: "Hello!", a: "Goodbye!", i1: IMG.friends, i2: IMG.mountain }
-          ]);
-          break;
-        case 17:
-          renderDropdown4([
-            { before: "One ", after: ".", opts: ["dog", "dogs"], ans: "dog", img: IMG.dog },
-            { before: "Many ", after: ".", opts: ["friends", "friend"], ans: "friends", img: IMG.friends },
-            { before: "One ", after: ".", opts: ["book", "books"], ans: "book", img: IMG.book },
-            { before: "One ", after: ".", opts: ["cat", "cats"], ans: "cat", img: IMG.cat }
-          ]);
-          break;
-        case 18:
-          render4Photos("She is reading a book.", [IMG.coffee, IMG.dog, IMG.book, IMG.water], 2);
-          break;
-        case 19:
-          c.innerHTML = `<div class="grid-4">${[
-            { t: "Water", i: IMG.water },
-            { t: "Book", i: IMG.book },
-            { t: "Coffee", i: IMG.coffee },
-            { t: "Dog", i: IMG.dog }
-          ].map(x => `<div class="l-card" onclick="speak('${x.t}');setFb('Spoken: ${x.t}','ok')"><div class="card-top"><span>${x.t}</span><button class="spk-btn">🔊</button></div><img src="${x.i}" alt="${x.t}"></div>`).join("")}</div>`;
-          break;
+    function populateUnits() {
+      const sel = document.getElementById("unitSelect");
+      for (let u = 1; u <= 10; u++) {
+        const op = document.createElement("option");
+        op.value = String(u);
+        op.textContent = `Unit ${u}`;
+        sel.appendChild(op);
       }
     }
 
-    renderSwitcher();
-    renderLessonUi();
+    function renderLessons() {
+      const uVal = document.getElementById("unitSelect").value;
+      const fVal = document.getElementById("filterSelect").value;
+      const grid = document.getElementById("lessonsGrid");
+      grid.innerHTML = "";
+
+      const dueCount = lessons.filter(l => isDue(l.id)).length;
+      document.getElementById("dueCounter").textContent = String(dueCount);
+
+      lessons.forEach((l, idx) => {
+        if (uVal !== "all" && String(l.unitNum) !== uVal) return;
+        const due = isDue(l.id);
+        const reviewed = (srs[l.id]?.reps || 0) > 0 && !due;
+        if (fVal === "due" && !due) return;
+        if (fVal === "done" && !reviewed) return;
+
+        const tile = document.createElement("div");
+        tile.className = "l-tile" + (reviewed ? " done" : due ? " due" : "");
+        tile.innerHTML = `
+          <div class="l-top">
+            <span>${l.unitTitle}</span>
+            <span>${due ? "Due Now" : `Reps: ${srs[l.id]?.reps || 0}`}</span>
+          </div>
+          <div>
+            <h3>${l.title}</h3>
+            <p>${l.steps.length} integrated views</p>
+          </div>
+          <button class="btn-gold" onclick="openLesson(${idx})">Start ▶</button>
+        `;
+        grid.appendChild(tile);
+      });
+    }
+
+    function openLesson(idx) {
+      curLesson = idx;
+      curStep = 0;
+      showScreen("playerScreen");
+      renderStep();
+    }
+
+    function renderDots() {
+      const dots = document.getElementById("stepDots");
+      dots.innerHTML = "";
+      lessons[curLesson].steps.forEach((_, i) => {
+        const b = document.createElement("button");
+        b.className = "s-dot" + (i === curStep ? " cur" : "");
+        b.textContent = String(i + 1);
+        b.onclick = () => { curStep = i; renderStep(); };
+        dots.appendChild(b);
+      });
+    }
+
+    function setFb(msg, cls = "") {
+      const el = document.getElementById("fbBox");
+      el.textContent = msg;
+      el.className = "fb " + cls;
+    }
+
+    function renderStep() {
+      stepSolved = false;
+      renderDots();
+      setFb("");
+
+      const step = lessons[curLesson].steps[curStep];
+      document.getElementById("promptTxt").textContent = step.prompt;
+      document.getElementById("mainSpk").onclick = () => speak(step.speak);
+
+      const area = document.getElementById("stageArea");
+      area.innerHTML = "";
+
+      if (step.uiType === "photo_4") {
+        const g = document.createElement("div");
+        g.className = "grid-4";
+        step.images.forEach((src, i) => {
+          const card = document.createElement("div");
+          card.className = "ex-card";
+          card.innerHTML = `<img src="${src}" alt="opt">`;
+          card.onclick = () => {
+            if (stepSolved) return;
+            if (i === step.correct) {
+              stepSolved = true;
+              card.classList.add("ok");
+              setFb("Correct match.", "ok");
+            } else {
+              card.classList.add("err");
+              setFb("Try another image.", "err");
+            }
+          };
+          g.appendChild(card);
+        });
+        area.appendChild(g);
+        speak(step.speak);
+      } else if (step.uiType === "dropdown_2") {
+        const g = document.createElement("div");
+        g.className = "grid-2";
+        const refs = [];
+
+        const check = () => {
+          let allPicked = true;
+          let allOk = true;
+          refs.forEach(({ card, sel, ans }) => {
+            if (!sel.value) { allPicked = false; card.classList.remove("ok", "err"); }
+            else if (sel.value === ans) { card.classList.add("ok"); card.classList.remove("err"); }
+            else { allOk = false; card.classList.add("err"); card.classList.remove("ok"); }
+          });
+          if (allPicked && allOk) {
+            stepSolved = true;
+            setFb("All words match.", "ok");
+          }
+        };
+
+        step.items.forEach(it => {
+          const card = document.createElement("div");
+          card.className = "ex-card";
+          const head = document.createElement("div");
+          head.className = "card-head";
+          const wrap = document.createElement("div");
+          const sel = document.createElement("select");
+          it.options.forEach(o => {
+            const op = document.createElement("option");
+            op.value = o;
+            op.textContent = o || "---";
+            sel.appendChild(op);
+          });
+          sel.onchange = () => {
+            if (sel.value) speak(it.before + sel.value + it.after);
+            check();
+          };
+          wrap.append(it.before, sel, it.after);
+          const spk = document.createElement("button");
+          spk.className = "spk-btn";
+          spk.textContent = "🔊";
+          spk.onclick = (e) => { e.stopPropagation(); speak(it.before + it.answer + it.after); };
+          head.append(wrap, spk);
+          const img = document.createElement("img");
+          img.src = it.img;
+          card.append(head, img);
+          g.appendChild(card);
+          refs.push({ card, sel, ans: it.answer });
+        });
+        area.appendChild(g);
+      } else if (step.uiType === "photo_choice_text") {
+        const box = document.createElement("div");
+        box.className = "single-box";
+        box.innerHTML = `<img src="${step.image}" alt="scene"><div class="choices-list" id="chList"></div>`;
+        area.appendChild(box);
+        const list = document.getElementById("chList");
+        step.choices.forEach((txt, i) => {
+          const b = document.createElement("button");
+          b.className = "opt-btn";
+          b.textContent = txt;
+          b.onclick = () => {
+            if (stepSolved) return;
+            if (i === step.correct) {
+              stepSolved = true;
+              b.style.borderColor = "var(--green)";
+              b.style.background = "var(--green-light)";
+              setFb("Correct sentence.", "ok");
+            } else {
+              b.style.borderColor = "var(--red)";
+              b.style.background = "var(--red-light)";
+              setFb("Try another sentence.", "err");
+            }
+          };
+          list.appendChild(b);
+        });
+      }
+    }
+
+    function nextStep() {
+      const lesson = lessons[curLesson];
+      if (!stepSolved) {
+        recordSrs(lesson.id, false);
+        setFb("Complete the current step first.", "err");
+        return;
+      }
+      if (curStep + 1 < lesson.steps.length) {
+        curStep++;
+        renderStep();
+      } else {
+        recordSrs(lesson.id, true);
+        renderLessons();
+        showScreen("coursesScreen");
+      }
+    }
+
+    populateUnits();
+    renderLessons();
   </script>
 </body>
 </html>
