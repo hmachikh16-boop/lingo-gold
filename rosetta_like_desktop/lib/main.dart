@@ -151,10 +151,19 @@ List<String> gridForStep(int step) {
   return List<String>.from(set)..shuffle(Random(step + 37));
 }
 
-enum AppScreen { course, lesson, context, assetLab }
+enum AppScreen { course, lesson, context, assetLab, read, write, listen, speak }
 
-class ReplicaApp extends StatelessWidget {
+class ReplicaApp extends StatefulWidget {
   const ReplicaApp({super.key});
+
+  @override
+  State<ReplicaApp> createState() => _ReplicaAppState();
+}
+
+class _ReplicaAppState extends State<ReplicaApp> {
+  bool _classic = false;
+
+  void _toggleTheme() => setState(() => _classic = !_classic);
 
   @override
   Widget build(BuildContext context) {
@@ -169,15 +178,17 @@ class ReplicaApp extends StatelessWidget {
               fontFamilyFallback: const ['Cairo'],
             ),
         colorScheme: ColorScheme.fromSeed(seedColor: kGreen, primary: kGreen),
-        scaffoldBackgroundColor: kCanvas,
+        scaffoldBackgroundColor: _classic ? const Color(0xFFE8E6DE) : kCanvas,
       ),
-      home: const ReplicaShell(),
+      home: ReplicaShell(classic: _classic, onToggleTheme: _toggleTheme),
     );
   }
 }
 
 class ReplicaShell extends StatefulWidget {
-  const ReplicaShell({super.key});
+  final bool classic;
+  final VoidCallback onToggleTheme;
+  const ReplicaShell({super.key, required this.classic, required this.onToggleTheme});
 
   @override
   State<ReplicaShell> createState() => _ReplicaShellState();
@@ -191,6 +202,10 @@ class _ReplicaShellState extends State<ReplicaShell> {
     if (value == 'lesson') return AppScreen.lesson;
     if (value == 'context') return AppScreen.context;
     if (value == 'asset') return AppScreen.assetLab;
+    if (value == 'read') return AppScreen.read;
+    if (value == 'write') return AppScreen.write;
+    if (value == 'listen') return AppScreen.listen;
+    if (value == 'speak') return AppScreen.speak;
     return AppScreen.course;
   }
   int _step = 0;
@@ -267,21 +282,28 @@ class _ReplicaShellState extends State<ReplicaShell> {
 
   @override
   Widget build(BuildContext context) {
+    final breadcrumb = switch (_screen) {
+      AppScreen.course => 'Language Basics',
+      AppScreen.lesson => 'Unit 1  >  Lesson 4  >  Core Lesson',
+      AppScreen.assetLab => 'Asset Lab  >  Structure',
+      AppScreen.read => 'Unit 1  >  Lesson 4  >  Read',
+      AppScreen.write => 'Unit 1  >  Lesson 4  >  Write',
+      AppScreen.listen => 'Unit 1  >  Lesson 4  >  Listen',
+      AppScreen.speak => 'Unit 1  >  Lesson 4  >  Speak',
+      _ => 'Unit 1  >  Lesson 4  >  Pronunciation',
+    };
+
     return Scaffold(
-      backgroundColor: kCanvas,
+      backgroundColor: widget.classic ? const Color(0xFFE8E6DE) : kCanvas,
       body: Column(
         children: [
           _Header(
-            breadcrumb: _screen == AppScreen.course
-                ? 'Language Basics'
-                : _screen == AppScreen.lesson
-                    ? 'Unit 1  >  Lesson 4  >  Core Lesson'
-                    : _screen == AppScreen.assetLab
-                        ? 'Asset Lab  >  Structure'
-                        : 'Unit 1  >  Lesson 4  >  Pronunciation',
+            breadcrumb: breadcrumb,
             onHome: _openCourse,
             xp: _xp,
             stars: _stars,
+            classic: widget.classic,
+            onToggle: widget.onToggleTheme,
           ),
           Expanded(
             child: _screen == AppScreen.course
@@ -289,8 +311,10 @@ class _ReplicaShellState extends State<ReplicaShell> {
                     onStart: _openLesson,
                     onContext: _openContext,
                     onAssetLab: () => setState(() => _screen = AppScreen.assetLab),
+                    onActivity: (kind) => setState(() => _screen = kind),
                     xp: _xp,
                     stars: _stars,
+                    classic: widget.classic,
                   )
                 : _screen == AppScreen.lesson
                     ? LessonScreen(
@@ -308,16 +332,21 @@ class _ReplicaShellState extends State<ReplicaShell> {
                       )
                     : _screen == AppScreen.assetLab
                         ? AssetLabScreen(onHome: _openCourse)
-                        : ContextScreen(
-                        onHome: _openCourse,
-                        onLesson: _openLesson,
-                        onXp: (amount) {
-                          setState(() {
-                            _xp += amount;
-                            saveProgress(_xp, _stars);
-                          });
-                        },
-                      ),
+                        : (_screen == AppScreen.read ||
+                                _screen == AppScreen.write ||
+                                _screen == AppScreen.listen ||
+                                _screen == AppScreen.speak)
+                            ? ActivityScreen(kind: _screen, onHome: _openCourse)
+                            : ContextScreen(
+                                onHome: _openCourse,
+                                onLesson: _openLesson,
+                                onXp: (amount) {
+                                  setState(() {
+                                    _xp += amount;
+                                    saveProgress(_xp, _stars);
+                                  });
+                                },
+                              ),
           ),
         ],
       ),
@@ -330,13 +359,22 @@ class _Header extends StatelessWidget {
   final VoidCallback onHome;
   final int xp;
   final int stars;
-  const _Header({required this.breadcrumb, required this.onHome, required this.xp, required this.stars});
+  final bool classic;
+  final VoidCallback onToggle;
+  const _Header({
+    required this.breadcrumb,
+    required this.onHome,
+    required this.xp,
+    required this.stars,
+    required this.classic,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 52,
-      color: kGreenDark,
+      color: classic ? const Color(0xFF1F2328) : kGreenDark,
       child: Row(
         children: [
           Container(
@@ -378,6 +416,11 @@ class _Header extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 10),
+          IconButton(
+            icon: Icon(classic ? Icons.light_mode_rounded : Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+            tooltip: classic ? 'Green theme' : 'Original-style theme',
+            onPressed: onToggle,
+          ),
           IconButton(
             icon: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 20),
             onPressed: () {},
@@ -699,9 +742,20 @@ class CourseMap extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onContext;
   final VoidCallback onAssetLab;
+  final ValueChanged<AppScreen> onActivity;
   final int xp;
   final int stars;
-  const CourseMap({super.key, required this.onStart, required this.onContext, required this.onAssetLab, required this.xp, required this.stars});
+  final bool classic;
+  const CourseMap({
+    super.key,
+    required this.onStart,
+    required this.onContext,
+    required this.onAssetLab,
+    required this.onActivity,
+    required this.xp,
+    required this.stars,
+    required this.classic,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -812,6 +866,18 @@ class CourseMap extends StatelessWidget {
             onPressed: onContext,
             icon: const Icon(Icons.volume_up_rounded, color: kGreenDark),
             label: const Text('Explore all activities for Unit 1', style: TextStyle(color: kGreenDark, fontWeight: FontWeight.w800)),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Center(
+          child: Wrap(
+            spacing: 8,
+            children: [
+              _ActivityChip(label: 'Read', icon: Icons.menu_book_rounded, onTap: () => onActivity(AppScreen.read)),
+              _ActivityChip(label: 'Write', icon: Icons.edit_rounded, onTap: () => onActivity(AppScreen.write)),
+              _ActivityChip(label: 'Listen', icon: Icons.hearing_rounded, onTap: () => onActivity(AppScreen.listen)),
+              _ActivityChip(label: 'Speak', icon: Icons.mic_rounded, onTap: () => onActivity(AppScreen.speak)),
+            ],
           ),
         ),
         const SizedBox(height: 6),
@@ -1300,3 +1366,209 @@ class _StatCard extends StatelessWidget {
         ),
       );
 }
+
+class _ActivityChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ActivityChip({required this.label, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => ActionChip(
+        backgroundColor: Colors.white,
+        side: const BorderSide(color: kLine),
+        onPressed: onTap,
+        avatar: Icon(icon, color: kGreen, size: 17),
+        label: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kInk)),
+      );
+}
+
+/// Read / Write / Listen / Speak activities in the same visual language.
+class ActivityScreen extends StatefulWidget {
+  final AppScreen kind;
+  final VoidCallback onHome;
+  const ActivityScreen({super.key, required this.kind, required this.onHome});
+
+  @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
+}
+
+class _ActivityScreenState extends State<ActivityScreen> {
+  final _controller = TextEditingController();
+  int? _selected;
+  bool _checked = false;
+  bool _correct = false;
+  bool _listening = false;
+  int? _score;
+
+  static const item = PhotoPrompt('a dog', 'L153_the_dog.jpg');
+  static const choices = <String>[
+    'L153_the_dog.jpg',
+    'L152_the_cat.jpg',
+    'L220_a_red_car.jpg',
+    'L223_bicycle.jpg',
+  ];
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _speakCheck() async {
+    if (_listening) return;
+    if (!startListening()) return;
+    setState(() => _listening = true);
+    await Future<void>.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+    final heard = heardText();
+    setState(() {
+      _listening = false;
+      _score = heard.isEmpty ? 0 : simpleScore(item.phrase, heard);
+    });
+    if ((_score ?? 0) >= 70) playTone(5);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = switch (widget.kind) {
+      AppScreen.read => 'Read',
+      AppScreen.write => 'Write',
+      AppScreen.listen => 'Listen',
+      _ => 'Speak',
+    };
+    return Column(
+      children: [
+        const SizedBox(height: 30),
+        Center(
+          child: Container(
+            width: 520,
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: kLine)),
+            child: Row(
+              children: [
+                Expanded(child: Text(title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: kInk))),
+                GestureDetector(
+                  onTap: () => speak(item.phrase),
+                  child: const Icon(Icons.volume_up_rounded, color: kGreen, size: 24),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Expanded(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 760),
+              child: ListView(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SizedBox(height: 260, width: double.infinity, child: Image.asset('assets/images/${item.image}', fit: BoxFit.cover)),
+                  ),
+                  const SizedBox(height: 16),
+                  if (widget.kind == AppScreen.read) ...[
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: kLine)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.phrase, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: kInk)),
+                          const SizedBox(height: 8),
+                          const Text('Look at the photo and listen. Then say the phrase out loud.', style: TextStyle(fontSize: 13, color: kMuted, height: 1.5)),
+                        ],
+                      ),
+                    ),
+                  ] else if (widget.kind == AppScreen.write) ...[
+                    TextField(
+                      controller: _controller,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        hintText: 'Type the phrase…',
+                        filled: true,
+                        fillColor: kGreenSoft,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kGreen)),
+                      ),
+                    ),
+                    if (_checked)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                          _correct ? 'Correct!' : 'Correct phrase: ${item.phrase}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.w900, color: kGreenDark),
+                        ),
+                      ),
+                  ] else if (widget.kind == AppScreen.listen) ...[
+                    const Text('Choose the photo you hear:', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kInk)),
+                    const SizedBox(height: 12),
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      children: [
+                        for (var i = 0; i < choices.length; i++)
+                          GestureDetector(
+                            onTap: _checked ? null : () => setState(() => _selected = i),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: _checked && i == 0 ? kGreen : (_selected == i ? kGreen : kLine),
+                                    width: _selected == i || (_checked && i == 0) ? 3 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Image.asset('assets/images/${choices[i]}', fit: BoxFit.cover),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ] else ...[
+                    Text('“${item.phrase}”', textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kInk)),
+                    const SizedBox(height: 12),
+                    Text(_score == null ? 'Score —' : 'Score $_score%', textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kGreenDark)),
+                  ],
+                  const SizedBox(height: 18),
+                  Center(
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        if (widget.kind == AppScreen.write) {
+                          playTone(3);
+                          setState(() {
+                            _checked = true;
+                            _correct = _normalize(_controller.text) == _normalize(item.phrase);
+                          });
+                        } else if (widget.kind == AppScreen.listen) {
+                          if (_selected == null) return;
+                          playTone(_selected == 0 ? 1 : 2);
+                          setState(() => _checked = true);
+                        } else if (widget.kind == AppScreen.speak) {
+                          _speakCheck();
+                        } else {
+                          playTone(3);
+                          speak(item.phrase);
+                        }
+                      },
+                      icon: const Icon(Icons.arrow_forward_rounded),
+                      label: Text(widget.kind == AppScreen.speak ? 'Check pronunciation' : 'Continue'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        _StepBar(step: 3, right: _selected == 0 || _correct ? 1 : 0, wrong: _selected != null && _selected != 0 ? 1 : 0, onCheck: null, onHome: widget.onHome),
+      ],
+    );
+  }
+}
+
+String _normalize(String v) => v.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
