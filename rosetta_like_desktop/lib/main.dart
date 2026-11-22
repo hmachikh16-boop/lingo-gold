@@ -32,25 +32,54 @@ class PhotoPrompt {
   const PhotoPrompt(this.phrase, this.image);
 }
 
-const prompts = <PhotoPrompt>[
-  PhotoPrompt('one apple', 'num_01.jpg'),
-  PhotoPrompt('two apples', 'num_02.jpg'),
-  PhotoPrompt('three apples', 'num_03.jpg'),
-  PhotoPrompt('four apples', 'num_04.jpg'),
-  PhotoPrompt('five apples', 'num_05.jpg'),
-  PhotoPrompt('six apples', 'num_06.jpg'),
-  PhotoPrompt('a dog', 'L153_the_dog.jpg'),
-  PhotoPrompt('a cat', 'L152_the_cat.jpg'),
-  PhotoPrompt('a pen', 'L165_a_blue_pen.jpg'),
-  PhotoPrompt('a car', 'L220_a_red_car.jpg'),
-  PhotoPrompt('a bicycle', 'L223_bicycle.jpg'),
-  PhotoPrompt('an egg', 'L169_a_brown_egg.jpg'),
+/// In the reference course a lesson reuses the SAME six photos across its
+/// steps, only shuffling their order. We reproduce that methodology with our
+/// own photos, grouped into three six-photo sets.
+const photoSets = <List<String>>[
+  [
+    'L153_the_dog.jpg', 'L152_the_cat.jpg', 'L165_a_blue_pen.jpg',
+    'L220_a_red_car.jpg', 'L223_bicycle.jpg', 'L169_a_brown_egg.jpg',
+  ],
+  [
+    'num_01.jpg', 'num_02.jpg', 'num_03.jpg',
+    'num_04.jpg', 'num_05.jpg', 'num_06.jpg',
+  ],
+  [
+    'L148_schoolboy.jpg', 'L149_schoolgirl.jpg', 'L164_a_green_book.jpg',
+    'fox.jpg', 'cat_sleeping_window.jpg', 'market_morning.jpg',
+  ],
 ];
 
-List<String> gridFor(int step, String correct) {
-  final others = photoPool.where((p) => p != correct).toList()..shuffle(Random(step + 7));
-  final chosen = <String>[correct, ...others.take(5)];
-  return chosen..shuffle(Random(step + 19));
+const phraseFor = <String, String>{
+  'num_01.jpg': 'one apple',
+  'num_02.jpg': 'two apples',
+  'num_03.jpg': 'three apples',
+  'num_04.jpg': 'four apples',
+  'num_05.jpg': 'five apples',
+  'num_06.jpg': 'six apples',
+  'L153_the_dog.jpg': 'a dog',
+  'L152_the_cat.jpg': 'a cat',
+  'L165_a_blue_pen.jpg': 'a pen',
+  'L220_a_red_car.jpg': 'a car',
+  'L223_bicycle.jpg': 'a bicycle',
+  'L169_a_brown_egg.jpg': 'an egg',
+  'L148_schoolboy.jpg': 'a schoolboy',
+  'L149_schoolgirl.jpg': 'a schoolgirl',
+  'L164_a_green_book.jpg': 'a book',
+  'fox.jpg': 'a fox',
+  'cat_sleeping_window.jpg': 'a sleeping cat',
+  'market_morning.jpg': 'a market',
+};
+
+PhotoPrompt promptForStep(int step) {
+  final set = photoSets[min(step ~/ 13, photoSets.length - 1)];
+  final correct = set[step % set.length];
+  return PhotoPrompt(phraseFor[correct] ?? 'a photo', correct);
+}
+
+List<String> gridForStep(int step) {
+  final set = photoSets[min(step ~/ 13, photoSets.length - 1)];
+  return List<String>.from(set)..shuffle(Random(step + 37));
 }
 
 enum AppScreen { course, lesson, context }
@@ -119,7 +148,7 @@ class _ReplicaShellState extends State<ReplicaShell> {
   void _openContext() => setState(() => _screen = AppScreen.context);
 
   void _checkAnswer(String correctImage) {
-    final correct = _selected != null && gridFor(_step, correctImage)[_selected!] == correctImage;
+    final correct = _selected != null && gridForStep(_step)[_selected!] == correctImage;
     setState(() {
       _checked = true;
       _lastCorrect = correct;
@@ -263,8 +292,8 @@ class LessonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prompt = prompts[step % prompts.length];
-    final images = gridFor(step, prompt.image);
+    final prompt = promptForStep(step);
+    final images = gridForStep(step);
     return Column(
       children: [
         const SizedBox(height: 18),
@@ -524,7 +553,17 @@ class CourseMap extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 18),
-        const Text('Language Basics', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: kInk)),
+        Row(
+          children: [
+            const Text('Language Basics', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: kInk)),
+            const SizedBox(width: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: kGreenSoft, borderRadius: BorderRadius.circular(14)),
+              child: Text('${photoPool.length} local photos', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: kGreenDark)),
+            ),
+          ],
+        ),
         const SizedBox(height: 18),
         _Path(onStart: onStart),
         const SizedBox(height: 26),
@@ -687,23 +726,66 @@ class _Diamond extends StatelessWidget {
       );
 }
 
-class ContextScreen extends StatelessWidget {
+class ContextScreen extends StatefulWidget {
   final VoidCallback onHome;
   final VoidCallback onLesson;
   const ContextScreen({super.key, required this.onHome, required this.onLesson});
 
   @override
+  State<ContextScreen> createState() => _ContextScreenState();
+}
+
+class _ContextScreenState extends State<ContextScreen> {
+  int _right = 0;
+  int _wrong = 0;
+  int? _selected;
+  bool _checked = false;
+
+  void _choose(bool correct) {
+    setState(() {
+      _selected = correct ? 0 : 1;
+      _checked = true;
+      if (correct) {
+        _right++;
+      } else {
+        _wrong++;
+      }
+    });
+  }
+
+  void _retry() {
+    setState(() {
+      _right = 0;
+      _wrong = 0;
+      _selected = null;
+      _checked = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 60),
+        const SizedBox(height: 46),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 60),
           child: Row(
             children: [
-              _ContextCard(image: 'img_girl_child.jpg', phrase: 'Hello.', correct: true, onHome: onHome),
+              _ContextCard(
+                image: 'img_girl_child.jpg',
+                phrase: 'Hello.',
+                selected: _selected == 0,
+                showCorrect: _checked && _selected == 0,
+                onTap: () => _choose(true),
+              ),
               const SizedBox(width: 16),
-              _ContextCard(image: 'L152_the_cat.jpg', phrase: 'Hello.', correct: false, onHome: onHome),
+              _ContextCard(
+                image: 'L152_the_cat.jpg',
+                phrase: 'Hello.',
+                selected: _selected == 1,
+                showCorrect: false,
+                onTap: () => _choose(false),
+              ),
             ],
           ),
         ),
@@ -716,15 +798,15 @@ class ContextScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.check_rounded, color: kGreen, size: 22),
-                const Text('1', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kGreen)),
+                Text('$_right', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kGreen)),
                 const SizedBox(width: 12),
                 Container(width: 1, height: 26, color: kLine),
                 const SizedBox(width: 12),
                 const Icon(Icons.close_rounded, color: kMuted, size: 22),
-                const Text('0', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kMuted)),
+                Text('$_wrong', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kMuted)),
                 const SizedBox(width: 16),
                 FilledButton.icon(
-                  onPressed: onLesson,
+                  onPressed: _retry,
                   icon: const Icon(Icons.replay_rounded, size: 17),
                   label: const Text('Try again'),
                   style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), minimumSize: const Size(0, 40)),
@@ -734,7 +816,7 @@ class ContextScreen extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        _StepBar(step: 3, right: 1, wrong: 0, onCheck: null, onHome: onHome),
+        _StepBar(step: 3, right: _right, wrong: _wrong, onCheck: null, onHome: widget.onHome),
       ],
     );
   }
@@ -743,33 +825,50 @@ class ContextScreen extends StatelessWidget {
 class _ContextCard extends StatelessWidget {
   final String image;
   final String phrase;
-  final bool correct;
-  final VoidCallback onHome;
-  const _ContextCard({required this.image, required this.phrase, required this.correct, required this.onHome});
+  final bool selected;
+  final bool showCorrect;
+  final VoidCallback onTap;
+  const _ContextCard({
+    required this.image,
+    required this.phrase,
+    required this.selected,
+    required this.showCorrect,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) => Expanded(
-        child: Container(
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: kLine)),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Row(
-                  children: [
-                    Expanded(child: Text(phrase, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: kInk))),
-                    GestureDetector(
-                      onTap: () => speak(phrase),
-                      child: const Icon(Icons.volume_up_rounded, color: kGreen, size: 24),
-                    ),
-                  ],
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: showCorrect || selected ? kGreen : kLine,
+                width: showCorrect || selected ? 4 : 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(phrase, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: kInk))),
+                      GestureDetector(
+                        onTap: () => speak(phrase),
+                        child: const Icon(Icons.volume_up_rounded, color: kGreen, size: 24),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: 330,
-                child: Image.asset('assets/images/$image', fit: BoxFit.cover, width: double.infinity),
-              ),
-            ],
+                SizedBox(
+                  height: 330,
+                  child: Image.asset('assets/images/$image', fit: BoxFit.cover, width: double.infinity),
+                ),
+              ],
+            ),
           ),
         ),
       );
