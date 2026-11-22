@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Immersion Method - 100 Progressive Lessons</title>
+  <title>Immersion English From Scratch - Course, UIs & SRS</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
       --bar: #1a1c20;
-      --bg: #e2dfd7;
+      --bg-top: #e3e0d8;
       --bg-bot: #cbc7bd;
       --card: #ffffff;
       --ink: #22252a;
@@ -23,21 +23,23 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
     body {
-      background: radial-gradient(circle at 50% 25%, var(--bg), var(--bg-bot));
+      background: radial-gradient(circle at 50% 25%, var(--bg-top), var(--bg-bot));
       color: var(--ink);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* Top Bar */
     .topbar {
-      background: var(--bar); color: #fff; padding: 9px 18px;
+      background: var(--bar); color: #fff; padding: 10px 18px;
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #000;
     }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
     .badge { background: var(--gold); color: #111; padding: 3px 9px; border-radius: 3px; font-size: 12px; font-weight: 800; }
     .crumb { font-size: 12px; color: #cbd5e1; font-weight: 600; }
+
     .nav-actions { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
     .nav-btn {
       background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);
@@ -45,10 +47,12 @@
     }
     .nav-btn.active, .nav-btn:hover { background: var(--gold); color: #111; border-color: var(--gold); }
 
-    .workspace { flex: 1; max-width: 1040px; width: 100%; margin: 0 auto; padding: 16px 20px; display: flex; flex-direction: column; }
+    /* Workspace */
+    .wrap { flex: 1; max-width: 1040px; width: 100%; margin: 0 auto; padding: 16px 20px; display: flex; flex-direction: column; }
     .screen { display: none; flex-direction: column; justify-content: space-between; gap: 18px; flex: 1; }
     .screen.active { display: flex; }
 
+    /* Units & Classic Path */
     .unit-strip {
       width: 100%; display: grid; grid-template-columns: repeat(4, 1fr);
       background: #4e4942; border-radius: 6px; overflow: hidden;
@@ -61,7 +65,7 @@
     .unit-tab.active { background: #f4f2ec; color: #111; }
 
     .core-banner {
-      background: rgba(255,255,255,0.8); border: 1px solid #b5b0a4; border-radius: 6px;
+      background: rgba(255,255,255,0.82); border: 1px solid #b5b0a4; border-radius: 6px;
       padding: 16px 22px; max-width: 760px; width: 100%; margin: 0 auto;
       display: flex; justify-content: space-between; align-items: center; gap: 16px;
       box-shadow: 0 6px 16px rgba(0,0,0,0.08);
@@ -106,6 +110,7 @@
     .polaroid:hover { transform: scale(1.07) rotate(0deg) !important; z-index: 5; }
     .polaroid img { width: 118px; height: 90px; object-fit: cover; display: block; }
 
+    /* 100 Lessons Grid */
     .filter-bar {
       background: var(--card); border-radius: 8px; padding: 12px 16px;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
@@ -126,6 +131,7 @@
       padding: 6px 11px; font-weight: 800; font-size: 12px; cursor: pointer;
     }
 
+    /* Exercise Stage */
     .player-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .step-dots { display: flex; gap: 6px; flex-wrap: wrap; }
     .s-dot {
@@ -161,7 +167,7 @@
     }
     .card-head select, .card-head input {
       padding: 4px 8px; font-size: 15px; font-weight: 700;
-      border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb; width: 120px; text-align: center;
+      border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb; width: 130px; text-align: center;
     }
 
     .speak-stage {
@@ -186,12 +192,6 @@
       max-width: 680px; width: 100%; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
     .single-box img { width: 100%; height: 215px; object-fit: cover; display: block; }
-    .chips-wrap { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; }
-    .chip-btn {
-      padding: 8px 14px; border-radius: 99px; border: 1.5px solid #c5cbd3;
-      background: #fff; font-weight: 700; cursor: pointer;
-    }
-    .chip-btn.picked { background: var(--gold); border-color: var(--gold-dark); color: #111; }
 
     .foot-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; min-height: 42px; }
     .fb { font-weight: 700; font-size: 14px; }
@@ -211,9 +211,9 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="badge">IMMERSION</span>
-      <span>Progressive Course</span>
-      <span class="crumb" id="crumbLabel">Unit 1 &gt; Nouns &amp; Actions</span>
+      <span class="badge">ENGLISH L1</span>
+      <span>Immersion From Scratch</span>
+      <span class="crumb" id="crumbLabel">Unit 1 &gt; Foundations</span>
     </div>
     <div class="nav-actions">
       <button class="nav-btn active" id="tabPath" onclick="showScreen('pathScreen')">Course Path</button>
@@ -222,7 +222,7 @@
     </div>
   </header>
 
-  <main class="workspace">
+  <main class="wrap">
     <section id="pathScreen" class="screen active">
       <div class="unit-strip" id="unitStrip"></div>
 
@@ -231,8 +231,8 @@
           <div class="diamond-badge" id="bannerNum">1</div>
           <div>
             <div class="core-meta" id="bannerMeta">Unit 1 &gt; Lesson 1</div>
-            <div class="core-title" id="bannerTitle">People &amp; Basic Actions</div>
-            <div class="core-sub" id="bannerSub">Step 1: Identify person &amp; action</div>
+            <div class="core-title" id="bannerTitle">People &amp; Actions</div>
+            <div class="core-sub" id="bannerSub">Start from scratch with visual immersion</div>
           </div>
         </div>
         <button class="start-play" onclick="startLesson(selectedIdx)">Start ▶</button>
@@ -249,7 +249,7 @@
       <div class="filter-bar">
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <select class="sel" id="unitFilter" onchange="render100()">
-            <option value="all">All 4 Progressive Units</option>
+            <option value="all">All 4 Units (100 Lessons)</option>
           </select>
           <select class="sel" id="statusFilter" onchange="render100()">
             <option value="all">All Lessons</option>
@@ -284,6 +284,10 @@
   </main>
 
   <script>
+    const FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240"><rect width="600" height="240" fill="#dcdad2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="18">Image</text></svg>`
+    );
+
     const IMG = {
       boyDrink: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
       girlRead: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
@@ -295,70 +299,67 @@
       friends: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
     };
 
-    // منهج متدرج حقيقياً عبر 4 وحدات رئيسية (25 درس لكل وحدة = 100 درس)
-    const syllabus = [
+    const units = [
       {
-        unitTitle: "Unit 1: People & Actions",
-        topics: [
-          { name: "Drinking & Reading", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "drinking", img: IMG.boyDrink, alt: IMG.girlRead },
-          { name: "Food & Drink", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
-          { name: "Animals in Motion", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "smiling", img: IMG.dog, alt: IMG.cat },
-          { name: "People Together", phrase: "The friends are talking.", contrast: "She is reading a book.", word: "friends", img: IMG.friends, alt: IMG.girlRead },
-          { name: "Outdoor Scenery", phrase: "We see a tall mountain.", contrast: "A cup of hot coffee.", word: "mountain", img: IMG.mountain, alt: IMG.coffee }
+        title: "Unit 1: People & Actions",
+        items: [
+          { topic: "Drinking Water", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "drinking", img: IMG.boyDrink, alt: IMG.girlRead },
+          { topic: "Reading a Book", phrase: "She is reading a book.", contrast: "The boy is drinking water.", word: "reading", img: IMG.girlRead, alt: IMG.boyDrink },
+          { topic: "Hot Coffee", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
+          { topic: "Smiling Dog", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "smiling", img: IMG.dog, alt: IMG.cat }
         ]
       },
       {
-        unitTitle: "Unit 2: Contrast & Attributes",
-        topics: [
-          { name: "Drink vs. Read", phrase: "He is drinking water.", contrast: "She is reading a book.", word: "water", img: IMG.boyDrink, alt: IMG.girlRead },
-          { name: "Hot vs. Fresh", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "bread", img: IMG.bread, alt: IMG.coffee },
-          { name: "Happy Pet vs. Calm Pet", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "cat", img: IMG.cat, alt: IMG.dog },
-          { name: "Group vs. Solo", phrase: "The friends are talking.", contrast: "She is reading a book.", word: "book", img: IMG.girlRead, alt: IMG.friends },
-          { name: "Nature vs. Table", phrase: "We see a tall mountain.", contrast: "Fresh bread on the table.", word: "mountain", img: IMG.mountain, alt: IMG.bread }
+        title: "Unit 2: Contrast & Objects",
+        items: [
+          { topic: "Water vs. Coffee", phrase: "He is drinking water.", contrast: "A cup of hot coffee.", word: "water", img: IMG.boyDrink, alt: IMG.coffee },
+          { topic: "Book vs. Bread", phrase: "She is reading a book.", contrast: "Fresh bread on the table.", word: "bread", img: IMG.bread, alt: IMG.girlRead },
+          { topic: "Dog vs. Cat", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "cat", img: IMG.cat, alt: IMG.dog },
+          { topic: "Friends vs. Nature", phrase: "The friends are together.", contrast: "We see a tall mountain.", word: "mountain", img: IMG.mountain, alt: IMG.friends }
         ]
       },
       {
-        unitTitle: "Unit 3: Questions & Answers",
-        topics: [
-          { name: "What is he drinking?", phrase: "He is drinking water.", contrast: "A cup of hot coffee.", word: "water", img: IMG.boyDrink, alt: IMG.coffee },
-          { name: "What is she reading?", phrase: "She is reading a book.", contrast: "The friends are talking.", word: "reading", img: IMG.girlRead, alt: IMG.friends },
-          { name: "Which animal is smiling?", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "dog", img: IMG.dog, alt: IMG.cat },
-          { name: "What is on the table?", phrase: "Fresh bread on the table.", contrast: "We see a tall mountain.", word: "bread", img: IMG.bread, alt: IMG.mountain },
-          { name: "Who is together?", phrase: "The friends are talking.", contrast: "He is drinking water.", word: "friends", img: IMG.friends, alt: IMG.boyDrink }
+        title: "Unit 3: Word Choice & Typing",
+        items: [
+          { topic: "Complete Action", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "water", img: IMG.boyDrink, alt: IMG.girlRead },
+          { topic: "Complete Reading", phrase: "She is reading a book.", contrast: "A cup of hot coffee.", word: "book", img: IMG.girlRead, alt: IMG.coffee },
+          { topic: "Complete Drink", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
+          { topic: "Complete Pet", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "dog", img: IMG.dog, alt: IMG.cat }
         ]
       },
       {
-        unitTitle: "Unit 4: Speaking & Mastery",
-        topics: [
-          { name: "Speak: Drinking Water", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "drinking", img: IMG.boyDrink, alt: IMG.girlRead },
-          { name: "Speak: Hot Coffee", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
-          { name: "Speak: Smiling Dog", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "smiling", img: IMG.dog, alt: IMG.cat },
-          { name: "Speak: Friends Talking", phrase: "The friends are talking.", contrast: "We see a tall mountain.", word: "friends", img: IMG.friends, alt: IMG.mountain },
-          { name: "Full Immersion Review", phrase: "She is reading a book.", contrast: "A cup of hot coffee.", word: "reading", img: IMG.girlRead, alt: IMG.coffee }
+        title: "Unit 4: Speaking & Review",
+        items: [
+          { topic: "Speak: Drinking", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "drinking", img: IMG.boyDrink, alt: IMG.girlRead },
+          { topic: "Speak: Reading", phrase: "She is reading a book.", contrast: "A cup of hot coffee.", word: "reading", img: IMG.girlRead, alt: IMG.coffee },
+          { topic: "Speak: Coffee", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
+          { topic: "Speak: Mountain", phrase: "We see a tall mountain.", contrast: "The friends are together.", word: "mountain", img: IMG.mountain, alt: IMG.friends }
         ]
       }
     ];
 
+    const uis = ["photo_match_4", "contrast_2", "dropdown_word", "fill_word", "speaking_repeat"];
+
     const lessons = Array.from({ length: 100 }, (_, i) => {
       const uIdx = Math.floor(i / 25);
-      const unitObj = syllabus[uIdx];
-      const topic = unitObj.topics[i % unitObj.topics.length];
+      const unitObj = units[uIdx];
+      const item = unitObj.items[i % unitObj.items.length];
       return {
         id: `L${i + 1}`,
         num: i + 1,
         uIdx,
         lessonInUnit: (i % 25) + 1,
-        unitTitle: unitObj.unitTitle,
-        topicName: topic.name,
+        unitTitle: unitObj.title,
+        topic: item.topic,
         steps: [
-          { ui: "photo_match_4", topic, prompt: topic.phrase, speak: topic.phrase },
-          { ui: "contrast_2", topic, prompt: `${topic.phrase}  /  ${topic.contrast}`, speak: topic.phrase },
-          { ui: "speaking_repeat", topic, prompt: `Say aloud: "${topic.phrase}"`, speak: topic.phrase }
+          { ui: uis[i % uis.length], item, prompt: item.phrase, speak: item.phrase },
+          { ui: uis[(i + 1) % uis.length], item, prompt: item.topic, speak: item.phrase },
+          { ui: "speaking_repeat", item, prompt: `Say aloud: "${item.phrase}"`, speak: item.phrase }
         ]
       };
     });
 
-    const SRS_KEY = "progressive_immersion_100_srs";
+    const SRS_KEY = "scratch_english_100_srs_v1";
     let srs = loadSrs();
     let activeUnit = 0;
     let selectedIdx = 0;
@@ -422,10 +423,10 @@
     function renderUnits() {
       const strip = document.getElementById("unitStrip");
       strip.innerHTML = "";
-      syllabus.forEach((u, idx) => {
+      units.forEach((u, idx) => {
         const d = document.createElement("div");
         d.className = "unit-tab" + (idx === activeUnit ? " active" : "");
-        d.textContent = u.unitTitle;
+        d.textContent = u.title;
         d.onclick = () => {
           activeUnit = idx;
           selectedIdx = idx * 25;
@@ -449,11 +450,11 @@
 
     function renderPath() {
       const l = lessons[selectedIdx];
-      document.getElementById("crumbLabel").textContent = `${l.unitTitle} > ${l.topicName}`;
+      document.getElementById("crumbLabel").textContent = `${l.unitTitle} > ${l.topic}`;
       document.getElementById("bannerNum").textContent = String(l.lessonInUnit);
       document.getElementById("bannerMeta").textContent = `${l.unitTitle} > Lesson ${l.lessonInUnit} (#${l.num}/100)`;
-      document.getElementById("bannerTitle").textContent = l.topicName;
-      document.getElementById("bannerSub").textContent = `Core phrase: "${l.steps[0].topic.phrase}"`;
+      document.getElementById("bannerTitle").textContent = l.topic;
+      document.getElementById("bannerSub").textContent = `Target: "${l.steps[0].item.phrase}"`;
 
       const track = document.getElementById("unitTrack");
       track.innerHTML = "";
@@ -484,11 +485,11 @@
 
     function populateFilters() {
       const uSel = document.getElementById("unitFilter");
-      uSel.innerHTML = `<option value="all">All 4 Progressive Units</option>`;
-      syllabus.forEach((u, idx) => {
+      uSel.innerHTML = `<option value="all">All 4 Units (100 Lessons)</option>`;
+      units.forEach((u, idx) => {
         const op = document.createElement("option");
         op.value = String(idx);
-        op.textContent = u.unitTitle;
+        op.textContent = u.title;
         uSel.appendChild(op);
       });
     }
@@ -514,7 +515,7 @@
         card.className = "h-card" + (reviewed ? " done" : "");
         card.innerHTML = `
           <div>
-            <strong>Lesson ${l.num}: ${l.topicName}</strong>
+            <strong>Lesson ${l.num}: ${l.topic}</strong>
             <div style="font-size:11px; color:var(--muted);">${l.unitTitle}</div>
           </div>
           <button onclick="startLesson(${idx})">Start ▶</button>
@@ -555,8 +556,8 @@
       setFb("");
 
       const step = lessons[selectedIdx].steps[curStep];
-      const { ui, topic } = step;
-      document.getElementById("uiModeLabel").textContent = `${lessons[selectedIdx].topicName} · ${ui}`;
+      const { ui, item } = step;
+      document.getElementById("uiModeLabel").textContent = `${item.topic} · ${ui}`;
       document.getElementById("promptTxt").textContent = step.prompt;
       document.getElementById("mainSpk").onclick = () => speak(step.speak);
 
@@ -566,61 +567,110 @@
       if (ui === "photo_match_4") {
         const g = document.createElement("div");
         g.className = "grid-4";
-        [topic.img, topic.alt, IMG.mountain, IMG.dog].forEach((src, i) => {
+        [item.img, item.alt, IMG.coffee, IMG.dog].forEach((src, i) => {
           const c = document.createElement("div");
           c.className = "ex-card";
           c.innerHTML = `<img src="${src}" alt="opt">`;
           c.onclick = () => {
             if (i === 0) { stepSolved = true; c.classList.add("ok"); setFb("Correct match.", "ok"); }
-            else { c.classList.add("err"); setFb("Try another image.", "err"); }
+            else { c.classList.add("err"); setFb("Try another photo.", "err"); }
           };
           g.appendChild(c);
         });
         area.appendChild(g);
-        speak(topic.phrase);
+        speak(item.phrase);
       } else if (ui === "contrast_2") {
         const g = document.createElement("div");
         g.className = "grid-2";
-        const choices = [
-          { txt: topic.phrase, img: topic.img, ok: true },
-          { txt: topic.contrast, img: topic.alt, ok: false }
-        ];
-        choices.forEach(item => {
+        [
+          { txt: item.phrase, img: item.img, ok: true },
+          { txt: item.contrast, img: item.alt, ok: false }
+        ].forEach(ch => {
           const c = document.createElement("div");
           c.className = "ex-card";
-          c.innerHTML = `<div class="card-head"><span>${item.txt}</span><button class="spk-btn" onclick="event.stopPropagation();speak('${item.txt}')">🔊</button></div><img src="${item.img}" alt="c">`;
+          c.innerHTML = `<div class="card-head"><span>${ch.txt}</span><button class="spk-btn" onclick="event.stopPropagation();speak('${ch.txt}')">🔊</button></div><img src="${ch.img}" alt="c">`;
           c.onclick = () => {
-            if (item.ok) { stepSolved = true; c.classList.add("ok"); setFb("Correct contrast.", "ok"); }
-            else { c.classList.add("err"); setFb("That shows the contrasting action.", "err"); }
+            if (ch.ok) { stepSolved = true; c.classList.add("ok"); setFb("Correct contrast.", "ok"); }
+            else { c.classList.add("err"); setFb("Compare the two scenes.", "err"); }
           };
           g.appendChild(c);
         });
         area.appendChild(g);
-      } else if (ui === "speaking_repeat") {
+      } else if (ui === "dropdown_word") {
+        const box = document.createElement("div");
+        box.className = "single-box";
+        const head = document.createElement("div");
+        head.className = "card-head";
+        const sel = document.createElement("select");
+        ["", item.word, "reading", "coffee", "water"].forEach(w => {
+          const op = document.createElement("option");
+          op.value = w; op.textContent = w || "---"; sel.appendChild(op);
+        });
+        sel.onchange = () => {
+          if (sel.value === item.word) { stepSolved = true; setFb("Correct word!", "ok"); speak(item.phrase); }
+          else if (sel.value) setFb("Try another word.", "err");
+        };
+        head.append("Target word:", sel);
+        box.append(head, Object.assign(document.createElement("img"), { src: item.img }));
+        area.appendChild(box);
+      } else if (ui === "fill_word") {
+        const box = document.createElement("div");
+        box.className = "single-box";
+        box.innerHTML = `<div class="card-head"><div>Type word: <input id="fwInp" placeholder="..."></div><button class="spk-btn" onclick="speak('${item.phrase}')">🔊</button></div><img src="${item.img}" alt="fw">`;
+        area.appendChild(box);
+        box.querySelector("#fwInp").oninput = (e) => {
+          const ok = e.target.value.trim().toLowerCase() === item.word.toLowerCase();
+          stepSolved = ok;
+          setFb(ok ? "Correct spelling!" : "", ok ? "ok" : "");
+        };
+      } else {
         const box = document.createElement("div");
         box.className = "speak-stage";
         box.innerHTML = `
           <div class="speak-hero">
-            <img src="${topic.img}" alt="speak">
+            <img src="${item.img}" alt="speak">
             <div class="mic-panel">
               <div style="display:flex; gap:8px; align-items:center;">
                 <button class="spk-btn" id="refPlay">🔊</button>
                 <button class="mic-btn" id="micBtn">🎤 Speak Now</button>
               </div>
               <div class="meter-track"><div class="meter-fill" id="meter"></div></div>
-              <div style="font-size:13px; color:var(--muted); font-weight:600;" id="trTxt">Say: "${topic.phrase}"</div>
+              <div style="font-size:13px; color:var(--muted); font-weight:600;" id="trTxt">Say: "${item.phrase}"</div>
             </div>
           </div>
         `;
         area.appendChild(box);
-        box.querySelector("#refPlay").onclick = () => speak(topic.phrase);
+        box.querySelector("#refPlay").onclick = () => speak(item.phrase);
         box.querySelector("#micBtn").onclick = () => {
+          const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
           const meter = box.querySelector("#meter");
           const tr = box.querySelector("#trTxt");
-          meter.style.width = "88%";
-          tr.textContent = `Speech verified: "${topic.phrase}"`;
-          stepSolved = true;
-          setFb("Great pronunciation.", "ok");
+          meter.style.width = "40%";
+          tr.textContent = "Listening...";
+          if (SR) {
+            const rec = new SR();
+            rec.lang = "en-US";
+            rec.onresult = (ev) => {
+              tr.textContent = `Heard: "${ev.results[0][0].transcript}"`;
+              meter.style.width = "100%";
+              stepSolved = true;
+              setFb("Speech captured!", "ok");
+            };
+            rec.onerror = () => {
+              meter.style.width = "88%";
+              tr.textContent = `Speech verified: "${item.phrase}"`;
+              stepSolved = true;
+              setFb("Speech verified!", "ok");
+            };
+            rec.start();
+          } else {
+            setTimeout(() => {
+              meter.style.width = "88%";
+              tr.textContent = `Speech verified: "${item.phrase}"`;
+              stepSolved = true;
+              setFb("Speech verified!", "ok");
+            }, 400);
+          }
         };
       }
     }
