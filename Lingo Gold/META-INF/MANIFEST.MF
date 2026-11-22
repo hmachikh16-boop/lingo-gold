@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Application-Name: Lingo Gold
+Entry-Point: LocalApp.swf
+Data-File: data.rsd
