@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosetta Stone - Choose Image</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f7f9f9; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* صندوق السؤال */
+        .question-box { background: #fff; padding: 20px 40px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); font-size: 24px; display: flex; align-items: center; gap: 15px; margin-bottom: 40px; }
+        .audio-icon { color: #3498db; font-size: 24px; cursor: pointer; }
+        
+        /* شبكة الصور */
+        .img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; width: 100%; }
+        .img-card { background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; position: relative; transition: 0.2s; border: 3px solid transparent; }
+        .img-card:hover { transform: scale(1.02); }
+        .img-card img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; display: block; }
+        
+        /* حالات الإجابة */
+        .img-card.correct { border-color: #2ecc71; }
+        .img-card.wrong { border-color: #e74c3c; }
+        
+        /* علامة الصح */
+        .check-mark { position: absolute; bottom: 15px; right: 15px; background: #2ecc71; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; opacity: 0; }
+        .img-card.correct .check-mark { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="question-box">
+        <span class="audio-icon">🔊</span> Which one is the apple?
+    </div>
+
+    <div class="img-grid">
+        <div class="img-card">
+            <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400" alt="dog">
+        </div>
+        <div class="img-card correct">
+            <img src="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400" alt="apple">
+            <div class="check-mark">✓</div>
+        </div>
+        <div class="img-card">
+            <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400" alt="car">
+        </div>
+        <div class="img-card">
+            <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400" alt="house">
+        </div>
+    </div>
+</body>
+</html>
