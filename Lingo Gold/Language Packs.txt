@@ -1,4 +1,7 @@
 Lingo Gold — Language Packs
 
-English (American) — active
+English (American) — Level 1-5
 Arabic — interface
+
+Content packages:
+data.rsd — local curriculum container

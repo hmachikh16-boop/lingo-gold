@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<application xmlns="http://ns.adobe.com/air/application/3.9">
+  <id>com.lingogold.language.training</id>
+  <filename>Lingo Gold</filename>
+  <name>Lingo Gold</name>
+  <versionNumber>1.0.0</versionNumber>
+  <copyright>Lingo Gold</copyright>
+  <initialWindow>
+    <content>LocalApp.swf</content>
+    <title>Lingo Gold</title>
+    <width>1024</width>
+    <height>768</height>
+    <requestedDisplayResolution>high</requestedDisplayResolution>
+  </initialWindow>
+</application>

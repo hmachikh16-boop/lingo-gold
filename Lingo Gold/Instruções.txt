@@ -1,9 +1,10 @@
-Lingo Gold — تعليمات التثبيت والتشغيل
+Lingo Gold — installation instructions
 
-1. شغّل ملف: Lingo Gold.exe
-2. الواجهة: LocalApp.swf
-3. بيانات المنهج: data.rsd
-4. الوسائط: مجلد media
-5. الدعم: مجلد support
+1. Run: Lingo Gold.exe
+2. Application entry: LocalApp.swf
+3. Curriculum data: data.rsd
+4. Media: media/
+5. Support: support/
+6. Manifest: META-INF/
 
-هذه ملفات هيكل مشروع باسم Lingo Gold، بمحتوى خاص بالمشروع.
+Project files use Lingo Gold content only.

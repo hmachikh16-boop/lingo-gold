@@ -1,0 +1,1 @@
+Locale resources for Lingo Gold.

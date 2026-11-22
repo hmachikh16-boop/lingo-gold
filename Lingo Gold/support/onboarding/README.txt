@@ -1,0 +1,1 @@
+Onboarding resources for Lingo Gold.

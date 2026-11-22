@@ -1,0 +1,1 @@
+Font resources for Lingo Gold.
