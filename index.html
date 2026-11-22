@@ -3,254 +3,582 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classic Course Path - 100 Lessons & SRS</title>
+  <title>Immersion Core - Classic Lesson & Exercise UI</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
-      --bar: #191b1f;
-      --bg: #dfddd5;
-      --card: #f2f0ea;
-      --ink: #22262b;
-      --muted: #666c75;
-      --red: #b42318;
-      --green: #28a745;
+      --bar-dark: #1a1c20;
+      --bar-sub: #3b3732;
+      --canvas-top: #e2dfd7;
+      --canvas-bot: #cdc9bf;
+      --card-bg: #ffffff;
+      --ink: #22252a;
+      --muted: #656b73;
+      --green: #43a047;
+      --green-light: #e8f5e9;
+      --red: #d32f2f;
+      --red-light: #ffebee;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
-    body { background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
-
-    /* Top Course Bar */
-    .topbar {
-      background: var(--bar);
-      color: #fff;
-      padding: 8px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
-    .brand-left { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
-    .gold-tag { background: var(--gold); color: #111; padding: 3px 8px; border-radius: 3px; font-weight: 800; font-size: 12px; }
 
-    .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .top-btn {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 5px 11px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .top-btn.active, .top-btn:hover { background: var(--gold); color: #111; border-color: var(--gold); }
-
-    /* Units Strip (like top of image 2) */
-    .units-strip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: #4a453f;
-      border-bottom: 2px solid #2b2824;
-    }
-    .unit-col {
-      padding: 8px 12px;
-      text-align: center;
-      color: #ddd;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border-right: 1px solid rgba(255,255,255,0.12);
-      background: #57514a;
-      transition: 0.15s;
-    }
-    .unit-col.active { background: #dcd8ce; color: #111; }
-
-    /* Main Stage */
-    .stage {
-      flex: 1;
-      max-width: 1100px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 20px;
+    body {
+      background: radial-gradient(circle at 50% 30%, var(--canvas-top), var(--canvas-bot));
+      color: var(--ink);
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: 20px;
+      overflow: hidden;
     }
-    .view { display: none; }
-    .view.active { display: flex; flex-direction: column; justify-content: space-between; gap: 20px; flex: 1; }
 
-    /* Core Lesson Box */
-    .core-box {
-      background: #c8c2b6;
-      border: 1px solid #a9a295;
+    /* ================= 1. الشريط العلوي الكلاسيكي ================= */
+    .top-header {
+      background: var(--bar-dark);
+      color: #fff;
+      height: 48px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #000;
+      z-index: 20;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: var(--gold);
+      color: #111;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 3px;
+      letter-spacing: 0.4px;
+    }
+
+    .course-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      padding: 5px 12px;
       border-radius: 4px;
-      padding: 14px 20px;
-      max-width: 660px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .icon-pill:hover,
+    .icon-pill.active {
+      background: var(--gold);
+      color: #111;
+      border-color: var(--gold);
+    }
+
+    /* ================= 2. منطقة العرض الرئيسية ================= */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .view {
+      display: none;
       width: 100%;
-      margin: 0 auto;
+      max-width: 1020px;
+      margin: auto;
+    }
+
+    .view.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+
+    /* ================= 3. شاشة مسار الدروس ================= */
+    .unit-strip {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: #4e4942;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .unit-tab {
+      padding: 11px 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #d6d3cd;
+      cursor: pointer;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      transition: 0.15s;
+    }
+
+    .unit-tab.active {
+      background: #f3f1eb;
+      color: #111;
+    }
+
+    .core-banner {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid #b5b0a4;
+      border-radius: 6px;
+      padding: 18px 26px;
+      width: 100%;
+      max-width: 680px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    .core-left { display: flex; align-items: center; gap: 14px; }
-    .diamond-num {
-      width: 44px; height: 44px;
-      background: var(--red); color: #fff;
-      font-weight: 800; font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 4px; flex-shrink: 0;
-    }
-    .core-meta-top { font-size: 12px; color: #444; font-weight: 700; }
-    .core-title { font-size: 24px; font-weight: 600; color: #1f2328; }
-    .core-right { display: flex; align-items: center; gap: 12px; }
-    .core-info { text-align: right; font-size: 12px; color: #333; line-height: 1.35; }
-    .start-square {
-      width: 42px; height: 42px; border-radius: 4px; border: none;
-      background: var(--green); color: #fff; font-size: 18px; cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     }
 
-    /* Horizontal Track with 10 Lessons in Active Unit */
-    .track-scroller { overflow-x: auto; padding: 10px 4px; }
-    .track {
+    .core-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .diamond-badge {
+      width: 48px;
+      height: 48px;
+      background: #b71c1c;
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      box-shadow: 0 3px 8px rgba(183, 28, 28, 0.35);
+    }
+
+    .core-titles span {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .core-titles h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1e2227;
+    }
+
+    .start-play {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(67, 160, 71, 0.3);
+      transition: 0.15s;
+    }
+
+    .start-play:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    .lesson-nodes-bar {
+      width: 100%;
+      max-width: 860px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      min-width: 780px;
       position: relative;
+      padding: 10px 0;
     }
-    .track::before {
+
+    .lesson-nodes-bar::before {
       content: "";
       position: absolute;
-      left: 16px; right: 16px; top: 50%;
-      height: 2px; background: #8e8a80;
-      transform: translateY(-50%); z-index: 1;
+      left: 20px;
+      right: 20px;
+      top: 50%;
+      height: 3px;
+      background: #9c978c;
+      transform: translateY(-50%);
+      z-index: 1;
     }
-    .node-btn {
-      position: relative; z-index: 2;
-      width: 34px; height: 34px; border-radius: 50%;
-      background: #f5f4f0; border: 2px solid #555;
-      font-weight: 800; font-size: 13px; cursor: pointer;
-    }
-    .node-btn.selected { background: var(--red); border-color: var(--red); color: #fff; }
-    .node-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
 
-    .mini-squares {
-      position: relative; z-index: 2;
-      display: flex; gap: 4px; background: var(--bg); padding: 0 4px;
+    .l-node {
+      position: relative;
+      z-index: 2;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #6e6a61;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.15s;
     }
-    .mini-sq {
-      width: 11px; height: 14px;
-      border: 1.5px solid #78756c; background: #f2f0ea;
-    }
-    .mini-sq.done { background: var(--gold); border-color: var(--gold-dark); }
 
-    /* Bottom Polaroids */
-    .polaroids {
-      display: flex; justify-content: center; flex-wrap: wrap; gap: 18px;
+    .l-node.selected {
+      background: #b71c1c;
+      border-color: #b71c1c;
+      color: #fff;
+      transform: scale(1.1);
     }
+
+    .l-node.completed {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .sub-boxes {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 5px;
+      background: #d6d3ca;
+      padding: 0 5px;
+    }
+
+    .sub-box {
+      width: 12px;
+      height: 15px;
+      border: 1.5px solid #7c786e;
+      background: #f5f4f0;
+    }
+
+    .sub-box.filled {
+      background: var(--gold);
+      border-color: var(--gold-dark);
+    }
+
+    .polaroids-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 6px;
+    }
+
     .polaroid {
-      background: #fff; padding: 7px 7px 20px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+      background: #fff;
+      padding: 8px 8px 22px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
       transition: transform 0.2s;
     }
+
     .polaroid:nth-child(1) { transform: rotate(-4deg); }
     .polaroid:nth-child(2) { transform: rotate(3deg); }
     .polaroid:nth-child(3) { transform: rotate(-2deg); }
     .polaroid:nth-child(4) { transform: rotate(4deg); }
     .polaroid:nth-child(5) { transform: rotate(-3deg); }
-    .polaroid:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 5; }
-    .polaroid img { width: 120px; height: 95px; object-fit: cover; display: block; }
+    .polaroid:hover { transform: scale(1.08) rotate(0deg) !important; z-index: 10; }
+    .polaroid img { width: 128px; height: 100px; object-fit: cover; display: block; }
 
-    /* All 100 Lessons Drawer/View */
-    .hundred-grid {
+    /* ================= 4. شاشة التمارين (قريبة من الأسلوب الكلاسيكي) ================= */
+    .prompt-banner {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px 22px;
+      width: 100%;
+      max-width: 880px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-bottom: 3px solid #d1cdc2;
+    }
+
+    .prompt-text {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1f2328;
+    }
+
+    .speaker-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      background: var(--green-light);
+      color: var(--green);
+      font-weight: 800;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: 0.15s;
+    }
+
+    .speaker-btn:hover {
+      background: var(--green);
+      color: #fff;
+    }
+
+    /* شبكة 2x2 للبطاقات */
+    .cards-grid-2x2 {
+      width: 100%;
+      max-width: 880px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .rs-card {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+      border: 3px solid transparent;
+      display: flex;
+      flex-direction: column;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+
+    .rs-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+    }
+
+    .rs-card.correct {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+
+    .rs-card.wrong {
+      border-color: var(--red);
+      background: var(--red-light);
+    }
+
+    .rs-card-header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
-      max-height: 68vh;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-    .h-item {
-      background: #fff; border-radius: 6px; padding: 10px 12px;
-      border-left: 4px solid var(--gold-dark);
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    }
-    .h-item button {
-      background: var(--gold); border: none; border-radius: 4px;
-      padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer;
+      min-height: 48px;
+      font-size: 17px;
+      font-weight: 600;
+      color: #222;
+      background: #fff;
+      border-bottom: 1px solid #eceae4;
     }
 
-    /* Exercise View */
-    .ex-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .btn-back { background: #fff; border: 1px solid #b5bcc4; padding: 7px 14px; border-radius: 5px; font-weight: 700; cursor: pointer; }
-    .btn-gold { background: var(--gold); border: none; padding: 9px 18px; border-radius: 5px; font-weight: 800; cursor: pointer; }
-
-    .ex-card {
-      background: #fff; border-radius: 8px; padding: 20px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.08); max-width: 780px; width: 100%; margin: 0 auto;
+    .rs-select {
+      padding: 4px 10px;
+      font-size: 16px;
+      font-weight: 700;
+      border: 2px solid #b0b7c0;
+      border-radius: 4px;
+      background: #f8f9fa;
+      color: #111;
+      cursor: pointer;
+      outline: none;
     }
-    .ex-prompt-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
-    .ex-phrase { font-size: 22px; font-weight: 700; }
-    .ex-phrase input { font-size: 19px; padding: 5px 10px; width: 150px; border: 2px solid #bcc3cc; border-radius: 5px; text-align: center; }
-    .audio-btn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--gold-dark); background: #fff8dc; font-weight: 800; cursor: pointer; }
-    .ex-img { width: 100%; height: 280px; object-fit: cover; border-radius: 6px; display: block; margin-bottom: 14px; }
-    .ex-foot { display: flex; justify-content: space-between; align-items: center; min-height: 36px; }
-    .msg { font-weight: 700; font-size: 14px; }
-    .msg.ok { color: var(--green); }
-    .msg.err { color: var(--red); }
 
-    @media (max-width: 700px) {
-      .units-strip { grid-template-columns: repeat(2, 1fr); }
-      .core-box { flex-direction: column; align-items: flex-start; }
+    .rs-select:focus {
+      border-color: var(--gold-dark);
+      background: #fff;
+    }
+
+    .rs-card-photo {
+      width: 100%;
+      height: 195px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* بطاقات الحوار المتجاورة (سؤال + جواب بصورتين) */
+    .pair-photos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: #ddd;
+    }
+
+    .pair-photos img {
+      width: 100%;
+      height: 185px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .pair-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #fff;
+      border-bottom: 1px solid #eceae4;
+    }
+
+    .pair-col {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ================= 5. شريط التقدم السفلي المرقّم ================= */
+    .bottom-dock {
+      background: #23262b;
+      color: #fff;
+      height: 52px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #000;
+      z-index: 20;
+    }
+
+    .dock-status {
+      font-size: 13px;
+      font-weight: 700;
+      color: #cbd5e1;
+      min-width: 150px;
+    }
+
+    .slide-numbers {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .slide-num {
+      width: 28px;
+      height: 26px;
+      border-radius: 3px;
+      border: 1px solid #555b64;
+      background: #32363e;
+      color: #d1d5db;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .slide-num.active {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: #111;
+    }
+
+    .slide-num.passed {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+
+    .next-arrow-btn {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .next-arrow-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    @media (max-width: 740px) {
+      body { height: auto; min-height: 100vh; overflow-y: auto; }
+      .cards-grid-2x2, .unit-strip { grid-template-columns: 1fr; }
+      .core-banner { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand-left">
-      <span class="gold-tag">COURSE</span>
-      <span>English (American) · 100 Lessons</span>
+
+  <!-- الشريط العلوي -->
+  <header class="top-header">
+    <div class="brand-group">
+      <span class="brand-badge">IMMERSION</span>
+      <span class="course-name">English (American) Level 1</span>
+      <span class="breadcrumb" id="breadcrumbLabel">Unit 1 &gt; Course Path</span>
     </div>
-    <div class="top-actions">
-      <button class="top-btn active" id="btnPathView" onclick="showView('pathView')">Course Path</button>
-      <button class="top-btn" id="btnAll100View" onclick="showView('all100View')">All 100 Lessons (<span id="dueBadge">0</span> Due)</button>
-      <button class="top-btn" onclick="resetSrs()">Reset SRS</button>
+    <div class="top-controls">
+      <button class="icon-pill active" id="navPathBtn" onclick="switchScreen('pathView')">Course Path</button>
+      <button class="icon-pill" id="navLessonBtn" onclick="startLesson(selectedLessonIdx)">Lesson Activity</button>
     </div>
   </header>
 
-  <div class="units-strip" id="unitsStrip"></div>
-
-  <main class="stage">
-    <!-- Classic Course Path View -->
+  <!-- مساحة العمل -->
+  <main class="workspace">
+    <!-- الشاشة 1: مسار الوحدة والدروس -->
     <section id="pathView" class="view active">
-      <div class="core-box">
+      <div class="unit-strip" id="unitStrip"></div>
+
+      <div class="core-banner">
         <div class="core-left">
-          <div class="diamond-num" id="coreLessonNum">1</div>
-          <div>
-            <div class="core-meta-top" id="corePathMeta">Unit 1 &gt; Lesson 1</div>
-            <div class="core-title">Core Lesson</div>
+          <div class="diamond-badge" id="bannerLessonNum">1</div>
+          <div class="core-titles">
+            <span id="bannerSubLabel">Unit 1 &gt; Lesson 1</span>
+            <h2 id="bannerLessonTitle">Core Lesson: People &amp; Actions</h2>
           </div>
         </div>
-        <div class="core-right">
-          <div class="core-info">
-            <strong id="coreSrsStatus">Due Now</strong>
-            <div>About 30 minutes</div>
-          </div>
-          <button class="start-square" onclick="launchLesson(activeLessonIndex)" title="Start">▶</button>
-        </div>
+        <button class="start-play" onclick="startLesson(selectedLessonIdx)">Start <span>▶</span></button>
       </div>
 
-      <div class="track-scroller">
-        <div class="track" id="unitTrack"></div>
-      </div>
+      <div class="lesson-nodes-bar" id="lessonNodesBar"></div>
 
-      <div class="polaroids">
+      <div class="polaroids-row">
         <div class="polaroid"><img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" alt="p1"></div>
         <div class="polaroid"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300" alt="p2"></div>
         <div class="polaroid"><img src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=300" alt="p3"></div>
@@ -259,109 +587,182 @@
       </div>
     </section>
 
-    <!-- All 100 Lessons List View -->
-    <section id="all100View" class="view">
-      <div class="hundred-grid" id="hundredGrid"></div>
-    </section>
-
-    <!-- Lesson Exercise View -->
+    <!-- الشاشة 2: واجهة التمارين التفاعلية -->
     <section id="exerciseView" class="view">
-      <div class="ex-top">
-        <button class="btn-back" onclick="showView('pathView')">← Back to Course</button>
-        <strong id="exHeaderLabel"></strong>
+      <div class="prompt-banner" id="promptBanner">
+        <div class="prompt-text" id="promptText">The boy is drinking water.</div>
+        <button class="speaker-btn" id="mainSpeakerBtn" title="Listen">🔊</button>
       </div>
 
-      <div class="ex-card">
-        <div class="ex-prompt-row">
-          <div class="ex-phrase" id="exPhraseBox"></div>
-          <button class="audio-btn" id="exAudioBtn">▶</button>
-        </div>
-        <img class="ex-img" id="exImage" src="" alt="exercise" />
-        <div class="ex-foot">
-          <div class="msg" id="exFeedback"></div>
-          <button class="btn-gold" id="exNextBtn" onclick="nextEx()">Continue ➔</button>
-        </div>
-      </div>
+      <div class="cards-grid-2x2" id="cardsGrid"></div>
     </section>
   </main>
 
+  <!-- الشريط السفلي المرقّم -->
+  <footer class="bottom-dock">
+    <div class="dock-status" id="dockStatus">Select a lesson to begin</div>
+    <div class="slide-numbers" id="slideNumbers"></div>
+    <button class="next-arrow-btn" id="nextSlideBtn" onclick="goNextSlide()">Next <span>➔</span></button>
+  </footer>
+
   <script>
-    const bank = [
-      { word: "water", sentence: "The boy is drinking ___.", full: "The boy is drinking water.", img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=700" },
-      { word: "reading", sentence: "She is ___ a book.", full: "She is reading a book.", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700" },
-      { word: "coffee", sentence: "A cup of hot ___.", full: "A cup of hot coffee.", img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700" },
-      { word: "dog", sentence: "The ___ is smiling.", full: "The dog is smiling.", img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700" },
-      { word: "cat", sentence: "The ___ is resting.", full: "The cat is resting.", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=700" },
-      { word: "mountain", sentence: "We see a tall ___.", full: "We see a tall mountain.", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700" }
+    const FALLBACK_IMG = "data:image/svg+xml;utf8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240"><rect width="600" height="240" fill="#dcdad2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="18">Image</text></svg>`
+    );
+
+    const units = [
+      { id: 1, title: "Unit 1: Language Basics" },
+      { id: 2, title: "Unit 2: Greetings & Introductions" },
+      { id: 3, title: "Unit 3: Work & School" },
+      { id: 4, title: "Unit 4: Shopping & Food" }
     ];
 
-    const unitNames = [
-      "Unit 1: Language Basics",
-      "Unit 2: Everyday Actions",
-      "Unit 3: People & Life",
-      "Unit 4: Around Us"
-    ];
-
-    // 100 درس موزعة على الوحدات (25 درس لكل وحدة، وفي المسار نعرض 10 عقد للوحدة النشطة)
-    const lessons = Array.from({ length: 100 }, (_, i) => {
-      const uIdx = Math.floor(i / 25);
-      const item = bank[i % bank.length];
-      return {
-        id: `L${i + 1}`,
-        num: i + 1,
-        uIdx,
-        unitLabel: unitNames[uIdx],
-        lessonInUnit: (i % 25) + 1,
-        exercises: [
-          { sentence: item.sentence, answer: item.word, speak: item.full, img: item.img },
-          { sentence: bank[(i + 1) % bank.length].sentence, answer: bank[(i + 1) % bank.length].word, speak: bank[(i + 1) % bank.length].full, img: bank[(i + 1) % bank.length].img }
+    const lessonsData = [
+      {
+        title: "Core Lesson: People & Actions",
+        slides: [
+          {
+            type: "photo_match",
+            prompt: "The boy is drinking water.",
+            speak: "The boy is drinking water.",
+            correct: 0,
+            cards: [
+              { img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600" },
+              { img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600" },
+              { img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" },
+              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" }
+            ]
+          },
+          {
+            type: "dropdown_cards",
+            prompt: "Choose the correct word for each picture.",
+            speak: "Choose the correct word for each picture.",
+            cards: [
+              {
+                before: "The ",
+                after: " are reading.",
+                options: ["", "man", "men"],
+                answer: "men",
+                speak: "The men are reading.",
+                img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600"
+              },
+              {
+                before: "The ",
+                after: " is reading.",
+                options: ["", "woman", "women"],
+                answer: "woman",
+                speak: "The woman is reading.",
+                img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600"
+              },
+              {
+                before: "The ",
+                after: " are reading.",
+                options: ["", "woman", "women"],
+                answer: "women",
+                speak: "The women are reading.",
+                img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
+              },
+              {
+                before: "The ",
+                after: " is reading.",
+                options: ["", "man", "men"],
+                answer: "man",
+                speak: "The man is reading.",
+                img: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600"
+              }
+            ]
+          },
+          {
+            type: "dialogue_pairs",
+            prompt: "Listen to each question and answer.",
+            speak: "How old is he? He is twelve years old.",
+            pairs: [
+              {
+                q: "How old is he?",
+                a: "He is twelve years old.",
+                img1: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400",
+                img2: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400"
+              },
+              {
+                q: "How old are you?",
+                a: "I am five years old.",
+                img1: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
+                img2: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400"
+              }
+            ]
+          },
+          {
+            type: "photo_match",
+            prompt: "A cup of hot coffee.",
+            speak: "A cup of hot coffee.",
+            correct: 2,
+            cards: [
+              { img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600" },
+              { img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600" },
+              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
+              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" }
+            ]
+          }
         ]
-      };
-    });
-
-    const SRS_KEY = "classic_path_100_srs";
-    let srs = loadSrs();
-    let activeUnit = 0;
-    let activeLessonIndex = 0;
-    let exStep = 0;
-    let stepSolved = false;
-
-    function loadSrs() {
-      try {
-        const saved = localStorage.getItem(SRS_KEY);
-        if (saved) return JSON.parse(saved);
-      } catch (_) {}
-      const init = {};
-      lessons.forEach(l => { init[l.id] = { reps: 0, dueAt: Date.now() }; });
-      return init;
-    }
-
-    function saveSrs() {
-      try { localStorage.setItem(SRS_KEY, JSON.stringify(srs)); } catch (_) {}
-    }
-
-    function resetSrs() {
-      localStorage.removeItem(SRS_KEY);
-      srs = loadSrs();
-      renderAll();
-    }
-
-    function isDue(id) {
-      return (srs[id]?.dueAt ?? 0) <= Date.now();
-    }
-
-    function markSrs(id, ok) {
-      const prev = srs[id] || { reps: 0, dueAt: Date.now() };
-      const intervalsSec = [60, 300, 1800, 86400];
-      if (ok) {
-        const reps = prev.reps + 1;
-        const sec = intervalsSec[Math.min(prev.reps, intervalsSec.length - 1)];
-        srs[id] = { reps, dueAt: Date.now() + sec * 1000 };
-      } else {
-        srs[id] = { reps: 0, dueAt: Date.now() + 30 * 1000 };
+      },
+      {
+        title: "Lesson 2: Food & Drink",
+        slides: [
+          {
+            type: "photo_match",
+            prompt: "Fresh bread on the table.",
+            speak: "Fresh bread on the table.",
+            correct: 1,
+            cards: [
+              { img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" },
+              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" },
+              { img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600" },
+              { img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600" }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Lesson 3: Nature & Outdoors",
+        slides: [
+          {
+            type: "photo_match",
+            prompt: "A tall mountain and lake.",
+            speak: "A tall mountain and lake.",
+            correct: 0,
+            cards: [
+              { img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600" },
+              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
+              { img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600" },
+              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Lesson 4: Review & Practice",
+        slides: [
+          {
+            type: "photo_match",
+            prompt: "The dog is smiling.",
+            speak: "The dog is smiling.",
+            correct: 3,
+            cards: [
+              { img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600" },
+              { img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600" },
+              { img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
+              { img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" }
+            ]
+          }
+        ]
       }
-      saveSrs();
-    }
+    ];
+
+    let selectedUnitIdx = 0;
+    let selectedLessonIdx = 0;
+    let currentSlideIdx = 0;
+    const completedLessons = new Set();
+    const passedSlides = new Set();
 
     function speak(text) {
       if (!("speechSynthesis" in window) || !text) return;
@@ -372,147 +773,282 @@
       window.speechSynthesis.speak(u);
     }
 
-    function showView(viewId) {
+    function switchScreen(viewId) {
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       document.getElementById(viewId).classList.add("active");
-      document.getElementById("btnPathView").classList.toggle("active", viewId === "pathView");
-      document.getElementById("btnAll100View").classList.toggle("active", viewId === "all100View");
-      if (viewId === "all100View") render100List();
+      document.getElementById("navPathBtn").classList.toggle("active", viewId === "pathView");
+      document.getElementById("navLessonBtn").classList.toggle("active", viewId === "exerciseView");
+
+      if (viewId === "pathView") {
+        document.getElementById("breadcrumbLabel").textContent = `Unit ${selectedUnitIdx + 1} > Course Path`;
+        document.getElementById("dockStatus").textContent = "Ready to start lesson";
+        document.getElementById("slideNumbers").innerHTML = "";
+      }
     }
 
-    function renderUnitsStrip() {
-      const strip = document.getElementById("unitsStrip");
+    function renderUnits() {
+      const strip = document.getElementById("unitStrip");
       strip.innerHTML = "";
-      unitNames.forEach((name, idx) => {
-        const col = document.createElement("div");
-        col.className = "unit-col" + (idx === activeUnit ? " active" : "");
-        col.textContent = name;
-        col.onclick = () => {
-          activeUnit = idx;
-          activeLessonIndex = idx * 25;
-          renderAll();
+      units.forEach((u, idx) => {
+        const div = document.createElement("div");
+        div.className = "unit-tab" + (idx === selectedUnitIdx ? " active" : "");
+        div.textContent = u.title;
+        div.onclick = () => {
+          selectedUnitIdx = idx;
+          renderUnits();
+          renderPath();
         };
-        strip.appendChild(col);
+        strip.appendChild(div);
       });
     }
 
     function renderPath() {
-      const l = lessons[activeLessonIndex];
-      document.getElementById("coreLessonNum").textContent = String(l.lessonInUnit);
-      document.getElementById("corePathMeta").textContent = `Unit ${l.uIdx + 1} > Lesson ${l.lessonInUnit} (#${l.num}/100)`;
-      document.getElementById("coreSrsStatus").textContent = isDue(l.id) ? "Due Now (SRS)" : `Reviewed (${srs[l.id]?.reps || 0})`;
+      const lesson = lessonsData[selectedLessonIdx];
+      document.getElementById("bannerLessonNum").textContent = String(selectedLessonIdx + 1);
+      document.getElementById("bannerSubLabel").textContent = `Unit ${selectedUnitIdx + 1} > Lesson ${selectedLessonIdx + 1}`;
+      document.getElementById("bannerLessonTitle").textContent = lesson.title;
 
-      const track = document.getElementById("unitTrack");
-      track.innerHTML = "";
-      const startIdx = activeUnit * 25;
-      for (let k = 0; k < 10; k++) {
-        const idx = startIdx + k;
-        const item = lessons[idx];
+      const bar = document.getElementById("lessonNodesBar");
+      bar.innerHTML = "";
+
+      lessonsData.forEach((_, idx) => {
         const btn = document.createElement("button");
-        btn.className = "node-btn";
-        if (idx === activeLessonIndex) btn.classList.add("selected");
-        else if (!isDue(item.id) && (srs[item.id]?.reps || 0) > 0) btn.classList.add("done");
-        btn.textContent = String(k + 1);
+        btn.className = "l-node";
+        if (idx === selectedLessonIdx) btn.classList.add("selected");
+        else if (completedLessons.has(idx)) btn.classList.add("completed");
+        btn.textContent = String(idx + 1);
         btn.onclick = () => {
-          activeLessonIndex = idx;
+          selectedLessonIdx = idx;
           renderPath();
         };
-        track.appendChild(btn);
+        bar.appendChild(btn);
 
-        if (k < 9) {
-          const sqs = document.createElement("div");
-          sqs.className = "mini-squares";
+        if (idx < lessonsData.length - 1) {
+          const boxes = document.createElement("div");
+          boxes.className = "sub-boxes";
           for (let s = 0; s < 4; s++) {
-            const box = document.createElement("span");
-            box.className = "mini-sq" + (!isDue(item.id) && (srs[item.id]?.reps || 0) > 0 ? " done" : "");
-            sqs.appendChild(box);
+            const sq = document.createElement("span");
+            sq.className = "sub-box" + (completedLessons.has(idx) ? " filled" : "");
+            boxes.appendChild(sq);
           }
-          track.appendChild(sqs);
+          bar.appendChild(boxes);
         }
-      }
+      });
     }
 
-    function render100List() {
-      const grid = document.getElementById("hundredGrid");
+    function startLesson(lessonIdx) {
+      selectedLessonIdx = lessonIdx;
+      currentSlideIdx = 0;
+      switchScreen("exerciseView");
+      renderSlide();
+    }
+
+    function renderSlideNumbers() {
+      const slides = lessonsData[selectedLessonIdx].slides;
+      const box = document.getElementById("slideNumbers");
+      box.innerHTML = "";
+
+      slides.forEach((_, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "slide-num";
+        if (passedSlides.has(`${selectedLessonIdx}-${idx}`)) btn.classList.add("passed");
+        if (idx === currentSlideIdx) btn.classList.add("active");
+        btn.textContent = String(idx + 1);
+        btn.onclick = () => {
+          currentSlideIdx = idx;
+          renderSlide();
+        };
+        box.appendChild(btn);
+      });
+    }
+
+    function renderSlide() {
+      const lesson = lessonsData[selectedLessonIdx];
+      const slide = lesson.slides[currentSlideIdx];
+
+      document.getElementById("breadcrumbLabel").textContent =
+        `Unit ${selectedUnitIdx + 1} > Lesson ${selectedLessonIdx + 1} > Activity`;
+      document.getElementById("dockStatus").textContent =
+        `Slide ${currentSlideIdx + 1} of ${lesson.slides.length}`;
+
+      renderSlideNumbers();
+
+      const promptBanner = document.getElementById("promptBanner");
+      const promptText = document.getElementById("promptText");
+      const mainSpeaker = document.getElementById("mainSpeakerBtn");
+      const grid = document.getElementById("cardsGrid");
+
       grid.innerHTML = "";
-      lessons.forEach((l, idx) => {
-        const row = document.createElement("div");
-        row.className = "h-item";
-        row.innerHTML = `
-          <div>
-            <strong>Lesson ${l.num}</strong>
-            <div style="font-size:11px;color:#666;">${isDue(l.id) ? "Due" : "Scheduled"}</div>
-          </div>
-          <button onclick="launchLesson(${idx})">Start ▶</button>
-        `;
-        grid.appendChild(row);
-      });
-    }
+      promptBanner.style.display = "flex";
+      promptText.textContent = slide.prompt;
+      mainSpeaker.onclick = () => speak(slide.speak);
 
-    function launchLesson(idx) {
-      activeLessonIndex = idx;
-      exStep = 0;
-      showView("exerciseView");
-      renderExercise();
-    }
+      if (slide.type === "photo_match") {
+        let solved = false;
+        const cardEls = [];
 
-    function renderExercise() {
-      stepSolved = false;
-      const lesson = lessons[activeLessonIndex];
-      const ex = lesson.exercises[exStep];
+        slide.cards.forEach((c, idx) => {
+          const card = document.createElement("div");
+          card.className = "rs-card";
+          cardEls.push(card);
 
-      document.getElementById("exHeaderLabel").textContent = `${lesson.unitLabel} · Lesson ${lesson.num}/100 (Step ${exStep + 1}/${lesson.exercises.length})`;
-      document.getElementById("exFeedback").textContent = "";
-      document.getElementById("exFeedback").className = "msg";
+          const img = document.createElement("img");
+          img.className = "rs-card-photo";
+          img.style.height = "220px";
+          img.src = c.img;
+          img.onerror = () => { img.src = FALLBACK_IMG; };
 
-      const phraseBox = document.getElementById("exPhraseBox");
-      phraseBox.innerHTML = "";
-      const parts = ex.sentence.split("___");
-      const input = document.createElement("input");
-      input.type = "text";
-      input.placeholder = "...";
-      input.addEventListener("input", () => {
-        const ok = input.value.trim().toLowerCase() === ex.answer.toLowerCase();
-        stepSolved = ok;
-        const fb = document.getElementById("exFeedback");
-        fb.textContent = ok ? "Correct." : "";
-        fb.className = ok ? "msg ok" : "msg";
-      });
-      phraseBox.append(parts[0] || "", input, parts[1] || "");
+          card.appendChild(img);
+          card.onclick = () => {
+            if (solved) return;
+            if (idx === slide.correct) {
+              solved = true;
+              cardEls.forEach(el => el.classList.remove("wrong"));
+              card.classList.add("correct");
+              passedSlides.add(`${selectedLessonIdx}-${currentSlideIdx}`);
+              document.getElementById("dockStatus").textContent = "Correct match!";
+              renderSlideNumbers();
+            } else {
+              card.classList.add("wrong");
+              document.getElementById("dockStatus").textContent = "Try another picture";
+            }
+          };
 
-      document.getElementById("exImage").src = ex.img;
-      document.getElementById("exAudioBtn").onclick = () => speak(ex.speak);
-      speak(ex.speak);
-    }
+          grid.appendChild(card);
+        });
 
-    function nextEx() {
-      const lesson = lessons[activeLessonIndex];
-      if (!stepSolved) {
-        const fb = document.getElementById("exFeedback");
-        fb.textContent = `Answer: "${lesson.exercises[exStep].answer}"`;
-        fb.className = "msg err";
-        markSrs(lesson.id, false);
-        return;
+        speak(slide.speak);
+      } else if (slide.type === "dropdown_cards") {
+        const refs = [];
+
+        const checkAll = () => {
+          let allDone = true;
+          let allCorrect = true;
+          refs.forEach(({ card, select, answer }) => {
+            if (!select.value) {
+              allDone = false;
+              card.classList.remove("correct", "wrong");
+            } else if (select.value === answer) {
+              card.classList.add("correct");
+              card.classList.remove("wrong");
+            } else {
+              allCorrect = false;
+              card.classList.add("wrong");
+              card.classList.remove("correct");
+            }
+          });
+
+          if (allDone && allCorrect) {
+            passedSlides.add(`${selectedLessonIdx}-${currentSlideIdx}`);
+            document.getElementById("dockStatus").textContent = "All sentences completed!";
+            renderSlideNumbers();
+          }
+        };
+
+        slide.cards.forEach(c => {
+          const card = document.createElement("div");
+          card.className = "rs-card";
+
+          const header = document.createElement("div");
+          header.className = "rs-card-header";
+
+          const sentenceWrap = document.createElement("div");
+          const sel = document.createElement("select");
+          sel.className = "rs-select";
+          c.options.forEach(opt => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt || "     ";
+            sel.appendChild(o);
+          });
+
+          sel.onchange = () => {
+            if (sel.value) speak(c.before + sel.value + c.after);
+            checkAll();
+          };
+
+          sentenceWrap.append(c.before, sel, c.after);
+
+          const spk = document.createElement("button");
+          spk.className = "speaker-btn";
+          spk.textContent = "🔊";
+          spk.onclick = (e) => {
+            e.stopPropagation();
+            speak(c.speak);
+          };
+
+          header.append(sentenceWrap, spk);
+
+          const img = document.createElement("img");
+          img.className = "rs-card-photo";
+          img.src = c.img;
+          img.onerror = () => { img.src = FALLBACK_IMG; };
+
+          card.append(header, img);
+          grid.appendChild(card);
+          refs.push({ card, select: sel, answer: c.answer });
+        });
+      } else if (slide.type === "dialogue_pairs") {
+        slide.pairs.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "rs-card";
+
+          const header = document.createElement("div");
+          header.className = "pair-header";
+
+          const col1 = document.createElement("div");
+          col1.className = "pair-col";
+          col1.innerHTML = `<span>${p.q}</span>`;
+          const b1 = document.createElement("button");
+          b1.className = "speaker-btn";
+          b1.textContent = "🔊";
+          b1.onclick = () => speak(p.q);
+          col1.appendChild(b1);
+
+          const col2 = document.createElement("div");
+          col2.className = "pair-col";
+          col2.innerHTML = `<span>${p.a}</span>`;
+          const b2 = document.createElement("button");
+          b2.className = "speaker-btn";
+          b2.textContent = "🔊";
+          b2.onclick = () => speak(p.a);
+          col2.appendChild(b2);
+
+          header.append(col1, col2);
+
+          const photos = document.createElement("div");
+          photos.className = "pair-photos";
+          const i1 = document.createElement("img");
+          i1.src = p.img1;
+          i1.onerror = () => { i1.src = FALLBACK_IMG; };
+          const i2 = document.createElement("img");
+          i2.src = p.img2;
+          i2.onerror = () => { i2.src = FALLBACK_IMG; };
+          photos.append(i1, i2);
+
+          card.append(header, photos);
+          grid.appendChild(card);
+        });
+
+        passedSlides.add(`${selectedLessonIdx}-${currentSlideIdx}`);
+        renderSlideNumbers();
       }
+    }
 
-      if (exStep + 1 < lesson.exercises.length) {
-        exStep++;
-        renderExercise();
+    function goNextSlide() {
+      const lesson = lessonsData[selectedLessonIdx];
+      if (currentSlideIdx + 1 < lesson.slides.length) {
+        currentSlideIdx++;
+        renderSlide();
       } else {
-        markSrs(lesson.id, true);
-        renderAll();
-        showView("pathView");
+        completedLessons.add(selectedLessonIdx);
+        renderPath();
+        switchScreen("pathView");
       }
     }
 
-    function renderAll() {
-      const dueCount = lessons.filter(l => isDue(l.id)).length;
-      document.getElementById("dueBadge").textContent = String(dueCount);
-      renderUnitsStrip();
-      renderPath();
-    }
-
-    renderAll();
+    renderUnits();
+    renderPath();
   </script>
 </body>
 </html>
