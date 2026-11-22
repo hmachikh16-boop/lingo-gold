@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingo Gold - Curriculum</title>
+    <style>
+        /* ============================================================
+           واجهة المنهج (Curriculum Dashboard)
+           مبنية على الكود المرفق مع تعديلات على مشروعنا:
+           - صور محلية من media/images بدل أيقونات الإنترنت
+           - الضغط على الوحدة يفتح الدرس فعلياً
+           - تصميم متجاوب
+           ============================================================ */
+
+        /* إعدادات عامة */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: #f4f4f4; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* 1. الشريط العلوي */
+        .top-bar {
+            background: #fff; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .logo {
+            color: #1DB954; font-weight: bold; font-size: 20px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .logo span { color: #1DB954; font-size: 24px; }
+        .nav-links { display: flex; gap: 20px; color: #666; font-size: 14px; font-weight: bold; }
+        .nav-links span { cursor: pointer; padding-bottom: 5px; }
+        .nav-links span.active { color: #333; border-bottom: 2px solid #1DB954; }
+        .top-actions { font-size: 14px; color: #666; }
+        .top-actions a { color: #666; text-decoration: none; margin-left: 8px; }
+        .top-actions a:hover { color: #1DB954; }
+
+        /* 2. عنوان الصفحة */
+        .page-header { padding: 20px 40px; color: #444; font-size: 14px; font-weight: bold; }
+
+        /* 3. شبكة الوحدات */
+        .curriculum-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 15px; padding: 0 40px 40px; max-width: 1200px; margin: 0 auto; width: 100%;
+        }
+
+        /* بطاقة الوحدة */
+        .unit-card {
+            border-radius: 8px; padding: 15px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            height: 120px; color: #fff; position: relative; overflow: hidden; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .unit-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+
+        .unit-info {
+            z-index: 2; display: flex; flex-direction: column;
+            height: 100%; justify-content: space-between;
+        }
+        .unit-number { font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .unit-title { font-size: 16px; font-weight: bold; line-height: 1.2; margin-top: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+
+        /* الصورة داخل البطاقة */
+        .unit-icon {
+            position: absolute; right: -10px; bottom: -10px;
+            width: 90px; height: 90px; background-size: cover; background-position: center;
+            opacity: 0.8; z-index: 1; border-radius: 50%;
+        }
+
+        /* ألوان الوحدات (مطابقة للصورة) */
+        .unit-1 { background-color: #f4d03f; }
+        .unit-2 { background-color: #f5b041; }
+        .unit-3 { background-color: #e74c3c; }
+        .unit-4 { background-color: #c0392b; }
+        .unit-5 { background-color: #5dade2; }
+        .unit-6 { background-color: #27ae60; }
+        .unit-7 { background-color: #e67e22; }
+        .unit-8 { background-color: #d4ac0d; }
+        .unit-9 { background-color: #85c1e9; }
+        .unit-10 { background-color: #a569bd; }
+        .unit-11 { background-color: #16a085; }
+        .unit-12 { background-color: #7fb3d5; }
+        .unit-13 { background-color: #48c9b0; }
+        .unit-14 { background-color: #82e0aa; }
+        .unit-15 { background-color: #9b59b6; }
+        .unit-16 { background-color: #f1948a; }
+
+        /* الشريط السفلي */
+        .bottom-bar {
+            background: #333; color: #ccc; padding: 10px 20px;
+            display: flex; justify-content: flex-end; gap: 20px; font-size: 12px; margin-top: auto;
+        }
+        .bottom-bar a { color: #ccc; text-decoration: none; }
+        .bottom-bar a:hover { color: #1DB954; }
+
+        /* تجاوب الشاشة */
+        @media (max-width: 900px) {
+            .curriculum-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 560px) {
+            .curriculum-grid { grid-template-columns: 1fr; padding: 0 20px 30px; }
+            .page-header { padding: 16px 20px; }
+            .top-bar { flex-wrap: wrap; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الشريط العلوي -->
+    <div class="top-bar">
+        <div class="logo"><span>●</span> Lingo Gold</div>
+        <div class="nav-links">
+            <span class="active">Home</span>
+            <span>Extended Learning</span>
+        </div>
+        <div class="top-actions">
+            <span>🔊</span> &nbsp; <span>⚙️</span> &nbsp;
+            <a href="dashboard.html">Dashboard</a> &nbsp; <span>👤 Sign Out</span>
+        </div>
+    </div>
+
+    <!-- عنوان الصفحة -->
+    <div class="page-header">Select a Unit to begin</div>
+
+    <!-- شبكة الوحدات: تُبنى تلقائياً عبر الجافاسكريبت -->
+    <div class="curriculum-grid" id="curriculumGrid"></div>
+
+    <!-- الشريط السفلي -->
+    <div class="bottom-bar">
+        <a href="dashboard.html">Sign Out</a>
+        <a href="dashboard.html">⚙️ Settings</a>
+    </div>
+
+    <script>
+        /* ============================================================
+           بيانات الوحدات الـ16 (كما في الكود المرفق)
+           ============================================================ */
+        const units = [
+            { id: 1,  title: 'Language Basics' },
+            { id: 2,  title: 'Greetings and Introductions' },
+            { id: 3,  title: 'Work and School' },
+            { id: 4,  title: 'Shopping' },
+            { id: 5,  title: 'Travel' },
+            { id: 6,  title: 'Past and Future' },
+            { id: 7,  title: 'Friends and Social Life' },
+            { id: 8,  title: 'Dining and Vacation' },
+            { id: 9,  title: 'Home and Health' },
+            { id: 10, title: 'Life and World' },
+            { id: 11, title: 'Everyday Things' },
+            { id: 12, title: 'Places and Events' },
+            { id: 13, title: 'Tourism and Recreation' },
+            { id: 14, title: 'Professions and Hobbies' },
+            { id: 15, title: 'At Home and Around Town' },
+            { id: 16, title: 'Style and Personal Wellness' }
+        ];
+
+        /* صور محلية موجودة فعلياً داخل media/images (بدل روابط الإنترنت) */
+        const localImages = [
+            'media/images/img_one_dog.jpg',
+            'media/images/img_four_boys.jpg',
+            'media/images/img_five_newspapers.jpg',
+            'media/images/img_house.jpg',
+            'media/images/img_market.jpg',
+            'media/images/img_man.jpg',
+            'media/images/img_woman.jpg',
+            'media/images/img_boy.jpg',
+            'media/images/img_two_pens.jpg'
+        ];
+
+        const grid = document.getElementById('curriculumGrid');
+
+        /* بناء بطاقات الوحدات تلقائياً */
+        units.forEach((unit, index) => {
+            const card = document.createElement('div');
+            card.className = 'unit-card unit-' + unit.id;
+
+            // الضغط على الوحدة يفتح الدرس بعد حفظ رقم الوحدة
+            card.onclick = () => {
+                localStorage.setItem('selectedUnit', unit.id);
+                window.location.href = 'index.html';
+            };
+
+            const info = document.createElement('div');
+            info.className = 'unit-info';
+
+            const number = document.createElement('div');
+            number.className = 'unit-number';
+            number.textContent = 'Unit ' + unit.id;
+
+            const title = document.createElement('div');
+            title.className = 'unit-title';
+            title.textContent = unit.title;
+
+            info.append(number, title);
+
+            const icon = document.createElement('div');
+            icon.className = 'unit-icon';
+            // توزيع الصور المحلية على الوحدات بالتكرار
+            icon.style.backgroundImage = "url('" + localImages[index % localImages.length] + "')";
+
+            card.append(info, icon);
+            grid.appendChild(card);
+        });
+    </script>
+
+</body>
+</html>
