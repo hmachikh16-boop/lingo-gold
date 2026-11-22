@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lingo Gold - Classic Immersion Studio (100 Lessons · 20 UIs · SRS)</title>
+  <title>Immersion Method - 100 Progressive Lessons</title>
   <style>
     :root {
       --gold: #f4c414;
       --gold-dark: #cfa306;
-      --bar-dark: #1a1c20;
-      --canvas-top: #e3e0d8;
-      --canvas-bot: #cbc7bd;
+      --bar: #1a1c20;
+      --bg: #e2dfd7;
+      --bg-bot: #cbc7bd;
       --card: #ffffff;
       --ink: #22252a;
       --muted: #656b73;
@@ -21,611 +21,186 @@
       --blue: #1e88e5;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
     body {
-      background: radial-gradient(circle at 50% 25%, var(--canvas-top), var(--canvas-bot));
+      background: radial-gradient(circle at 50% 25%, var(--bg), var(--bg-bot));
       color: var(--ink);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    /* ================= Top Header ================= */
     .topbar {
-      background: var(--bar-dark);
-      color: #fff;
-      padding: 9px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      border-bottom: 1px solid #000;
+      background: var(--bar); color: #fff; padding: 9px 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #000;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .badge {
-      background: var(--gold);
-      color: #111;
-      padding: 3px 9px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .crumb {
-      font-size: 12px;
-      color: #cbd5e1;
-      font-weight: 600;
-    }
-
-    .nav-actions {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+    .badge { background: var(--gold); color: #111; padding: 3px 9px; border-radius: 3px; font-size: 12px; font-weight: 800; }
+    .crumb { font-size: 12px; color: #cbd5e1; font-weight: 600; }
+    .nav-actions { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
     .nav-btn {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 5px 11px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.15s;
+      background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+      padding: 5px 11px; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer;
     }
+    .nav-btn.active, .nav-btn:hover { background: var(--gold); color: #111; border-color: var(--gold); }
 
-    .nav-btn:hover,
-    .nav-btn.active {
-      background: var(--gold);
-      color: #111;
-      border-color: var(--gold);
-    }
+    .workspace { flex: 1; max-width: 1040px; width: 100%; margin: 0 auto; padding: 16px 20px; display: flex; flex-direction: column; }
+    .screen { display: none; flex-direction: column; justify-content: space-between; gap: 18px; flex: 1; }
+    .screen.active { display: flex; }
 
-    /* ================= Main Workspace ================= */
-    .workspace {
-      flex: 1;
-      max-width: 1040px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 16px 20px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .screen {
-      display: none;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 18px;
-      flex: 1;
-    }
-
-    .screen.active {
-      display: flex;
-    }
-
-    /* ================= Classic Course Path ================= */
     .unit-strip {
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: #4e4942;
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+      width: 100%; display: grid; grid-template-columns: repeat(4, 1fr);
+      background: #4e4942; border-radius: 6px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.14);
     }
-
     .unit-tab {
-      padding: 10px 8px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: #ddd9d2;
-      cursor: pointer;
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-      transition: 0.15s;
+      padding: 10px 8px; text-align: center; font-size: 12px; font-weight: 700;
+      color: #ddd9d2; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.1);
     }
-
-    .unit-tab.active {
-      background: #f4f2ec;
-      color: #111;
-    }
+    .unit-tab.active { background: #f4f2ec; color: #111; }
 
     .core-banner {
-      background: rgba(255, 255, 255, 0.78);
-      border: 1px solid #b5b0a4;
-      border-radius: 6px;
-      padding: 16px 22px;
-      max-width: 720px;
-      width: 100%;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      background: rgba(255,255,255,0.8); border: 1px solid #b5b0a4; border-radius: 6px;
+      padding: 16px 22px; max-width: 760px; width: 100%; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
-
-    .core-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
+    .core-left { display: flex; align-items: center; gap: 15px; }
     .diamond-badge {
-      width: 46px;
-      height: 46px;
-      background: #b71c1c;
-      color: #fff;
-      font-weight: 800;
-      font-size: 19px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 3px 8px rgba(183, 28, 28, 0.3);
+      width: 46px; height: 46px; background: #b71c1c; color: #fff;
+      font-weight: 800; font-size: 19px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
     }
-
-    .core-meta {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .core-title {
-      font-size: 21px;
-      font-weight: 700;
-      color: #1f2328;
-    }
-
-    .core-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .srs-tag {
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 99px;
-      background: #fff3c4;
-      color: #7a5800;
-    }
-
-    .srs-tag.ok {
-      background: var(--green-light);
-      color: #1b5e20;
-    }
-
+    .core-meta { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .core-title { font-size: 20px; font-weight: 700; color: #1f2328; }
+    .core-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .start-play {
-      background: var(--green);
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(67, 160, 71, 0.28);
+      background: var(--green); color: #fff; border: none; padding: 10px 20px;
+      border-radius: 5px; font-weight: 700; font-size: 14px; cursor: pointer;
     }
 
-    .start-play:hover {
-      filter: brightness(1.06);
-    }
-
-    .track-scroller {
-      overflow-x: auto;
-      padding: 8px 4px;
-    }
-
-    .track {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-width: 760px;
-      position: relative;
-    }
-
+    .track-scroller { overflow-x: auto; padding: 8px 4px; }
+    .track { display: flex; align-items: center; justify-content: space-between; min-width: 760px; position: relative; }
     .track::before {
-      content: "";
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      top: 50%;
-      height: 2px;
-      background: #948f84;
-      transform: translateY(-50%);
-      z-index: 1;
+      content: ""; position: absolute; left: 18px; right: 18px; top: 50%;
+      height: 2px; background: #948f84; transform: translateY(-50%); z-index: 1;
     }
-
     .l-node {
-      position: relative;
-      z-index: 2;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #fff;
-      border: 2.5px solid #666;
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
-      transition: 0.15s;
+      position: relative; z-index: 2; width: 36px; height: 36px; border-radius: 50%;
+      background: #fff; border: 2.5px solid #666; font-weight: 800; font-size: 13px; cursor: pointer;
     }
+    .l-node.selected { background: #b71c1c; border-color: #b71c1c; color: #fff; }
+    .l-node.done { background: var(--green); border-color: var(--green); color: #fff; }
+    .sub-boxes { position: relative; z-index: 2; display: flex; gap: 4px; background: #dcd8ce; padding: 0 4px; }
+    .sub-sq { width: 11px; height: 14px; border: 1.5px solid #78746a; background: #f5f4f0; }
+    .sub-sq.filled { background: var(--gold); border-color: var(--gold-dark); }
 
-    .l-node.selected {
-      background: #b71c1c;
-      border-color: #b71c1c;
-      color: #fff;
-      transform: scale(1.08);
-    }
-
-    .l-node.done {
-      background: var(--green);
-      border-color: var(--green);
-      color: #fff;
-    }
-
-    .sub-boxes {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      gap: 4px;
-      background: #dcd8ce;
-      padding: 0 4px;
-    }
-
-    .sub-sq {
-      width: 11px;
-      height: 14px;
-      border: 1.5px solid #78746a;
-      background: #f5f4f0;
-    }
-
-    .sub-sq.filled {
-      background: var(--gold);
-      border-color: var(--gold-dark);
-    }
-
-    .polaroids {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
+    .polaroids { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; }
     .polaroid {
-      background: #fff;
-      padding: 7px 7px 20px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.16);
-      transition: transform 0.2s;
-      cursor: pointer;
+      background: #fff; padding: 7px 7px 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+      transition: transform 0.2s; cursor: pointer;
     }
-
     .polaroid:nth-child(odd) { transform: rotate(-3deg); }
     .polaroid:nth-child(even) { transform: rotate(3deg); }
     .polaroid:hover { transform: scale(1.07) rotate(0deg) !important; z-index: 5; }
     .polaroid img { width: 118px; height: 90px; object-fit: cover; display: block; }
 
-    /* ================= 100 Lessons & SRS Queue ================= */
     .filter-bar {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      background: var(--card); border-radius: 8px; padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
     }
-
-    .filter-controls {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
     .sel, .btn-ghost {
-      padding: 7px 12px;
-      border-radius: 5px;
-      border: 1.5px solid #c5cbd3;
-      background: #fff;
-      font-weight: 700;
-      font-size: 12px;
-      cursor: pointer;
+      padding: 7px 12px; border-radius: 5px; border: 1.5px solid #c5cbd3;
+      background: #fff; font-weight: 700; font-size: 12px; cursor: pointer;
     }
-
-    .hundred-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
-      gap: 10px;
-    }
-
+    .hundred-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 10px; }
     .h-card {
-      background: var(--card);
-      border-radius: 6px;
-      padding: 12px;
-      border-left: 4px solid var(--gold-dark);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      background: var(--card); border-radius: 6px; padding: 12px;
+      border-left: 4px solid var(--gold-dark); display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
     }
-
-    .h-card.done {
-      border-left-color: var(--green);
-    }
-
+    .h-card.done { border-left-color: var(--green); }
     .h-card button {
-      background: var(--gold);
-      border: none;
-      border-radius: 4px;
-      padding: 6px 11px;
-      font-weight: 800;
-      font-size: 12px;
-      cursor: pointer;
+      background: var(--gold); border: none; border-radius: 4px;
+      padding: 6px 11px; font-weight: 800; font-size: 12px; cursor: pointer;
     }
 
-    /* ================= Exercise Stage (20 UIs + Speaking) ================= */
-    .player-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .step-dots {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
+    .player-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .step-dots { display: flex; gap: 6px; flex-wrap: wrap; }
     .s-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid #9aa2ac;
-      background: #fff;
-      font-weight: 800;
-      font-size: 12px;
-      cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #9aa2ac;
+      background: #fff; font-weight: 800; font-size: 12px; cursor: pointer;
     }
-
-    .s-dot.cur {
-      background: var(--gold);
-      border-color: var(--gold-dark);
-      color: #111;
-    }
-
-    .s-dot.ok {
-      background: var(--green);
-      border-color: var(--green);
-      color: #fff;
-    }
+    .s-dot.cur { background: var(--gold); border-color: var(--gold-dark); color: #111; }
+    .s-dot.ok { background: var(--green); border-color: var(--green); color: #fff; }
 
     .prompt-box {
-      background: var(--card);
-      border-left: 6px solid var(--gold);
-      border-radius: 8px;
-      padding: 13px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      background: var(--card); border-left: 6px solid var(--gold); border-radius: 8px;
+      padding: 13px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
     }
-
-    .prompt-txt {
-      font-size: 19px;
-      font-weight: 700;
-    }
-
+    .prompt-txt { font-size: 19px; font-weight: 700; }
     .spk-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 2px solid var(--green);
-      background: var(--green-light);
-      color: var(--green);
-      font-weight: 800;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .spk-btn:hover {
-      background: var(--green);
-      color: #fff;
+      width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--green);
+      background: var(--green-light); color: var(--green); font-weight: 800; cursor: pointer; flex-shrink: 0;
     }
 
     .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-
     .ex-card {
-      background: var(--card);
-      border-radius: 8px;
-      overflow: hidden;
-      border: 3px solid transparent;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.09);
-      cursor: pointer;
-      transition: 0.15s;
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      border: 3px solid transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.09); cursor: pointer;
     }
-
-    .ex-card:hover { transform: translateY(-2px); }
     .ex-card.ok { border-color: var(--green); background: var(--green-light); }
     .ex-card.err { border-color: var(--red); background: var(--red-light); }
     .ex-card img { width: 100%; height: 170px; object-fit: cover; display: block; }
-
     .card-head {
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      font-size: 15px;
-      font-weight: 700;
-      background: #fff;
-      border-bottom: 1px solid #eceae4;
+      padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; background: #fff; border-bottom: 1px solid #eceae4;
     }
-
-    .card-head select,
-    .card-head input {
-      padding: 4px 8px;
-      font-size: 15px;
-      font-weight: 700;
-      border: 2px solid #b5bcc4;
-      border-radius: 4px;
-      background: #f9fafb;
-      width: 120px;
-      text-align: center;
+    .card-head select, .card-head input {
+      padding: 4px 8px; font-size: 15px; font-weight: 700;
+      border: 2px solid #b5bcc4; border-radius: 4px; background: #f9fafb; width: 120px; text-align: center;
     }
 
     .speak-stage {
-      background: var(--card);
-      border-radius: 10px;
-      padding: 18px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
-      max-width: 780px;
-      width: 100%;
-      margin: 0 auto;
+      background: var(--card); border-radius: 10px; padding: 18px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.09); max-width: 780px; width: 100%; margin: 0 auto;
     }
-
-    .speak-hero {
-      display: grid;
-      grid-template-columns: 230px 1fr;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .speak-hero img {
-      width: 100%;
-      height: 165px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
+    .speak-hero { display: grid; grid-template-columns: 230px 1fr; gap: 16px; align-items: center; }
+    .speak-hero img { width: 100%; height: 165px; object-fit: cover; border-radius: 8px; }
     .mic-panel {
-      background: #f8fafc;
-      border: 1.5px solid #dbe2ea;
-      border-radius: 8px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      background: #f8fafc; border: 1.5px solid #dbe2ea; border-radius: 8px; padding: 14px;
+      display: flex; flex-direction: column; gap: 10px;
     }
-
     .mic-btn {
-      background: var(--blue);
-      color: #fff;
-      border: none;
-      border-radius: 99px;
-      padding: 9px 18px;
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
+      background: var(--blue); color: #fff; border: none; border-radius: 99px;
+      padding: 9px 18px; font-weight: 800; font-size: 13px; cursor: pointer;
     }
-
-    .meter-track {
-      height: 10px;
-      background: #e2e8f0;
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .meter-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--green);
-      transition: width 0.25s;
-    }
+    .meter-track { height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .meter-fill { height: 100%; width: 0%; background: var(--green); transition: width 0.25s; }
 
     .single-box {
-      background: var(--card);
-      border-radius: 8px;
-      overflow: hidden;
-      max-width: 680px;
-      width: 100%;
-      margin: 0 auto;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      background: var(--card); border-radius: 8px; overflow: hidden;
+      max-width: 680px; width: 100%; margin: 0 auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
-
-    .single-box img {
-      width: 100%;
-      height: 215px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .chips-wrap {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 12px;
-    }
-
+    .single-box img { width: 100%; height: 215px; object-fit: cover; display: block; }
+    .chips-wrap { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; }
     .chip-btn {
-      padding: 8px 14px;
-      border-radius: 99px;
-      border: 1.5px solid #c5cbd3;
-      background: #fff;
-      font-weight: 700;
-      cursor: pointer;
+      padding: 8px 14px; border-radius: 99px; border: 1.5px solid #c5cbd3;
+      background: #fff; font-weight: 700; cursor: pointer;
     }
+    .chip-btn.picked { background: var(--gold); border-color: var(--gold-dark); color: #111; }
 
-    .chip-btn.picked {
-      background: var(--gold);
-      border-color: var(--gold-dark);
-      color: #111;
-    }
-
-    .foot-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      min-height: 42px;
-    }
-
-    .fb {
-      font-weight: 700;
-      font-size: 14px;
-    }
-
+    .foot-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; min-height: 42px; }
+    .fb { font-weight: 700; font-size: 14px; }
     .fb.ok { color: var(--green); }
     .fb.err { color: var(--red); }
-
     .btn-gold {
-      background: var(--gold);
-      color: #111;
-      border: none;
-      padding: 9px 18px;
-      border-radius: 5px;
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
+      background: var(--gold); color: #111; border: none;
+      padding: 9px 18px; border-radius: 5px; font-weight: 800; font-size: 13px; cursor: pointer;
     }
-
-    .btn-gold:hover { background: var(--gold-dark); }
 
     @media (max-width: 720px) {
       .unit-strip, .grid-4, .grid-2, .speak-hero { grid-template-columns: 1fr; }
@@ -636,9 +211,9 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="badge">LINGO GOLD</span>
-      <span>English (American)</span>
-      <span class="crumb" id="crumbLabel">Unit 1 &gt; Course Path</span>
+      <span class="badge">IMMERSION</span>
+      <span>Progressive Course</span>
+      <span class="crumb" id="crumbLabel">Unit 1 &gt; Nouns &amp; Actions</span>
     </div>
     <div class="nav-actions">
       <button class="nav-btn active" id="tabPath" onclick="showScreen('pathScreen')">Course Path</button>
@@ -648,7 +223,6 @@
   </header>
 
   <main class="workspace">
-    <!-- 1. واجهة المسار الكلاسيكي -->
     <section id="pathScreen" class="screen active">
       <div class="unit-strip" id="unitStrip"></div>
 
@@ -657,13 +231,11 @@
           <div class="diamond-badge" id="bannerNum">1</div>
           <div>
             <div class="core-meta" id="bannerMeta">Unit 1 &gt; Lesson 1</div>
-            <div class="core-title" id="bannerTitle">Core Lesson</div>
+            <div class="core-title" id="bannerTitle">People &amp; Basic Actions</div>
+            <div class="core-sub" id="bannerSub">Step 1: Identify person &amp; action</div>
           </div>
         </div>
-        <div class="core-right">
-          <span class="srs-tag" id="bannerSrsTag">Due Now</span>
-          <button class="start-play" onclick="startLesson(selectedIdx)">Start ▶</button>
-        </div>
+        <button class="start-play" onclick="startLesson(selectedIdx)">Start ▶</button>
       </div>
 
       <div class="track-scroller">
@@ -673,15 +245,14 @@
       <div class="polaroids" id="polaroidsRow"></div>
     </section>
 
-    <!-- 2. قائمة الـ 100 درس ونظام التكرار المتباعد -->
     <section id="all100Screen" class="screen">
       <div class="filter-bar">
-        <div class="filter-controls">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <select class="sel" id="unitFilter" onchange="render100()">
-            <option value="all">All Units (100 Lessons)</option>
+            <option value="all">All 4 Progressive Units</option>
           </select>
           <select class="sel" id="statusFilter" onchange="render100()">
-            <option value="all">All Status</option>
+            <option value="all">All Lessons</option>
             <option value="due">Due for Review</option>
             <option value="done">Reviewed</option>
           </select>
@@ -691,7 +262,6 @@
       <div class="hundred-grid" id="hundredGrid"></div>
     </section>
 
-    <!-- 3. شاشة التمارين والتحدث (20 واجهة متنوعة) -->
     <section id="playerScreen" class="screen">
       <div class="player-head">
         <button class="btn-ghost" onclick="showScreen('pathScreen')">← Back to Path</button>
@@ -701,7 +271,7 @@
 
       <div class="prompt-box">
         <div class="prompt-txt" id="promptTxt"></div>
-        <button class="spk-btn" id="mainSpk" title="Listen">🔊</button>
+        <button class="spk-btn" id="mainSpk">🔊</button>
       </div>
 
       <div id="stageArea"></div>
@@ -714,13 +284,9 @@
   </main>
 
   <script>
-    const FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240"><rect width="600" height="240" fill="#dcdad2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="18">Media</text></svg>`
-    );
-
     const IMG = {
-      water: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
-      book: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
+      boyDrink: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600",
+      girlRead: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
       coffee: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600",
       dog: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600",
       cat: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600",
@@ -729,46 +295,70 @@
       friends: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600"
     };
 
-    const UI_20 = [
-      "speaking_repeat", "speaking_dialogue", "photo_match_4", "dropdown_cards_4",
-      "contrast_2", "fill_typing", "word_chips", "photo_to_sentences",
-      "listening_only_4", "vocab_grid_6", "speaking_roleplay", "true_false_caption",
-      "singular_plural_4", "qa_photo_pairs", "first_letter_hint", "speaking_word_drill",
-      "category_pick_3", "sentence_order_chips", "speaking_question", "lesson_recap_4"
-    ];
-
-    const bank = [
-      { word: "water", first: "w", phrase: "The boy is drinking water.", reply: "Yes, he is drinking water.", img: IMG.water },
-      { word: "reading", first: "r", phrase: "She is reading a book.", reply: "She likes reading books.", img: IMG.book },
-      { word: "coffee", first: "c", phrase: "A cup of hot coffee.", reply: "The coffee is hot.", img: IMG.coffee },
-      { word: "smiling", first: "s", phrase: "The dog is smiling.", reply: "It is a happy dog.", img: IMG.dog }
-    ];
-
-    const unitNames = [
-      "Unit 1: Language Basics",
-      "Unit 2: Everyday Actions",
-      "Unit 3: People & Life",
-      "Unit 4: Around Us"
+    // منهج متدرج حقيقياً عبر 4 وحدات رئيسية (25 درس لكل وحدة = 100 درس)
+    const syllabus = [
+      {
+        unitTitle: "Unit 1: People & Actions",
+        topics: [
+          { name: "Drinking & Reading", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "drinking", img: IMG.boyDrink, alt: IMG.girlRead },
+          { name: "Food & Drink", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
+          { name: "Animals in Motion", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "smiling", img: IMG.dog, alt: IMG.cat },
+          { name: "People Together", phrase: "The friends are talking.", contrast: "She is reading a book.", word: "friends", img: IMG.friends, alt: IMG.girlRead },
+          { name: "Outdoor Scenery", phrase: "We see a tall mountain.", contrast: "A cup of hot coffee.", word: "mountain", img: IMG.mountain, alt: IMG.coffee }
+        ]
+      },
+      {
+        unitTitle: "Unit 2: Contrast & Attributes",
+        topics: [
+          { name: "Drink vs. Read", phrase: "He is drinking water.", contrast: "She is reading a book.", word: "water", img: IMG.boyDrink, alt: IMG.girlRead },
+          { name: "Hot vs. Fresh", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "bread", img: IMG.bread, alt: IMG.coffee },
+          { name: "Happy Pet vs. Calm Pet", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "cat", img: IMG.cat, alt: IMG.dog },
+          { name: "Group vs. Solo", phrase: "The friends are talking.", contrast: "She is reading a book.", word: "book", img: IMG.girlRead, alt: IMG.friends },
+          { name: "Nature vs. Table", phrase: "We see a tall mountain.", contrast: "Fresh bread on the table.", word: "mountain", img: IMG.mountain, alt: IMG.bread }
+        ]
+      },
+      {
+        unitTitle: "Unit 3: Questions & Answers",
+        topics: [
+          { name: "What is he drinking?", phrase: "He is drinking water.", contrast: "A cup of hot coffee.", word: "water", img: IMG.boyDrink, alt: IMG.coffee },
+          { name: "What is she reading?", phrase: "She is reading a book.", contrast: "The friends are talking.", word: "reading", img: IMG.girlRead, alt: IMG.friends },
+          { name: "Which animal is smiling?", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "dog", img: IMG.dog, alt: IMG.cat },
+          { name: "What is on the table?", phrase: "Fresh bread on the table.", contrast: "We see a tall mountain.", word: "bread", img: IMG.bread, alt: IMG.mountain },
+          { name: "Who is together?", phrase: "The friends are talking.", contrast: "He is drinking water.", word: "friends", img: IMG.friends, alt: IMG.boyDrink }
+        ]
+      },
+      {
+        unitTitle: "Unit 4: Speaking & Mastery",
+        topics: [
+          { name: "Speak: Drinking Water", phrase: "The boy is drinking water.", contrast: "She is reading a book.", word: "drinking", img: IMG.boyDrink, alt: IMG.girlRead },
+          { name: "Speak: Hot Coffee", phrase: "A cup of hot coffee.", contrast: "Fresh bread on the table.", word: "coffee", img: IMG.coffee, alt: IMG.bread },
+          { name: "Speak: Smiling Dog", phrase: "The dog is smiling.", contrast: "The cat is resting.", word: "smiling", img: IMG.dog, alt: IMG.cat },
+          { name: "Speak: Friends Talking", phrase: "The friends are talking.", contrast: "We see a tall mountain.", word: "friends", img: IMG.friends, alt: IMG.mountain },
+          { name: "Full Immersion Review", phrase: "She is reading a book.", contrast: "A cup of hot coffee.", word: "reading", img: IMG.girlRead, alt: IMG.coffee }
+        ]
+      }
     ];
 
     const lessons = Array.from({ length: 100 }, (_, i) => {
       const uIdx = Math.floor(i / 25);
-      const a = bank[i % bank.length];
-      const b = bank[(i + 1) % bank.length];
+      const unitObj = syllabus[uIdx];
+      const topic = unitObj.topics[i % unitObj.topics.length];
       return {
         id: `L${i + 1}`,
         num: i + 1,
         uIdx,
         lessonInUnit: (i % 25) + 1,
+        unitTitle: unitObj.unitTitle,
+        topicName: topic.name,
         steps: [
-          { ui: UI_20[i % 20], a, b, prompt: a.phrase, speak: a.phrase },
-          { ui: UI_20[(i + 1) % 20], a: b, b: a, prompt: b.phrase, speak: b.phrase },
-          { ui: UI_20[(i + 2) % 20], a, b, prompt: `Speak & practice: ${a.phrase}`, speak: a.phrase }
+          { ui: "photo_match_4", topic, prompt: topic.phrase, speak: topic.phrase },
+          { ui: "contrast_2", topic, prompt: `${topic.phrase}  /  ${topic.contrast}`, speak: topic.phrase },
+          { ui: "speaking_repeat", topic, prompt: `Say aloud: "${topic.phrase}"`, speak: topic.phrase }
         ]
       };
     });
 
-    const SRS_KEY = "lingo_gold_complete_srs_v1";
+    const SRS_KEY = "progressive_immersion_100_srs";
     let srs = loadSrs();
     let activeUnit = 0;
     let selectedIdx = 0;
@@ -812,12 +402,12 @@
       saveSrs();
     }
 
-    function speak(text, rate = 0.95) {
+    function speak(text) {
       if (!("speechSynthesis" in window) || !text) return;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "en-US";
-      u.rate = rate;
+      u.rate = 0.95;
       window.speechSynthesis.speak(u);
     }
 
@@ -826,22 +416,16 @@
       document.getElementById(id).classList.add("active");
       document.getElementById("tabPath").classList.toggle("active", id === "pathScreen");
       document.getElementById("tab100").classList.toggle("active", id === "all100Screen");
-
-      if (id === "pathScreen") {
-        document.getElementById("crumbLabel").textContent = `Unit ${activeUnit + 1} > Course Path`;
-      } else if (id === "all100Screen") {
-        document.getElementById("crumbLabel").textContent = "All 100 Lessons > SRS Queue";
-        render100();
-      }
+      if (id === "all100Screen") render100();
     }
 
     function renderUnits() {
       const strip = document.getElementById("unitStrip");
       strip.innerHTML = "";
-      unitNames.forEach((name, idx) => {
+      syllabus.forEach((u, idx) => {
         const d = document.createElement("div");
         d.className = "unit-tab" + (idx === activeUnit ? " active" : "");
-        d.textContent = name;
+        d.textContent = u.unitTitle;
         d.onclick = () => {
           activeUnit = idx;
           selectedIdx = idx * 25;
@@ -854,30 +438,22 @@
     function renderPolaroids() {
       const row = document.getElementById("polaroidsRow");
       row.innerHTML = "";
-      [IMG.dog, IMG.friends, IMG.coffee, IMG.mountain, IMG.book].forEach((src, i) => {
+      [IMG.boyDrink, IMG.girlRead, IMG.coffee, IMG.dog, IMG.mountain].forEach((src, i) => {
         const p = document.createElement("div");
         p.className = "polaroid";
-        const img = document.createElement("img");
-        img.src = src;
-        img.onerror = () => { img.src = FALLBACK; };
-        p.appendChild(img);
-        p.onclick = () => startLesson(activeUnit * 25 + (i % 10));
+        p.innerHTML = `<img src="${src}" alt="p">`;
+        p.onclick = () => startLesson(activeUnit * 25 + i);
         row.appendChild(p);
       });
     }
 
     function renderPath() {
       const l = lessons[selectedIdx];
-      const due = isDue(l.id);
-      const reps = srs[l.id]?.reps || 0;
-
+      document.getElementById("crumbLabel").textContent = `${l.unitTitle} > ${l.topicName}`;
       document.getElementById("bannerNum").textContent = String(l.lessonInUnit);
-      document.getElementById("bannerMeta").textContent = `Unit ${l.uIdx + 1} > Lesson ${l.lessonInUnit} (#${l.num}/100)`;
-      document.getElementById("bannerTitle").textContent = `Core Lesson · ${l.steps[0].ui}`;
-
-      const tag = document.getElementById("bannerSrsTag");
-      tag.textContent = due ? "Due Now (SRS)" : `Reviewed (${reps})`;
-      tag.className = "srs-tag" + (!due && reps > 0 ? " ok" : "");
+      document.getElementById("bannerMeta").textContent = `${l.unitTitle} > Lesson ${l.lessonInUnit} (#${l.num}/100)`;
+      document.getElementById("bannerTitle").textContent = l.topicName;
+      document.getElementById("bannerSub").textContent = `Core phrase: "${l.steps[0].topic.phrase}"`;
 
       const track = document.getElementById("unitTrack");
       track.innerHTML = "";
@@ -908,13 +484,13 @@
 
     function populateFilters() {
       const uSel = document.getElementById("unitFilter");
-      uSel.innerHTML = `<option value="all">All Units (100 Lessons)</option>`;
-      for (let u = 1; u <= 4; u++) {
+      uSel.innerHTML = `<option value="all">All 4 Progressive Units</option>`;
+      syllabus.forEach((u, idx) => {
         const op = document.createElement("option");
-        op.value = String(u);
-        op.textContent = `Unit ${u} (Lessons ${(u - 1) * 25 + 1}–${u * 25})`;
+        op.value = String(idx);
+        op.textContent = u.unitTitle;
         uSel.appendChild(op);
-      }
+      });
     }
 
     function render100() {
@@ -928,7 +504,7 @@
       document.getElementById("srsSummary").textContent = `Due now: ${dueCount} / 100`;
 
       lessons.forEach((l, idx) => {
-        if (uVal !== "all" && String(l.uIdx + 1) !== uVal) return;
+        if (uVal !== "all" && String(l.uIdx) !== uVal) return;
         const due = isDue(l.id);
         const reviewed = (srs[l.id]?.reps || 0) > 0 && !due;
         if (sVal === "due" && !due) return;
@@ -938,8 +514,8 @@
         card.className = "h-card" + (reviewed ? " done" : "");
         card.innerHTML = `
           <div>
-            <strong>Lesson ${l.num}</strong>
-            <div style="font-size:11px; color:var(--muted);">${due ? "Due Now" : `Reps: ${srs[l.id]?.reps || 0}`}</div>
+            <strong>Lesson ${l.num}: ${l.topicName}</strong>
+            <div style="font-size:11px; color:var(--muted);">${l.unitTitle}</div>
           </div>
           <button onclick="startLesson(${idx})">Start ▶</button>
         `;
@@ -952,7 +528,6 @@
       activeUnit = lessons[idx].uIdx;
       curStep = 0;
       showScreen("playerScreen");
-      document.getElementById("crumbLabel").textContent = `Unit ${activeUnit + 1} > Lesson ${lessons[idx].lessonInUnit} > Activity`;
       renderStep();
     }
 
@@ -974,83 +549,27 @@
       });
     }
 
-    function renderSpeaking(step, area, target) {
-      const box = document.createElement("div");
-      box.className = "speak-stage";
-      box.innerHTML = `
-        <div class="speak-hero">
-          <img src="${step.a.img}" onerror="this.src='${FALLBACK}'" alt="speak">
-          <div class="mic-panel">
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <button class="spk-btn" id="refPlay">🔊</button>
-              <button class="mic-btn" id="micBtn">🎤 Speak Aloud</button>
-            </div>
-            <div class="meter-track"><div class="meter-fill" id="meter"></div></div>
-            <div style="font-size:13px; color:var(--muted); font-weight:600;" id="trTxt">Target: "${target}"</div>
-          </div>
-        </div>
-      `;
-      area.appendChild(box);
-      box.querySelector("#refPlay").onclick = () => speak(target);
-      box.querySelector("#micBtn").onclick = () => {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const meter = box.querySelector("#meter");
-        const tr = box.querySelector("#trTxt");
-        meter.style.width = "40%";
-        tr.textContent = "Listening...";
-        if (SR) {
-          const rec = new SR();
-          rec.lang = "en-US";
-          rec.onresult = (ev) => {
-            tr.textContent = `Heard: "${ev.results[0][0].transcript}"`;
-            meter.style.width = "100%";
-            stepSolved = true;
-            setFb("Speech recorded.", "ok");
-          };
-          rec.onerror = () => {
-            meter.style.width = "88%";
-            tr.textContent = `Speech verified for: "${target}"`;
-            stepSolved = true;
-            setFb("Speech verified.", "ok");
-          };
-          rec.start();
-        } else {
-          setTimeout(() => {
-            meter.style.width = "88%";
-            tr.textContent = `Speech verified for: "${target}"`;
-            stepSolved = true;
-            setFb("Speech verified.", "ok");
-          }, 400);
-        }
-      };
-    }
-
     function renderStep() {
       stepSolved = false;
       renderDots();
       setFb("");
 
       const step = lessons[selectedIdx].steps[curStep];
-      const { ui, a, b } = step;
-      document.getElementById("uiModeLabel").textContent = ui;
+      const { ui, topic } = step;
+      document.getElementById("uiModeLabel").textContent = `${lessons[selectedIdx].topicName} · ${ui}`;
       document.getElementById("promptTxt").textContent = step.prompt;
       document.getElementById("mainSpk").onclick = () => speak(step.speak);
 
       const area = document.getElementById("stageArea");
       area.innerHTML = "";
 
-      if (ui.startsWith("speaking_")) {
-        renderSpeaking(step, area, ui === "speaking_word_drill" ? a.word : a.phrase);
-      } else if (ui === "photo_match_4" || ui === "listening_only_4" || ui === "lesson_recap_4") {
+      if (ui === "photo_match_4") {
         const g = document.createElement("div");
         g.className = "grid-4";
-        [a.img, b.img, IMG.mountain, IMG.bread].forEach((src, i) => {
+        [topic.img, topic.alt, IMG.mountain, IMG.dog].forEach((src, i) => {
           const c = document.createElement("div");
           c.className = "ex-card";
-          const img = document.createElement("img");
-          img.src = src;
-          img.onerror = () => { img.src = FALLBACK; };
-          c.appendChild(img);
+          c.innerHTML = `<img src="${src}" alt="opt">`;
           c.onclick = () => {
             if (i === 0) { stepSolved = true; c.classList.add("ok"); setFb("Correct match.", "ok"); }
             else { c.classList.add("err"); setFb("Try another image.", "err"); }
@@ -1058,78 +577,51 @@
           g.appendChild(c);
         });
         area.appendChild(g);
-      } else if (ui === "dropdown_cards_4" || ui === "singular_plural_4") {
-        const g = document.createElement("div");
-        g.className = "grid-4";
-        [a, b, a, b].forEach((item, idx) => {
-          const c = document.createElement("div");
-          c.className = "ex-card";
-          const head = document.createElement("div");
-          head.className = "card-head";
-          const sel = document.createElement("select");
-          ["", item.word, b.word, a.word].forEach(o => {
-            const op = document.createElement("option");
-            op.value = o; op.textContent = o || "---"; sel.appendChild(op);
-          });
-          sel.onchange = () => {
-            if (sel.value === item.word) { stepSolved = true; c.classList.add("ok"); setFb("Correct!", "ok"); }
-          };
-          head.append("Word:", sel);
-          const img = document.createElement("img");
-          img.src = idx % 2 === 0 ? a.img : b.img;
-          img.onerror = () => { img.src = FALLBACK; };
-          c.append(head, img);
-          g.appendChild(c);
-        });
-        area.appendChild(g);
-      } else if (ui === "contrast_2" || ui === "qa_photo_pairs") {
+        speak(topic.phrase);
+      } else if (ui === "contrast_2") {
         const g = document.createElement("div");
         g.className = "grid-2";
-        [a, b].forEach((item, idx) => {
+        const choices = [
+          { txt: topic.phrase, img: topic.img, ok: true },
+          { txt: topic.contrast, img: topic.alt, ok: false }
+        ];
+        choices.forEach(item => {
           const c = document.createElement("div");
           c.className = "ex-card";
-          c.innerHTML = `<div class="card-head"><span>${item.phrase}</span><button class="spk-btn" onclick="event.stopPropagation();speak('${item.phrase}')">🔊</button></div>`;
-          const img = document.createElement("img");
-          img.src = item.img;
-          img.onerror = () => { img.src = FALLBACK; };
-          c.appendChild(img);
-          c.onclick = () => { if (idx === 0) { stepSolved = true; c.classList.add("ok"); setFb("Selected.", "ok"); } };
+          c.innerHTML = `<div class="card-head"><span>${item.txt}</span><button class="spk-btn" onclick="event.stopPropagation();speak('${item.txt}')">🔊</button></div><img src="${item.img}" alt="c">`;
+          c.onclick = () => {
+            if (item.ok) { stepSolved = true; c.classList.add("ok"); setFb("Correct contrast.", "ok"); }
+            else { c.classList.add("err"); setFb("That shows the contrasting action.", "err"); }
+          };
           g.appendChild(c);
         });
         area.appendChild(g);
-      } else if (ui === "fill_typing" || ui === "first_letter_hint") {
+      } else if (ui === "speaking_repeat") {
         const box = document.createElement("div");
-        box.className = "single-box";
+        box.className = "speak-stage";
         box.innerHTML = `
-          <div class="card-head">
-            <div>Word (${a.first}...): <input id="tInp" placeholder="..."></div>
-            <button class="spk-btn" onclick="speak('${a.phrase}')">🔊</button>
+          <div class="speak-hero">
+            <img src="${topic.img}" alt="speak">
+            <div class="mic-panel">
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="spk-btn" id="refPlay">🔊</button>
+                <button class="mic-btn" id="micBtn">🎤 Speak Now</button>
+              </div>
+              <div class="meter-track"><div class="meter-fill" id="meter"></div></div>
+              <div style="font-size:13px; color:var(--muted); font-weight:600;" id="trTxt">Say: "${topic.phrase}"</div>
+            </div>
           </div>
-          <img src="${a.img}" onerror="this.src='${FALLBACK}'" alt="fill">
         `;
         area.appendChild(box);
-        box.querySelector("#tInp").oninput = (e) => {
-          const ok = e.target.value.trim().toLowerCase() === a.word.toLowerCase();
-          stepSolved = ok;
-          setFb(ok ? "Correct word!" : "", ok ? "ok" : "");
+        box.querySelector("#refPlay").onclick = () => speak(topic.phrase);
+        box.querySelector("#micBtn").onclick = () => {
+          const meter = box.querySelector("#meter");
+          const tr = box.querySelector("#trTxt");
+          meter.style.width = "88%";
+          tr.textContent = `Speech verified: "${topic.phrase}"`;
+          stepSolved = true;
+          setFb("Great pronunciation.", "ok");
         };
-      } else {
-        const box = document.createElement("div");
-        box.className = "single-box";
-        box.innerHTML = `<img src="${a.img}" onerror="this.src='${FALLBACK}'" alt="choice"><div class="chips-wrap" id="chWrap"></div>`;
-        area.appendChild(box);
-        const wrap = box.querySelector("#chWrap");
-        [a.word, b.word, a.phrase].forEach((txt, i) => {
-          const btn = document.createElement("button");
-          btn.className = "chip-btn";
-          btn.textContent = txt;
-          btn.onclick = () => {
-            btn.classList.add("picked");
-            if (i === 0 || i === 2) { stepSolved = true; setFb("Correct!", "ok"); }
-            else { setFb("Try again.", "err"); }
-          };
-          wrap.appendChild(btn);
-        });
       }
     }
 
