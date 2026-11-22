@@ -1,7 +1,7 @@
 name: lingo_gold
 description: Lingo Gold - clean Rosetta-style learning app
 publish_to: 'none'
-version: 1.0.0+77
+version: 1.2.0+78
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
