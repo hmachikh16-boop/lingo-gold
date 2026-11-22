@@ -4,6 +4,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'assets_manifest.dart';
+import 'generated_assets.dart';
+
+@JS('lingoTone')
+external bool _lingoTone(int index);
+
+void playTone(int index) {
+  try {
+    _lingoTone(index);
+  } catch (_) {}
+}
 
 @JS('lingoSpeak')
 external bool _lingoSpeak(String text);
@@ -141,7 +151,7 @@ List<String> gridForStep(int step) {
   return List<String>.from(set)..shuffle(Random(step + 37));
 }
 
-enum AppScreen { course, lesson, context }
+enum AppScreen { course, lesson, context, assetLab }
 
 class ReplicaApp extends StatelessWidget {
   const ReplicaApp({super.key});
@@ -180,6 +190,7 @@ class _ReplicaShellState extends State<ReplicaShell> {
     final value = Uri.base.queryParameters['screen'];
     if (value == 'lesson') return AppScreen.lesson;
     if (value == 'context') return AppScreen.context;
+    if (value == 'asset') return AppScreen.assetLab;
     return AppScreen.course;
   }
   int _step = 0;
@@ -201,6 +212,7 @@ class _ReplicaShellState extends State<ReplicaShell> {
   }
 
   void _openLesson() {
+    playTone(0);
     setState(() {
       _screen = AppScreen.lesson;
       _step = 0;
@@ -218,6 +230,7 @@ class _ReplicaShellState extends State<ReplicaShell> {
 
   void _checkAnswer(String correctImage) {
     final correct = _selected != null && gridForStep(_step)[_selected!] == correctImage;
+    playTone(correct ? 1 : 2);
     setState(() {
       _checked = true;
       _lastCorrect = correct;
@@ -234,6 +247,7 @@ class _ReplicaShellState extends State<ReplicaShell> {
 
   void _advance() {
     if (!_checked) return;
+    playTone(3);
     if (_step < totalSteps - 1) {
       setState(() {
         _step++;
@@ -243,6 +257,7 @@ class _ReplicaShellState extends State<ReplicaShell> {
       return;
     }
     final earned = _wrong == 0 ? 3 : (_wrong <= 3 ? 2 : 1);
+    playTone(4);
     setState(() {
       _stars = earned > _stars ? earned : _stars;
       _finished = true;
@@ -261,14 +276,22 @@ class _ReplicaShellState extends State<ReplicaShell> {
                 ? 'Language Basics'
                 : _screen == AppScreen.lesson
                     ? 'Unit 1  >  Lesson 4  >  Core Lesson'
-                    : 'Unit 1  >  Lesson 4  >  Pronunciation',
+                    : _screen == AppScreen.assetLab
+                        ? 'Asset Lab  >  Structure'
+                        : 'Unit 1  >  Lesson 4  >  Pronunciation',
             onHome: _openCourse,
             xp: _xp,
             stars: _stars,
           ),
           Expanded(
             child: _screen == AppScreen.course
-                ? CourseMap(onStart: _openLesson, onContext: _openContext, xp: _xp, stars: _stars)
+                ? CourseMap(
+                    onStart: _openLesson,
+                    onContext: _openContext,
+                    onAssetLab: () => setState(() => _screen = AppScreen.assetLab),
+                    xp: _xp,
+                    stars: _stars,
+                  )
                 : _screen == AppScreen.lesson
                     ? LessonScreen(
                         step: _step,
@@ -283,7 +306,9 @@ class _ReplicaShellState extends State<ReplicaShell> {
                         onAdvance: _advance,
                         onHome: _openCourse,
                       )
-                    : ContextScreen(
+                    : _screen == AppScreen.assetLab
+                        ? AssetLabScreen(onHome: _openCourse)
+                        : ContextScreen(
                         onHome: _openCourse,
                         onLesson: _openLesson,
                         onXp: (amount) {
@@ -452,12 +477,18 @@ class LessonScreen extends StatelessWidget {
                       childAspectRatio: 0.98,
                       children: [
                         for (var i = 0; i < images.length; i++)
-                          _PhotoTile(
-                            image: images[i],
-                            selected: selected == i,
-                            checked: checked,
-                            correct: checked && images[i] == prompt.image,
-                            onTap: checked ? null : () => onSelect(i),
+                          AnimatedScale(
+                            scale: selected == i ? motionScale(step + i) : 1.0,
+                            duration: motionDuration(step + i),
+                            curve: shapeCurve(step + i),
+                            child: _PhotoTile(
+                              image: images[i],
+                              selected: selected == i,
+                              checked: checked,
+                              correct: checked && images[i] == prompt.image,
+                              radius: shapeRadius(step + i),
+                              onTap: checked ? null : () => onSelect(i),
+                            ),
                           ),
                       ],
                     ),
@@ -482,6 +513,7 @@ class _PhotoTile extends StatelessWidget {
   final bool selected;
   final bool checked;
   final bool correct;
+  final double radius;
   final VoidCallback? onTap;
   const _PhotoTile({
     super.key,
@@ -489,6 +521,7 @@ class _PhotoTile extends StatelessWidget {
     required this.selected,
     required this.checked,
     required this.correct,
+    required this.radius,
     required this.onTap,
   });
 
@@ -499,7 +532,7 @@ class _PhotoTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(radius),
           border: Border.all(
             color: correct ? kGreen : (selected ? kGreen : const Color(0xFFC9C9C2)),
             width: correct || selected ? 4 : 2,
@@ -665,9 +698,10 @@ class _SmallCount extends StatelessWidget {
 class CourseMap extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onContext;
+  final VoidCallback onAssetLab;
   final int xp;
   final int stars;
-  const CourseMap({super.key, required this.onStart, required this.onContext, required this.xp, required this.stars});
+  const CourseMap({super.key, required this.onStart, required this.onContext, required this.onAssetLab, required this.xp, required this.stars});
 
   @override
   Widget build(BuildContext context) {
@@ -778,6 +812,14 @@ class CourseMap extends StatelessWidget {
             onPressed: onContext,
             icon: const Icon(Icons.volume_up_rounded, color: kGreenDark),
             label: const Text('Explore all activities for Unit 1', style: TextStyle(color: kGreenDark, fontWeight: FontWeight.w800)),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Center(
+          child: TextButton.icon(
+            onPressed: onAssetLab,
+            icon: const Icon(Icons.category_rounded, color: kGreenDark),
+            label: const Text('Asset Lab — 683 motions • 256 shapes • 10 photos • 8 sounds', style: TextStyle(color: kGreenDark, fontWeight: FontWeight.w800)),
           ),
         ),
       ],
@@ -907,10 +949,14 @@ class _ContextScreenState extends State<ContextScreen> {
       _heard = heard.isEmpty ? 'No speech detected. Try again.' : 'Heard: “$heard”';
       _pronScore = score;
     });
-    if (score >= 70) widget.onXp(10);
+    if (score >= 70) {
+      playTone(5);
+      widget.onXp(10);
+    }
   }
 
   void _choose(bool correct) {
+    playTone(correct ? 1 : 2);
     setState(() {
       _selected = correct ? 0 : 1;
       _checked = true;
@@ -923,6 +969,7 @@ class _ContextScreenState extends State<ContextScreen> {
   }
 
   void _retry() {
+    playTone(6);
     setState(() {
       _right = 0;
       _wrong = 0;
@@ -1086,6 +1133,170 @@ class _ContextCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      );
+}
+
+/// A visible inventory of the original elements created for this replica,
+/// matching the categories and counts found in the SWF structure table.
+class AssetLabScreen extends StatefulWidget {
+  final VoidCallback onHome;
+  const AssetLabScreen({super.key, required this.onHome});
+
+  @override
+  State<AssetLabScreen> createState() => _AssetLabScreenState();
+}
+
+class _AssetLabScreenState extends State<AssetLabScreen> {
+  int _motionIndex = 0;
+  bool _big = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(40, 24, 40, 40),
+      children: [
+        Row(
+          children: [
+            const Text('Asset Lab', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: kInk)),
+            const Spacer(),
+            TextButton.icon(onPressed: widget.onHome, icon: const Icon(Icons.home_rounded), label: const Text('Back')),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _StatCard(label: 'Motion presets', value: '$motionCount', icon: Icons.animation_rounded),
+            _StatCard(label: 'Vector shapes', value: '$shapeCount', icon: Icons.category_rounded),
+            _StatCard(label: 'Photos', value: '${featuredPhotos.length}', icon: Icons.photo_rounded),
+            _StatCard(label: 'Sounds', value: '$soundCount', icon: Icons.audiotrack_rounded),
+          ],
+        ),
+        const SizedBox(height: 26),
+        const Text('683 motion presets', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            AnimatedScale(
+              scale: _big ? motionScale(_motionIndex) : 1.0,
+              duration: motionDuration(_motionIndex),
+              curve: shapeCurve(_motionIndex),
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(color: kGreen, borderRadius: BorderRadius.circular(shapeRadius(_motionIndex))),
+                child: Center(
+                  child: Text('${_motionIndex + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Preset ${_motionIndex + 1} of $motionCount', style: const TextStyle(fontSize: 13, color: kMuted)),
+                  Text('Duration ${motionDuration(_motionIndex).inMilliseconds} ms', style: const TextStyle(fontSize: 12, color: kMuted)),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: () {
+                      playTone(0);
+                      setState(() {
+                        _big = !_big;
+                        _motionIndex = (_motionIndex + 1) % motionCount;
+                      });
+                    },
+                    child: const Text('Play next motion'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 26),
+        const Text('256 vector shapes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: shapeCount,
+            itemBuilder: (context, i) => Container(
+              width: 62,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(color: shapeTint(i), borderRadius: BorderRadius.circular(shapeRadius(i)), border: Border.all(color: kLine)),
+              child: Center(child: Text('$i', style: const TextStyle(fontSize: 10, color: kGreenDark, fontWeight: FontWeight.w900))),
+            ),
+          ),
+        ),
+        const SizedBox(height: 26),
+        const Text('10 photos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 140,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: featuredPhotos.length,
+            itemBuilder: (context, i) => Container(
+              width: 150,
+              margin: const EdgeInsets.only(right: 10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset('assets/images/${featuredPhotos[i]}', fit: BoxFit.cover),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 26),
+        const Text('8 generated sounds', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kInk)),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          children: [
+            for (var i = 0; i < soundCount; i++)
+              OutlinedButton(
+                onPressed: () => playTone(i),
+                child: Text('Tone ${i + 1}'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  const _StatCard({required this.label, required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 170,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: kLine)),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: const BoxDecoration(color: kGreenSoft, shape: BoxShape.circle),
+              child: Icon(icon, color: kGreen, size: 19),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kInk)),
+                  Text(label, style: const TextStyle(fontSize: 10, color: kMuted)),
+                ],
+              ),
+            ),
+          ],
         ),
       );
 }
