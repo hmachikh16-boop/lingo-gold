@@ -3,83 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lingo Gold — Immersion</title>
+  <title>Lingo Gold — Visual Immersion</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="loading" id="loading"><div style="text-align:center"><div style="font-size:36px">🌊</div><div class="status" style="margin-top:8px">Loading lessons...</div></div></div>
 
-  <div class="loading" id="loading">
-    <div style="text-align:center">
-      <div style="font-size:38px">🌊</div>
-      <p class="prompt" style="margin-top:10px">جارٍ تجهيز الدروس...</p>
-    </div>
-  </div>
-
-  <!-- ============ HOME ============ -->
   <div id="home">
-    <header class="home-top">
-      <div class="hbrand"><span class="hmark">LG</span><span>Lingo Gold</span></div>
-      <div class="hmeta">تقدّمك: <span id="homeProgress">0 / 48</span></div>
+    <header class="top">
+      <div class="logo"><i>LG</i><span>Lingo Gold</span></div>
+      <div class="prog" id="progress">0 / 48</div>
     </header>
-    <div class="home">
-      <aside class="side">
-        <h4>المستويات</h4>
-        <div id="sideLevels"></div>
-        <h4 style="margin-top:18px">أدوات</h4>
-        <button class="lv" id="reviewBtn">↻ مراجعة</button>
-      </aside>
-      <main class="main">
-        <h1 id="homeTitle">الوحدة</h1>
-        <p class="lead" id="homeLead">تعلّم بالصورة والسياق</p>
-        <div class="section-t">دروس الوحدة <span>9 تمارين متتابعة</span></div>
-        <div class="path" id="pathGrid"></div>
-        <div class="section-t">الاختبارات <span>75% للنجاح</span></div>
-        <div class="tests" id="testRow"></div>
+    <div class="shell">
+      <aside class="side"><h4>LEVELS</h4><div id="side"></div></aside>
+      <main class="mainbox">
+        <h1 id="title">Unit</h1>
+        <div class="sub" id="titleSub">Visual immersion · English only</div>
+        <div class="headrow"><h2>LESSONS</h2><span>Learn through context</span></div>
+        <div class="path" id="path"></div>
+        <div class="headrow"><h2>ASSESSMENT</h2><span>75% to pass</span></div>
+        <div class="tools" id="tools"></div>
       </main>
     </div>
   </div>
 
-  <!-- ============ FULL-SCREEN LESSON ============ -->
-  <section class="lesson" id="lesson">
-    <div class="l-top">
-      <button class="x" id="exitBtn" title="خروج">✕</button>
-      <div class="segs" id="segBar"></div>
-      <span class="l-count" id="lCount">1/9</span>
+  <section class="stage" id="stage">
+    <div class="bar">
+      <button class="exit" id="exit" title="Exit">✕</button>
+      <div class="track" id="pieces"></div>
+      <div class="kind" id="kind">OBSERVE</div>
+      <div class="count" id="count">1/9</div>
     </div>
-    <div class="l-body">
-      <div class="l-inner">
-        <div class="prompt" id="lPrompt">الملاحظة</div>
-        <div id="lStage" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"></div>
-      </div>
-    </div>
-    <div class="l-foot">
-      <div class="note" id="lNote"></div>
-      <button class="go" id="goBtn" disabled>متابعة ←</button>
-    </div>
+    <div class="viewport"><div class="wrap" id="wrap"></div></div>
+    <div class="foot"><div class="mark" id="mark"></div><button class="next" id="next" disabled>Next →</button></div>
   </section>
 
-  <!-- ============ TEST MODAL ============ -->
-  <section class="lesson" id="testModal" style="background:#fafaf9">
-    <div class="l-top">
-      <button class="x" id="testCloseX">✕</button>
-      <div class="segs"></div>
-      <span class="l-count">TEST</span>
-    </div>
-    <div class="l-body">
-      <div class="l-inner" id="testArea"></div>
-    </div>
+  <section class="stage" id="testModal">
+    <div class="bar"><button class="exit" id="texit">✕</button><div class="track"></div><div class="kind">TEST</div></div>
+    <div class="viewport"><div class="wrap" id="testWrap"></div></div>
   </section>
 
-  <!-- ============ REVIEW MODAL ============ -->
-  <section class="lesson" id="reviewModal" style="background:#fafaf9">
-    <div class="l-top">
-      <button class="x" id="reviewCloseX">✕</button>
-      <div class="segs"></div>
-      <span class="l-count">↻</span>
-    </div>
-    <div class="l-body">
-      <div class="l-inner" id="reviewArea"></div>
-    </div>
+  <section class="stage" id="reviewModal">
+    <div class="bar"><button class="exit" id="rexit">✕</button><div class="track"></div><div class="kind">REVIEW</div></div>
+    <div class="viewport"><div class="wrap" id="reviewWrap"></div></div>
   </section>
 
   <div class="toast" id="toast"></div>

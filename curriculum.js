@@ -1,204 +1,165 @@
 /* ============================================================
-   Lingo Gold — Immersion Curriculum
-   120 local photographs → semantic families → 48 graded lessons.
-   Every scene has one correct sentence; grammar grows A1 → B2.
+   Lingo Gold — Immersion Syllabus
+   Each lesson = 4 linked scenes. Vocabulary returns in new contexts.
+   All image names verified against the 120 local files.
    ============================================================ */
-(function (global) {
+(function (w) {
   'use strict';
+  var IMG = function (n) { return 'assets/img/img_' + n + '.jpg'; };
 
-  var P = function (n) { return 'assets/img/img_' + n + '.jpg'; };
-
-  var FAMILY = {
-    hello: 'greeting', goodbye: 'greeting', hello_context: 'greeting', milestone: 'greeting',
-    man: 'people', woman: 'people', boy: 'people', girl: 'people', baby: 'people',
-    family: 'people', family_home: 'people', mother: 'people', father: 'people', sister: 'people', brother: 'people',
-    one_dog: 'numbers', two_dogs: 'numbers', two_pens: 'numbers', three_cats: 'numbers', three_bicycles: 'numbers',
-    one_car: 'numbers', one_egg: 'numbers', one_apple: 'numbers', two_apples: 'numbers', three_apples: 'numbers',
-    four_apples: 'numbers', five_newspapers: 'numbers', six_apples: 'numbers', four_boys: 'numbers',
-    six_girls: 'numbers', five_boys: 'numbers',
-    color_red: 'colors', color_blue: 'colors', color_green: 'colors', color_yellow: 'colors',
-    dog: 'animals', cat: 'animals', bird: 'animals', fish: 'animals',
-    house: 'home', door: 'home', window: 'home', chair: 'home', table: 'home', bed: 'home',
-    reading: 'actions', writing: 'actions', running: 'actions', jumping: 'actions', sitting: 'actions',
-    sleeping: 'actions', eating: 'actions', drinking: 'actions',
-    shirt: 'clothes', pants: 'clothes', shoes: 'clothes', hat: 'clothes', dress: 'clothes',
-    book: 'school', pen: 'school', pencil: 'school', desk: 'school', teacher: 'school', student: 'school', classroom: 'school',
-    apple: 'food', banana: 'food', bread: 'food', milk: 'food', oranges: 'food', tomatoes: 'food',
-    vegetables: 'food', vendor: 'food', money: 'food',
-    car: 'transport', bus: 'transport', bicycle: 'transport', train: 'transport', airplane: 'transport',
-    boat: 'transport', train_station: 'transport', airport: 'transport', hotel: 'transport',
-    market: 'places', park: 'places', library: 'places', hospital: 'places', school: 'places', street: 'places', building: 'places',
-    sun: 'nature', moon: 'nature', cloud: 'nature', tree: 'nature', flower: 'nature', mountain: 'nature', river: 'nature',
-    sunny: 'weather', rainy: 'weather', snowy: 'weather', windy: 'weather',
-    morning: 'time', evening: 'time', night: 'time', clock: 'time',
-    doctor: 'professions', nurse: 'professions', chef: 'professions', farmer: 'professions', police: 'professions',
-    soccer: 'sports', basketball: 'sports', swimming: 'sports', music: 'sports', painting: 'sports',
-    head: 'body', hand: 'body', eye: 'body', foot: 'body', map: 'travel'
-  };
-
-  /* image, sentence, focus word, context question, AR title, EN title */
-  var SEEDS = {
+  /* [image, sentence, key word] */
+  var DATA = {
     A1: [
       [
-        ['hello', 'Hello.', 'Hello', 'How do people greet?', 'مرحبًا', 'Greetings'],
-        ['goodbye', 'Goodbye.', 'Goodbye', 'What do people say when leaving?', 'وداعًا', 'Farewell'],
-        ['man', 'This is a man.', 'man', 'Who is this?', 'هذا رجل', 'A Man'],
-        ['woman', 'This is a woman.', 'woman', 'Who is this?', 'هذه امرأة', 'A Woman']
+        ['People', 'Ashkhas', [
+          ['man','This is a man.','man'],['woman','This is a woman.','woman'],['boy','This is a boy.','boy'],['girl','This is a girl.','girl']]],
+        ['Greetings', 'Tahiyya', [
+          ['hello','Hello.','Hello'],['goodbye','Goodbye.','Goodbye'],['hello_context','Hello! How are you?','Hello'],['family','This is my family.','family']]],
+        ['Numbers', 'Arqam', [
+          ['one_apple','I have one apple.','one'],['two_apples','I have two apples.','two'],['three_apples','I have three apples.','three'],['four_apples','I have four apples.','four']]],
+        ['Colors', 'Alwan', [
+          ['color_red','The apple is red.','red'],['color_blue','The sky is blue.','blue'],['color_green','The leaf is green.','green'],['color_yellow','The sun is yellow.','yellow']]]
       ],
       [
-        ['boy', 'This is a boy.', 'boy', 'Who is this?', 'هذا ولد', 'A Boy'],
-        ['girl', 'This is a girl.', 'girl', 'Who is this?', 'هذه بنت', 'A Girl'],
-        ['one_apple', 'I have one apple.', 'apple', 'How many apples?', 'تفاحة واحدة', 'One Apple'],
-        ['two_pens', 'I have two pens.', 'pens', 'What do I have?', 'قلمان', 'Two Pens']
+        ['Family', 'Usra', [
+          ['mother','This is my mother.','mother'],['father','This is my father.','father'],['sister','This is my sister.','sister'],['brother','This is my brother.','brother']]],
+        ['Home', 'Bayt', [
+          ['house','This is my house.','house'],['door','This is the door.','door'],['window','This is the window.','window'],['bed','This is the bed.','bed']]],
+        ['School things', 'Ashya al-madrasa', [
+          ['book','This is a book.','book'],['pen','This is a pen.','pen'],['pencil','This is a pencil.','pencil'],['desk','This is a desk.','desk']]],
+        ['Animals', 'Hayawanat', [
+          ['dog','This is a dog.','dog'],['cat','This is a cat.','cat'],['bird','This is a bird.','bird'],['fish','This is a fish.','fish']]]
       ],
       [
-        ['color_red', 'The apple is red.', 'red', 'What color is the apple?', 'أحمر', 'Red'],
-        ['color_blue', 'The sky is blue.', 'blue', 'What color is the sky?', 'أزرق', 'Blue'],
-        ['dog', 'This is a dog.', 'dog', 'Which animal is this?', 'كلب', 'A Dog'],
-        ['cat', 'This is a cat.', 'cat', 'Which animal is this?', 'قطة', 'A Cat']
+        ['Actions 1', 'Af al 1', [
+          ['reading','He is reading.','reading'],['writing','She is writing.','writing'],['running','He is running.','running'],['jumping','She is jumping.','jumping']]],
+        ['Actions 2', 'Af al 2', [
+          ['sitting','He is sitting.','sitting'],['sleeping','She is sleeping.','sleeping'],['eating','He is eating.','eating'],['drinking','She is drinking.','drinking']]],
+        ['Food', 'Taam', [
+          ['apple','This is an apple.','apple'],['banana','This is a banana.','banana'],['bread','This is bread.','bread'],['milk','This is milk.','milk']]],
+        ['Places', 'Amaakin', [
+          ['park','This is the park.','park'],['school','This is the school.','school'],['market','This is the market.','market'],['library','This is the library.','library']]]
       ]
     ],
     A2: [
       [
-        ['mother', 'This is my mother.', 'mother', 'Who is this?', 'أمي', 'My Mother'],
-        ['father', 'My father is reading.', 'reading', 'What is he doing?', 'أبي يقرأ', 'My Father'],
-        ['house', 'This is my house.', 'house', 'What is this?', 'بيتي', 'My House'],
-        ['family_home', 'My family is at home.', 'family', 'Where is the family?', 'العائلة', 'At Home']
+        ['Family at home', 'Usra fil bayt', [
+          ['family_home','My family is at home.','family'],['mother','My mother is reading.','mother'],['father','My father is sitting.','father'],['baby','The baby is sleeping.','baby']]],
+        ['Rooms', 'Ghuraf', [
+          ['house','This is my house.','house'],['door','The door is open.','door'],['window','The window is big.','window'],['chair','The chair is near the table.','chair']]],
+        ['Clothes', 'Malabis', [
+          ['shirt','He is wearing a shirt.','shirt'],['pants','He is wearing pants.','pants'],['shoes','She is wearing shoes.','shoes'],['hat','She is wearing a hat.','hat']]],
+        ['Objects', 'Ashya', [
+          ['table','The book is on the table.','table'],['bed','The cat is on the bed.','bed'],['clock','The clock is on the wall.','clock'],['book','The book is open.','book']]]
       ],
       [
-        ['reading', 'She is reading a book.', 'reading', 'What is she doing?', 'تقرأ', 'Reading'],
-        ['writing', 'He is writing a letter.', 'writing', 'What is he doing?', 'يكتب', 'Writing'],
-        ['running', 'The man is running.', 'running', 'What is the man doing?', 'يركض', 'Running'],
-        ['drinking', 'She is drinking water.', 'drinking', 'What is she drinking?', 'تشرب', 'Drinking']
+        ['Morning', 'Sabah', [
+          ['morning','It is morning.','morning'],['reading','I read in the morning.','read'],['drinking','I drink water in the morning.','drink'],['eating','I eat bread in the morning.','eat']]],
+        ['Movement', 'Haraka', [
+          ['running','They are running.','running'],['jumping','They are jumping.','jumping'],['swimming','They are swimming.','swimming'],['soccer','They are playing soccer.','soccer']]],
+        ['People at work', 'Nas fi al amal', [
+          ['teacher','She is a teacher.','teacher'],['student','He is a student.','student'],['doctor','She is a doctor.','doctor'],['nurse','He is a nurse.','nurse']]],
+        ['Evening', 'Masa', [
+          ['evening','It is evening.','evening'],['night','It is night.','night'],['sitting','We are sitting.','sitting'],['sleeping','We are sleeping.','sleeping']]]
       ],
       [
-        ['bread', 'I would like some bread.', 'bread', 'What would you like?', 'خبز', 'Bread'],
-        ['milk', 'There is a glass of milk.', 'milk', 'What is on the table?', 'حليب', 'Milk'],
-        ['market', 'We are at the market.', 'market', 'Where are they?', 'السوق', 'The Market'],
-        ['park', 'The children are in the park.', 'children', 'Where are the children?', 'الحديقة', 'The Park']
+        ['At the market', 'Fil suq', [
+          ['market','We are at the market.','market'],['vendor','The vendor is here.','vendor'],['money','I have money.','money'],['oranges','I like oranges.','oranges']]],
+        ['Food', 'Taam', [
+          ['bread','I would like some bread.','bread'],['milk','There is a glass of milk.','milk'],['tomatoes','I like tomatoes.','tomatoes'],['vegetables','We need vegetables.','vegetables']]],
+        ['In town', 'Fil madina', [
+          ['street','This is the street.','street'],['building','This is a tall building.','building'],['hospital','The hospital is here.','hospital'],['library','The library is quiet.','library']]],
+        ['Outside', 'Fi al kharij', [
+          ['park','The children are in the park.','children'],['tree','There is a tree.','tree'],['flower','There is a flower.','flower'],['river','There is a river.','river']]]
       ]
     ],
     B1: [
       [
-        ['morning', 'I get up early in the morning.', 'morning', 'When do you get up?', 'الصباح', 'Morning'],
-        ['nurse', 'She works as a nurse.', 'nurse', 'What does she do?', 'ممرضة', 'A Nurse'],
-        ['teacher', 'He teaches at a school.', 'teaches', 'What does he do?', 'معلم', 'A Teacher'],
-        ['bus', 'I go to work by bus.', 'bus', 'How do you go to work?', 'الحافلة', 'By Bus']
+        ['Daily routine', 'Routin yawmi', [
+          ['morning','I get up early in the morning.','morning'],['clock','The clock says seven.','clock'],['bus','I go to work by bus.','bus'],['evening','I rest in the evening.','evening']]],
+        ['Jobs', 'Mihan', [
+          ['nurse','She has worked as a nurse for years.','nurse'],['teacher','He teaches at a school.','teaches'],['chef','The chef prepares food.','chef'],['farmer','The farmer works outside.','farmer']]],
+        ['Transport', 'Muwasalat', [
+          ['car','I drive a car.','car'],['bicycle','He rides a bicycle.','bicycle'],['bus','We take the bus.','bus'],['train','The train leaves at six.','train']]],
+        ['School days', 'Ayyam al madrasa', [
+          ['school','I went to school yesterday.','school'],['classroom','The classroom was full.','classroom'],['student','The student asked a question.','student'],['book','I read the book.','book']]]
       ],
       [
-        ['train', 'The train leaves at six.', 'train', 'What leaves at six?', 'القطار', 'The Train'],
-        ['airplane', 'We travelled by plane.', 'travelled', 'How did you travel?', 'الطائرة', 'By Plane'],
-        ['airport', 'The airport was busy.', 'airport', 'What was busy?', 'المطار', 'The Airport'],
-        ['hotel', 'We stayed at a hotel.', 'hotel', 'Where did you stay?', 'الفندق', 'The Hotel']
+        ['At the station', 'Fil mahatta', [
+          ['train_station','We arrived at the train station.','station'],['train','The train was late.','train'],['map','I looked at the map.','map'],['clock','We waited for an hour.','hour']]],
+        ['Flying', 'Tayaran', [
+          ['airplane','We travelled by plane.','plane'],['airport','The airport was busy.','airport'],['hotel','We stayed at a hotel.','hotel'],['map','We used a map.','map']]],
+        ['Places to stay', 'Amaakin al iqama', [
+          ['hotel','The hotel was small.','hotel'],['house','We visited a house.','house'],['building','The building is old.','building'],['street','The street was quiet.','street']]],
+        ['Getting around', 'Tanaqul', [
+          ['boat','We travelled by boat.','boat'],['car','We drove a car.','car'],['bicycle','We rode bicycles.','bicycles'],['bus','We took the bus.','bus']]]
       ],
       [
-        ['rainy', 'It was raining all day.', 'raining', 'What was the weather like?', 'ممطر', 'Rainy'],
-        ['river', 'The river is very long.', 'river', 'What is very long?', 'النهر', 'The River'],
-        ['mountain', 'We climbed the mountain.', 'mountain', 'What did you climb?', 'الجبل', 'The Mountain'],
-        ['sunny', 'It is sunny today.', 'sunny', 'How is the weather?', 'مشمس', 'Sunny']
+        ['Weather', 'Taqs', [
+          ['sunny','It is sunny today.','sunny'],['rainy','It was raining all day.','raining'],['snowy','It is snowy in winter.','snowy'],['windy','It is windy outside.','windy']]],
+        ['Landscape', 'Manzar', [
+          ['mountain','We climbed the mountain.','mountain'],['river','The river flows through the village.','river'],['tree','An old tree stands nearby.','tree'],['flower','The flower is beautiful.','flower']]],
+        ['Sky', 'Sama', [
+          ['sun','The sun is bright.','sun'],['moon','The moon is white.','moon'],['cloud','There is a cloud.','cloud'],['night','The night is quiet.','night']]],
+        ['Past weather', 'Taqs madi', [
+          ['rainy','It rained yesterday.','rained'],['windy','The wind blew hard.','wind'],['sunny','The sun came out.','sun'],['snowy','Snow fell last night.','snow']]]
       ]
     ],
     B2: [
       [
-        ['painting', 'I have finished the painting.', 'finished', 'What have you finished?', 'اللوحة', 'Finished'],
-        ['chef', 'The chef prepared dinner.', 'prepared', 'Who prepared dinner?', 'الطاهي', 'The Chef'],
-        ['milestone', 'Congratulations on your achievement!', 'achievement', 'What do you celebrate?', 'الإنجاز', 'Achievement'],
-        ['library', 'The library has many books.', 'library', 'What has many books?', 'المكتبة', 'The Library']
+        ['Achievements', 'Injazat', [
+          ['milestone','Congratulations on your achievement!','achievement'],['painting','I have finished the painting.','finished'],['music','I have written the music.','written'],['book','I have read the book.','read']]],
+        ['Before we arrived', 'Qabla an nasil', [
+          ['chef','The chef had prepared dinner.','prepared'],['bread','I had eaten the bread.','eaten'],['family_home','They had left home.','left'],['market','We had visited the market.','visited']]],
+        ['Opinions', 'Araa', [
+          ['music','I think the music is beautiful.','beautiful'],['painting','I believe the painting is old.','old'],['book','This book is useful.','useful'],['soccer','Soccer is exciting.','exciting']]],
+        ['The library', 'Al maktaba', [
+          ['library','The library provides free books.','provides'],['book','You can borrow a book.','borrow'],['classroom','Students study in the classroom.','study'],['teacher','The teacher helps students.','helps']]]
       ],
       [
-        ['hospital', 'The doctor advised me to rest.', 'advised', 'What did the doctor do?', 'نصيحة', 'Advice'],
-        ['cloud', 'If it rains, we will stay in.', 'rains', 'What happens if it rains?', 'غيوم', 'Clouds'],
-        ['police', 'The officer helped the tourist.', 'helped', 'Who helped the tourist?', 'الشرطي', 'Help'],
-        ['street', 'They opened a new street.', 'opened', 'What did they open?', 'الشارع', 'A New Street']
+        ['Help', 'Musaada', [
+          ['police','The officer helped the tourist.','helped'],['hospital','The hospital helped many people.','helped'],['doctor','The doctor advised me to rest.','advised'],['nurse','The nurse took care of him.','care']]],
+        ['Advice', 'Nasiha', [
+          ['doctor','If you are ill, see a doctor.','ill'],['bed','You should stay in bed.','stay'],['sleeping','You need more sleep.','sleep'],['milk','Drink a glass of milk.','drink']]],
+        ['Conditions', 'Shurut', [
+          ['cloud','If it gets cloudy, we will go in.','cloudy'],['rainy','If it rains, we will stay home.','rains'],['windy','If it is windy, close the window.','windy'],['sunny','If it is sunny, we will go out.','sunny']]],
+        ['Neighborhood', 'Al hara', [
+          ['street','They opened a new street.','opened'],['building','The building was built last year.','built'],['market','The market was crowded.','crowded'],['park','The park was cleaned.','cleaned']]]
       ],
       [
-        ['swimming', 'They enjoy swimming.', 'swimming', 'What do they enjoy?', 'السباحة', 'Swimming'],
-        ['music', 'The music was too loud.', 'loud', 'How was the music?', 'الموسيقى', 'Music'],
-        ['tree', 'An old tree stands nearby.', 'tree', 'What stands nearby?', 'الشجرة', 'A Tree'],
-        ['boat', 'We might travel by boat.', 'boat', 'How might you travel?', 'القارب', 'By Boat']
+        ['Sports', 'Riyada', [
+          ['swimming','They enjoy swimming.','swimming'],['soccer','He plays soccer well.','plays'],['basketball','She likes basketball.','likes'],['music','We listen to music.','listen']]],
+        ['Nature', 'Tabia', [
+          ['tree','An old tree stands beside the road.','stands'],['flower','Flowers grow in spring.','grow'],['mountain','The mountain is covered with snow.','covered'],['river','The river is very wide.','wide']]],
+        ['Plans', 'Khatat', [
+          ['boat','We might travel by boat.','might'],['airplane','We may fly to London.','may'],['hotel','We could stay at a hotel.','could'],['map','We should take a map.','should']]],
+        ['Review', 'Murajaa', [
+          ['library','I have already visited the library.','visited'],['mountain','We had climbed the mountain.','climbed'],['music','I have never heard such music.','heard'],['milestone','This is my greatest achievement.','achievement']]]
       ]
     ]
   };
 
-  var LEVELS = [
-    { id: 'A1', name: 'A1 — Beginner', ar: 'مبتدئ', desc: 'أول الكلمات والجمل القصيرة' },
-    { id: 'A2', name: 'A2 — Elementary', ar: 'أساسي', desc: 'الأسرة والأفعال والأماكن' },
-    { id: 'B1', name: 'B1 — Intermediate', ar: 'متوسط', desc: 'الروتين والسفر والطقس' },
-    { id: 'B2', name: 'B2 — Upper Intermediate', ar: 'فوق المتوسط', desc: 'خبرات وتعبيرات أعمق' }
-  ];
-  var UNITS = {
-    A1: ['First Words', 'People & Things', 'Colors & Animals'],
-    A2: ['Family & Home', 'Everyday Actions', 'Food & Places'],
-    B1: ['Routines & Work', 'Travel & Transport', 'Nature & Weather'],
-    B2: ['Experiences', 'Community', 'Culture & Leisure']
-  };
-  var UNITS_AR = {
-    A1: ['أول الكلمات', 'الأشخاص والأشياء', 'الألوان والحيوانات'],
-    A2: ['العائلة والبيت', 'الأفعال اليومية', 'الطعام والأماكن'],
-    B1: ['الروتين والعمل', 'السفر والمواصلات', 'الطبيعة والطقس'],
-    B2: ['الخبرات', 'المجتمع', 'الثقافة والترفيه']
-  };
-
-  var flatSeeds = [];
-  Object.keys(SEEDS).forEach(function (l) { SEEDS[l].forEach(function (u) { u.forEach(function (s) { flatSeeds.push(s); }); }); });
-
-  function sameFamily(name, count, exclude) {
-    var fam = FAMILY[name];
-    var pool = Object.keys(FAMILY).filter(function (k) { return FAMILY[k] === fam && k !== name && exclude.indexOf(k) === -1; });
-    while (pool.length < count) {
-      Object.keys(FAMILY).forEach(function (k) {
-        if (k !== name && exclude.indexOf(k) === -1 && pool.indexOf(k) === -1) pool.push(k);
-      });
-    }
-    return pool.slice(0, count);
-  }
-  function otherWords(seed, count) {
-    var w = seed[2];
-    var pool = flatSeeds.filter(function (s) { return s[2].toLowerCase() !== w.toLowerCase(); })
-      .map(function (s) { return s[2]; });
-    pool = pool.filter(function (x, i) { return pool.indexOf(x) === i; });
-    return pool.slice(0, count);
-  }
-
-  var n = 0;
-  var levels = LEVELS.map(function (lv, li) {
-    var units = SEEDS[lv.id].map(function (unitSeeds, ui) {
-      var lessons = unitSeeds.map(function (s, si) {
-        var idx = n++, name = s[0], focus = s[2];
-        var words = s[1].replace(/([.!?])$/, ' $1').trim().split(/\s+/);
-        var blank = s[1].replace(new RegExp('\\b' + focus + '\\b', 'i'), '____');
-        var imgNames = [name].concat(sameFamily(name, 3, [name]));
-        var phrs = flatSeeds.filter(function (x) { return x[1] !== s[1] && FAMILY[x[0]] === FAMILY[name]; })
-          .map(function (x) { return x[1]; });
-        phrs = phrs.filter(function (x, i) { return phrs.indexOf(x) === i; });
-        if (phrs.length < 2) phrs = flatSeeds.map(function (x) { return x[1]; }).filter(function (x) { return x !== s[1]; });
-        var wds = [focus].concat(otherWords(s, 3));
-        return {
-          id: lv.id + '-U' + (ui + 1) + '-L' + (si + 1),
-          index: idx, levelIndex: li, unitIndex: ui, lessonInUnit: si + 1,
-          titleAr: s[4], titleEn: s[5], level: lv.id,
-          image: P(name), imageName: name, category: FAMILY[name],
-          phrase: s[1], question: s[3], speak: s[1],
-          words: words, focus: focus, blank: blank,
-          imageOptions: imgNames.map(P), imageAnswer: 0,
-          phraseOptions: [s[1], phrs[0], phrs[1]], phraseAnswer: 0,
-          wordOptions: wds, wordAnswer: 0,
-          unitTitle: UNITS[lv.id][ui], unitTitleAr: UNITS_AR[lv.id][ui]
+  var all = [], index = 0;
+  Object.keys(DATA).forEach(function (lid, li) {
+    DATA[lid].forEach(function (unit, ui) {
+      unit.forEach(function (lesson, lesi) {
+        var scenes = lesson[2].map(function (s) {
+          return { image: IMG(s[0]), phrase: s[1], key: s[2], words: s[1].replace(/([.!?])$/, ' $1').trim().split(/\s+/) };
+        });
+        var l = {
+          id: lid + '-U' + (ui + 1) + '-L' + (lesi + 1),
+          index: index++, level: lid, levelIndex: li, unitIndex: ui, lessonInUnit: lesi + 1,
+          title: lesson[0], titleSub: lesson[1],
+          unitTitle: ['First Words','People & Things','Colors & Actions'][ui] || lesson[0],
+          scenes: scenes,
+          main: scenes[0],
+          images: scenes.map(function (s) { return s.image; }),
+          phrases: scenes.map(function (s) { return s.phrase; })
         };
+        all.push(l);
       });
-      return { id: lv.id + '-U' + (ui + 1), title: UNITS[lv.id][ui], titleAr: UNITS_AR[lv.id][ui], lessons: lessons };
     });
-    return { id: lv.id, name: lv.name, ar: lv.ar, desc: lv.desc, units: units };
   });
 
-  var all = levels.reduce(function (a, l) { return a.concat(l.units.reduce(function (b, u) { return b.concat(u.lessons); }, [])); }, []);
-  all.forEach(function (l, i) {
-    var prev = all.slice(0, i).filter(function (x) { return x.levelIndex === l.levelIndex; }).slice(-2);
-    if (prev.length < 2) prev = all.slice(0, i).slice(-2);
-    while (prev.length < 2) prev.push(all[(i + prev.length + 5) % all.length]);
-    l.review = prev.map(function (x) { return { image: x.image, phrase: x.phrase, title: x.titleAr }; });
-    l.match = [l].concat(prev).map(function (x) { return { image: x.image, phrase: x.phrase }; });
-  });
-
-  global.IMS_CURRICULUM = { version: 5, levels: levels, allLessons: all, stages: 9 };
+  w.IMS_CURRICULUM = { version: 6, allLessons: all, levels: ['A1','A2','B1','B2'], count: all.length };
 })(window);

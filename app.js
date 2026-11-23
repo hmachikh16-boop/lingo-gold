@@ -1,6 +1,6 @@
 /* ============================================================
-   Lingo Gold — Immersion Engine
-   Nine linked exercises inside a full-screen photo lesson.
+   Lingo Gold — Visual Immersion Engine
+   Activities are driven by linked scenes, not isolated quiz pages.
    ============================================================ */
 (function () {
   'use strict';
@@ -9,473 +9,199 @@
   var FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#eef0ef"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9aa5ad" font-family="sans-serif" font-size="18">Image</text></svg>'
   );
-  var SRS = [1, 2, 4, 8, 16, 32];
-  var NAMES = ['الملاحظة', 'الاستماع', 'ربط الصوت بالصورة', 'اختيار الصورة', 'فهم السياق', 'التعرف على الجملة', 'تكوين الجملة', 'النطق', 'المراجعة'];
+  var SRS = [1,2,4,8,16,32];
+  var KINDS = ['OBSERVE','LISTEN','SOUND → PICTURE','CHOOSE PICTURE','IN CONTEXT','RECOGNIZE','BUILD','SPEAK','REVIEW'];
   var $ = function (i) { return document.getElementById(i); };
+  var state, ui = { li:0, ui_:0, lesson:null, act:0, round:0, rounds:1, ok:false, quiz:null }, toastT;
 
-  var state, ui = { level: 0, unit: 0, lesson: null, stage: 0, ok: false, match: null };
-  var timer;
+  function load(){
+    var d={v:3,xp:0,lessons:{},tests:{},streak:{count:0,last:''},stats:{speaking:0,reviews:0}};
+    try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);Object.keys(d).forEach(function(k){if(o[k]!==undefined)d[k]=o[k];});}}catch(e){console.warn('read',e);}return d;
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){console.warn('save',e);}}
+  function rec(id){return state.lessons[id]||(state.lessons[id]={done:false,reps:0,due:0,at:0});}
+  function done(id){return !!(state.lessons[id]&&state.lessons[id].done);}
+  function due(id){var r=state.lessons[id];return !!(r&&r.done&&r.due&&r.due<=Date.now());}
+  function doneCount(){return Object.keys(state.lessons).filter(done).length;}
+  function touch(){var t=new Date().toISOString().slice(0,10),y=new Date(Date.now()-86400000).toISOString().slice(0,10);if(state.streak.last!==t){state.streak.count=state.streak.last===y?state.streak.count+1:1;state.streak.last=t;}}
+  function toast(m){var e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){e.classList.remove('show');},2100);}
+  function mark(v){var e=$('mark');e.textContent=v?'✓':'✕';e.className='mark '+(v?'ok':'bad');}
+  function gate(v){ui.ok=!!v;$('next').disabled=!v;}
+  function shuffle(a,s){var x=a.slice(),n=x.length;s=s||1;while(n>1){s=(s*9301+49297)%233280;var i=Math.floor(s/233280*n);n--;var t=x[n];x[n]=x[i];x[i]=t;}return x;}
+  function im(src){var e=document.createElement('img');e.src=src||FALLBACK;e.alt='';e.onerror=function(){e.onerror=null;e.src=FALLBACK;};return e;}
+  function norm(s){return String(s).toLowerCase().replace(/[.,!?]/g,'').replace(/\s+/g,' ').trim();}
+  function say(text,btn){if(!('speechSynthesis' in window)){toast('Audio not supported');return;}try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.9;if(btn){btn.classList.add('playing');u.onend=function(){btn.classList.remove('playing');};}speechSynthesis.speak(u);}catch(e){toast('Audio error');}}
 
-  function load() {
-    var d = { v: 2, xp: 0, lessons: {}, tests: {}, streak: { count: 0, last: '' }, stats: { speaking: 0, reviews: 0 } };
-    try {
-      var raw = localStorage.getItem(KEY);
-      if (raw) { var o = JSON.parse(raw); Object.keys(d).forEach(function (k) { if (o[k] !== undefined) d[k] = o[k]; }); }
-    } catch (e) { console.warn('read failed', e); }
-    return d;
-  }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn('save failed', e); } }
-  function rec(id) { return state.lessons[id] || (state.lessons[id] = { done: false, reps: 0, due: 0, at: 0 }); }
-  function done(id) { return !!(state.lessons[id] && state.lessons[id].done); }
-  function due(id) { var r = state.lessons[id]; return !!(r && r.done && r.due && r.due <= Date.now()); }
-  function doneCount() { return Object.keys(state.lessons).filter(done).length; }
-  function touch() {
-    var t = new Date().toISOString().slice(0, 10), y = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    if (state.streak.last !== t) { state.streak.count = state.streak.last === y ? state.streak.count + 1 : 1; state.streak.last = t; }
-  }
-  function toast(m) { var e = $('toast'); e.textContent = m; e.classList.add('show'); clearTimeout(timer); timer = setTimeout(function () { e.classList.remove('show'); }, 2200); }
-  function note(m, k) { var e = $('lNote'); e.textContent = m || ''; e.className = 'note' + (k ? ' ' + k : ''); }
-  function gate(v) { ui.ok = !!v; $('goBtn').disabled = !v; }
-  function img(src) {
-    var e = document.createElement('img'); e.src = src || FALLBACK; e.alt = '';
-    e.onerror = function () { e.onerror = null; e.src = FALLBACK; }; return e;
-  }
-  function norm(s) { return String(s).toLowerCase().replace(/[.,!?]/g, '').replace(/\s+/g, ' ').trim(); }
-  function shuffled(a, seed) {
-    var x = a.slice(), n = x.length; seed = seed || 1;
-    while (n > 1) { seed = (seed * 9301 + 49297) % 233280; var i = Math.floor(seed / 233280 * n); n--; var t = x[n]; x[n] = x[i]; x[i] = t; }
-    return x;
-  }
-  function say(text, btn) {
-    if (!('speechSynthesis' in window)) { toast('هذا المتصفح لا يدعم الصوت'); return; }
-    try {
-      speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(String(text));
-      u.lang = 'en-US'; u.rate = .9;
-      if (btn) { btn.classList.add('playing'); u.onend = function () { btn.classList.remove('playing'); }; }
-      speechSynthesis.speak(u);
-    } catch (e) { toast('تعذّر تشغيل الصوت'); }
-  }
+  /* progression */
+  function levelOpen(i){if(i===0)return true;var t=state.tests['L-'+C.levels[i-1]];return !!(t&&t.pass);}
+  function unitOpen(li,uiIdx){if(!levelOpen(li))return false;if(uiIdx===0)return true;var idx=(li*12)+(uiIdx-1)*4;for(var k=0;k<4;k++)if(!done(C.allLessons[idx+k].id))return false;return true;}
+  function lessonOpen(l){if(!unitOpen(l.levelIndex,l.unitIndex))return false;if(l.lessonInUnit===1)return true;return done(C.allLessons[l.index-1].id);}
+  function unitTestOpen(u){var base=u*4;for(var k=0;k<4;k++)if(!done(C.allLessons[base+k].id))return false;return true;}
+  function levelTestOpen(lv){for(var u=0;u<3;u++){var t=state.tests['U-'+lv+'-'+u];if(!(t&&t.pass))return false;}return true;}
+  function nextLesson(){for(var i=0;i<C.allLessons.length;i++)if(!done(C.allLessons[i].id))return C.allLessons[i];return null;}
 
-  /* ---------- progression ---------- */
-  function levelOpen(i) { if (i === 0) return true; var t = state.tests['L-' + C.levels[i - 1].id]; return !!(t && t.pass); }
-  function unitOpen(li, uidx) {
-    if (!levelOpen(li)) return false;
-    if (uidx === 0) return true;
-    return C.levels[li].units[uidx - 1].lessons.every(function (l) { return done(l.id); });
-  }
-  function lessonOpen(l) {
-    if (!unitOpen(l.levelIndex, l.unitIndex)) return false;
-    if (l.lessonInUnit === 1) return true;
-    var u = C.levels[l.levelIndex].units[l.unitIndex];
-    return done(u.lessons[l.lessonInUnit - 2].id);
-  }
-  function unitTest(u) { return u.lessons.every(function (l) { return done(l.id); }); }
-  function levelTest(lv) { return lv.units.every(function (u) { var t = state.tests['U-' + u.id]; return t && t.pass; }); }
-  function nextLesson() { for (var i = 0; i < C.allLessons.length; i++) if (!done(C.allLessons[i].id)) return C.allLessons[i]; return null; }
-
-  /* ---------- home ---------- */
-  function renderHome() {
-    var lv = C.levels[ui.level], u = lv.units[ui.unit];
-    $('homeProgress').textContent = doneCount() + ' / ' + C.allLessons.length;
-    var sl = $('sideLevels'); sl.innerHTML = '';
-    C.levels.forEach(function (l, i) {
-      var b = document.createElement('button');
-      b.className = 'lv' + (i === ui.level ? ' on' : '');
-      b.innerHTML = '<span>' + (levelOpen(i) ? '' : '🔒 ') + l.name + '</span><small>' + l.ar + '</small>';
-      b.onclick = function () {
-        if (!levelOpen(i)) { toast('اجتز اختبار المستوى السابق أولًا'); return; }
-        ui.level = i; ui.unit = 0; renderHome();
-      };
-      sl.appendChild(b);
-      if (i === ui.level) l.units.forEach(function (un, j) {
-        var ub = document.createElement('button');
-        ub.className = 'u-item' + (j === ui.unit ? ' on' : '');
-        var c = un.lessons.filter(function (x) { return done(x.id); }).length;
-        ub.innerHTML = '<span>' + (unitOpen(i, j) ? '' : '🔒 ') + un.titleAr + '</span><span>' + c + '/4</span>';
-        ub.onclick = function () {
-          if (!unitOpen(i, j)) { toast('أكمل الوحدة السابقة أولًا'); return; }
-          ui.level = i; ui.unit = j; renderHome();
-        };
-        sl.appendChild(ub);
+  /* home */
+  function home(){
+    $('progress').textContent=doneCount()+' / '+C.count;
+    var lv=C.levels[ui.li], side=$('side');side.innerHTML='';
+    C.levels.forEach(function(l,i){
+      var b=document.createElement('button');b.className='lv'+(i===ui.li?' on':'');
+      b.innerHTML='<span>'+(levelOpen(i)?'':'🔒 ')+l+'</span><span>'+doneCountForLevel(i)+'/12</span>';
+      b.onclick=function(){if(!levelOpen(i)){toast('Complete the previous level test');return;}ui.li=i;ui.ui_=0;home();};
+      side.appendChild(b);
+      if(i===ui.li)['Unit 1','Unit 2','Unit 3'].forEach(function(u,j){
+        var ub=document.createElement('button');ub.className='un'+(j===ui.ui_?' on':'');
+        ub.innerHTML='<span>'+(unitOpen(i,j)?'':'🔒 ')+u+'</span><span>4</span>';
+        ub.onclick=function(){if(!unitOpen(i,j)){toast('Complete the previous unit');return;}ui.li=i;ui.ui_=j;home();};
+        side.appendChild(ub);
       });
     });
-    $('homeTitle').textContent = u.titleAr;
-    $('homeLead').textContent = lv.name + ' · ' + u.title + ' — تعلّم بالصورة والسياق';
-    var g = $('pathGrid'); g.innerHTML = '';
-    u.lessons.forEach(function (l) {
-      var ok = lessonOpen(l), finished = done(l.id);
-      var t = document.createElement('div');
-      t.className = 'tile' + (ok ? ' open' : ' lock') + (finished ? ' done' : '');
-      t.innerHTML = '<span class="flag' + (finished ? ' ok' : '') + '">' + (finished ? '✓' : (ok ? '' : '🔒')) + '</span>' +
-        '<img src="' + l.image + '" alt=""><div class="t"><small>' + l.level + ' · LESSON ' + String(l.index + 1).padStart(2, '0') + '</small>' +
-        '<h3>' + l.titleAr + '</h3><div class="en">' + l.titleEn + '</div></div>';
-      var im = t.querySelector('img'); im.onerror = function () { im.onerror = null; im.src = FALLBACK; };
-      t.onclick = function () { if (ok) open(l); else toast('أكمل الدرس السابق أولًا'); };
-      g.appendChild(t);
-    });
-    var row = $('testRow'); row.innerHTML = '';
-    [['U-' + u.id, unitTest(u), 'اختبار الوحدة', u.titleAr, 'unit'],
-     ['L-' + lv.id, levelTest(lv) && levelOpen(ui.level), 'اختبار المستوى', lv.name, 'level']].forEach(function (a) {
-      var r = state.tests[a[0]], b = document.createElement('button');
-      b.className = 'mini' + (a[1] && !(r && r.pass) ? ' go' : '');
-      b.innerHTML = (r && r.pass ? '✓ ' + r.score + '%' : (a[1] ? a[2] + ' ابدأ' : '🔒 ' + a[2]));
-      if (a[1] && !(r && r.pass)) b.onclick = function () { startTest(a[4]); };
+    var base=ui.li*12+ui.ui_*4;
+    $('title').textContent=lv+' · Unit '+(ui.ui_+1);
+    var grid=$('path');grid.innerHTML='';
+    for(var k=0;k<4;k++){
+      let l=C.allLessons[base+k], open=lessonOpen(l), fin=done(l.id);
+      let t=document.createElement('div');t.className='tile'+(open?' open':' lock')+(fin?' done':'');
+      t.innerHTML='<span class="st'+(fin?' ok':'')+'">'+(fin?'✓':(open?'':'🔒'))+'</span><img src="'+l.main.image+'" alt="">'+
+        '<div class="info"><small>'+l.level+' · LESSON '+String(l.index+1).padStart(2,'0')+'</small><h3>'+l.title+'</h3><div class="en">'+l.titleSub+'</div></div>';
+      var im=t.querySelector('img');im.onerror=function(){im.onerror=null;im.src=FALLBACK;};
+      t.onclick=function(){if(open)openLesson(l);else toast('Finish the previous lesson first');};
+      grid.appendChild(t);
+    }
+    var tools=$('tools');tools.innerHTML='';
+    var a=document.createElement('button');a.className='btn-s'+(unitTestOpen(ui.ui_)?' go':'');a.textContent='Unit test';
+    if(unitTestOpen(ui.ui_))a.onclick=function(){startTest('unit');};tools.appendChild(a);
+    var b=document.createElement('button');b.className='btn-s'+(levelTestOpen(lv)?' go':'');b.textContent='Level test';
+    if(levelTestOpen(lv))b.onclick=function(){startTest('level');};tools.appendChild(b);
+    var dues=C.allLessons.filter(function(l){return due(l.id);}).length;
+    var r=document.createElement('button');r.className='btn-s'+(dues?' go':'');r.textContent='Review'+(dues?' ('+dues+')':'');
+    r.onclick=openReview;tools.appendChild(r);
+  }
+  function doneCountForLevel(i){var n=0;for(var k=i*12;k<i*12+12;k++)if(done(C.allLessons[k].id))n++;return n;}
+
+  /* lesson */
+  function openLesson(l){if(!lessonOpen(l))return;ui.lesson=l;ui.act=0;ui.round=0;$('home').style.display='none';$('stage').classList.add('on');render();}
+  function exitLesson(){$('stage').classList.remove('on');$('home').style.display='block';home();}
+  function bar(){var b=$('pieces');b.innerHTML='';for(var i=0;i<9;i++){var s=document.createElement('span');s.className='piece'+(i<ui.act?' done':'')+(i===ui.act?' now':'');b.appendChild(s);}$('count').textContent=(ui.act+1)+'/9';$('kind').textContent=KINDS[ui.act];}
+  function render(){
+    bar();gate(false);mark(0);
+    var h=$('wrap');h.innerHTML='';
+    if(ui.act===0)observe(h);
+    else if(ui.act===1)bySound(h,false);
+    else if(ui.act===2)bySound(h,true);
+    else if(ui.act===3)byText(h);
+    else if(ui.act===4)contextual(h);
+    else if(ui.act===5)recognize(h);
+    else if(ui.act===6)build(h);
+    else if(ui.act===7)speaking(h);
+    else reviewing(h);
+  }
+  function hero(h,scene,withSentence){
+    var f=document.createElement('div');f.className='hero';f.appendChild(im(scene.image));h.appendChild(f);
+    if(withSentence){var c=document.createElement('div');c.className='caption';var s=document.createElement('div');s.className='sent en';s.textContent=scene.phrase;c.appendChild(s);var b=document.createElement('button');b.className='listen';b.textContent='🔊';c.appendChild(b);h.appendChild(c);return b;}
+    return null;
+  }
+  function imageRow(h,images,right,onRight){
+    var row=document.createElement('div');row.className='row4';
+    images.forEach(function(src){
+      var b=document.createElement('button');b.className='pick';b.appendChild(im(src));
+      b.onclick=function(){var ok=src===right;if(ok){b.classList.add('correct');onRight();}else b.classList.add('wrong');mark(ok);};
       row.appendChild(b);
     });
-    var dueN = C.allLessons.filter(function (l) { return due(l.id); }).length;
-    $('reviewBtn').textContent = dueN ? 'مراجعة (' + dueN + ')' : 'مراجعة';
+    h.appendChild(row);
   }
+  function textLine(h,options,right,onRight){
+    var line=document.createElement('div');line.className='line';
+    options.forEach(function(txt){var b=document.createElement('button');b.className='word-opt en';b.textContent=txt;
+      b.onclick=function(){var ok=txt===right;if(ok){b.classList.add('correct');onRight();}else b.classList.add('wrong');mark(ok);};line.appendChild(b);});
+    h.appendChild(line);
+  }
+  function nextRound(){if(ui.round<ui.rounds-1){ui.round++;render();}else gate(true);}
 
-  /* ---------- lesson shell ---------- */
-  function open(l) {
-    if (!lessonOpen(l)) return;
-    ui.lesson = l; ui.stage = 0;
-    $('home').style.display = 'none';
-    $('lesson').classList.add('on');
-    render();
+  function observe(h){var l=ui.lesson,b=hero(h,l.main,true);b.onclick=function(){say(l.main.phrase,b);gate(true);mark(1);};say(l.main.phrase,b);}
+  function bySound(h,word){
+    ui.rounds=2;var l=ui.lesson,scene=l.scenes[ui.round%4],imgs=shuffle(l.images,l.index+ui.round*7);
+    var c=document.createElement('div');c.className='caption';var b=document.createElement('button');b.className='listen';b.textContent='🔊';c.appendChild(b);h.appendChild(c);
+    var target=word?scene.key:scene.phrase;b.onclick=function(){say(target,b);};say(target,b);
+    imageRow(h,imgs,scene.image,nextRound);
   }
-  function closeLesson() {
-    $('lesson').classList.remove('on');
-    $('home').style.display = 'grid';
-    renderHome();
-  }
-  function render() {
-    var s = ui.stage, l = ui.lesson;
-    gate(false); note('');
-    var seg = $('segBar'); seg.innerHTML = '';
-    for (var i = 0; i < 9; i++) {
-      var d = document.createElement('span');
-      d.className = 'seg' + (i < s ? ' done' : '') + (i === s ? ' cur' : '');
-      seg.appendChild(d);
-    }
-    $('lCount').textContent = (s + 1) + '/9';
-    $('lPrompt').textContent = NAMES[s];
-    var host = $('lStage'); host.innerHTML = '';
-    if (s === 0) observe(host, l);
-    else if (s === 1) listenPicture(host, l);
-    else if (s === 2) wordPicture(host, l);
-    else if (s === 3) selectPicture(host, l);
-    else if (s === 4) context(host, l);
-    else if (s === 5) recognize(host, l);
-    else if (s === 6) build(host, l);
-    else if (s === 7) speak(host, l);
-    else review(host, l);
-  }
+  function byText(h){ui.rounds=2;var l=ui.lesson,scene=l.scenes[(ui.round+1)%4],imgs=shuffle(l.images,l.index+ui.round*11);
+    var cap=document.createElement('div');cap.className='caption';var s=document.createElement('div');s.className='sent en';s.textContent=scene.phrase;cap.appendChild(s);h.appendChild(cap);
+    imageRow(h,imgs,scene.image,nextRound);}
+  function contextual(h){ui.rounds=2;var l=ui.lesson,scene=l.scenes[(ui.round+2)%4];
+    hero(h,scene,false);
+    var cap=document.createElement('div');cap.className='caption';var s=document.createElement('div');s.className='sent en';
+    s.innerHTML=scene.phrase.replace(new RegExp('\\b'+scene.key+'\\b','i'),'<span style="color:var(--gold)">____</span>');cap.appendChild(s);h.appendChild(cap);
+    var opts=[scene.key];l.scenes.forEach(function(x){if(x.key!==scene.key&&opts.indexOf(x.key)===-1)opts.push(x.key);});
+    while(opts.length<4)opts.push(l.scenes[(opts.length+ui.round)%4].key+'s');
+    textLine(h,shuffle(opts,l.index+ui.round),scene.key,nextRound);}
+  function recognize(h){ui.rounds=2;var l=ui.lesson,scene=l.scenes[(ui.round+3)%4];hero(h,scene,false);
+    textLine(h,shuffle(l.phrases,l.index+ui.round*5),scene.phrase,nextRound);}
+  function build(h){ui.rounds=2;var l=ui.lesson,scene=l.scenes[ui.round%4];hero(h,scene,false);
+    var slots=document.createElement('div');slots.className='slots en';var pool=document.createElement('div');pool.className='pool en';var placed=[];
+    shuffle(scene.words.map(function(w,i){return {w:w,i:i};}),l.index+ui.round).forEach(function(t){var c=document.createElement('button');c.className='chip';c.textContent=t.w;c.onclick=function(){c.classList.add('used');placed.push(t);draw();};pool.appendChild(c);});
+    function draw(){slots.innerHTML='';placed.forEach(function(t,j){var c=document.createElement('button');c.className='chip placed';c.textContent=t.w;c.onclick=function(){placed.splice(j,1);var o=[].slice.call(pool.children).filter(function(x){return x.textContent===t.w&&x.classList.contains('used');})[0];if(o)o.classList.remove('used');draw();};slots.appendChild(c);});
+      if(placed.map(function(t){return t.w;}).join(' ')===scene.words.join(' ')){mark(1);say(scene.phrase);nextRound();}}
+    h.append(slots,pool);}
+  function speaking(h){var l=ui.lesson,b=hero(h,l.main,true);b.onclick=function(){say(l.main.phrase,b);};
+    var mic=document.createElement('button');mic.className='mic';mic.textContent='🎙 SPEAK';
+    var meter=document.createElement('div');meter.className='levelbar';meter.innerHTML='<span></span>';
+    var st=document.createElement('div');st.className='status';st.textContent='Press and say the sentence';
+    var self=document.createElement('button');self.className='self';self.textContent='Practiced aloud (no pronunciation score)';
+    h.append(mic,meter,st,self);
+    mic.onclick=function(){speechCheck(l.main.phrase,mic,meter.firstChild,st);};
+    self.onclick=function(){state.stats.speaking++;save();gate(true);mark(1);st.textContent='Practice recorded — pronunciation not scored';};}
+  function speechCheck(target,btn,bar,st){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){st.textContent='Speech recognition unavailable in this browser';return;}
+    try{var r=new SR();r.lang='en-US';r.interimResults=false;btn.classList.add('rec');bar.style.width='35%';st.textContent='Listening...';
+      r.onresult=function(e){btn.classList.remove('rec');var said=e.results[0][0].transcript;bar.style.width='100%';st.textContent='Heard: '+said;
+        if(norm(said)===norm(target)){state.stats.speaking++;save();gate(true);mark(1);}else{mark(0);}};
+      r.onerror=function(e){btn.classList.remove('rec');bar.style.width='0%';st.textContent='Recognition error: '+(e.error||'');mark(0);};
+      r.onend=function(){btn.classList.remove('rec');};r.start();}catch(e){btn.classList.remove('rec');st.textContent='Microphone could not start';}}
 
-  function scene(host, src, sentence, withSound) {
-    var f = document.createElement('div'); f.className = 'scene';
-    if (!src) { f.style.display = 'none'; }
-    else f.appendChild(img(src));
-    host.appendChild(f);
-    if (sentence !== null) {
-      var r = document.createElement('div'); r.className = 'sentence-row';
-      var t = document.createElement('div'); t.className = 'sentence'; t.textContent = sentence || '';
-      r.appendChild(t);
-      if (withSound) {
-        var b = document.createElement('button'); b.className = 'sound'; b.textContent = '🔊';
-        b.onclick = function () { say(sentence, b); }; r.appendChild(b); f._sound = b;
-      }
-      host.appendChild(r);
-    }
-    return f;
+  function reviewing(h){ui.rounds=4;var l=ui.lesson,prev=C.allLessons[l.index-1]||l;
+    if(ui.round<2){var ps=prev.scenes[ui.round%4],imgs=shuffle(prev.images,prev.index+ui.round);
+      var cap=document.createElement('div');cap.className='caption';var s=document.createElement('div');s.className='sent en';s.textContent=ps.phrase;cap.appendChild(s);h.appendChild(cap);
+      imageRow(h,imgs,ps.image,nextRound);
+    }else if(ui.round===2){var sc=l.main,imgs2=shuffle(l.images,l.index+41);
+      var c2=document.createElement('div');c2.className='caption';var t2=document.createElement('div');t2.className='sent en';t2.textContent=sc.phrase;c2.appendChild(t2);h.appendChild(c2);
+      imageRow(h,imgs2,sc.image,nextRound);
+    }else{var sc3=l.scenes[1];hero(h,sc3,false);
+      var cap3=document.createElement('div');cap3.className='caption';var x=document.createElement('div');x.className='sent en';x.innerHTML=sc3.phrase.replace(new RegExp('\\b'+sc3.key+'\\b','i'),'____');cap3.appendChild(x);h.appendChild(cap3);
+      textLine(h,shuffle(l.scenes.map(function(s){return s.key;}),l.index+53),sc3.key,nextRound);}
   }
-  function prompt(host, text) { var d = document.createElement('div'); d.className = 'prompt'; d.textContent = text; host.appendChild(d); }
-  function photoChoices(host, list, correctIdx, onResult) {
-    var g = document.createElement('div'); g.className = 'choices';
-    list.forEach(function (src, i) {
-      var b = document.createElement('button'); b.className = 'opt'; b.appendChild(img(src));
-      b.onclick = function () {
-        if (b.dataset.lock) return;
-        var ok = i === correctIdx;
-        [].slice.call(g.children).forEach(function (x) { x.classList.remove('correct', 'wrong'); });
-        b.classList.add(ok ? 'correct' : 'wrong');
-        if (!ok) b.dataset.lock = '1';
-        if (onResult) onResult(ok, i);
-        gate(ok); note(ok ? 'أحسنت.' : 'حاول مرة أخرى.', ok ? 'ok' : 'bad');
-      };
-      g.appendChild(b);
-    });
-    host.appendChild(g); return g;
-  }
-  function textChoices(host, list, correctIdx, onResult) {
-    var g = document.createElement('div'); g.className = 'choices';
-    g.style.gridTemplateColumns = '1fr';
-    list.forEach(function (txt, i) {
-      var b = document.createElement('button'); b.className = 'opt-text en'; b.textContent = txt;
-      b.onclick = function () {
-        if (b.dataset.lock) return;
-        var ok = i === correctIdx;
-        [].slice.call(g.children).forEach(function (x) { x.classList.remove('correct', 'wrong'); });
-        b.classList.add(ok ? 'correct' : 'wrong');
-        if (!ok) b.dataset.lock = '1';
-        if (onResult) onResult(ok, txt);
-        gate(ok); note(ok ? 'صحيح.' : 'حاول مرة أخرى.', ok ? 'ok' : 'bad');
-      };
-      g.appendChild(b);
-    });
-    host.appendChild(g); return g;
-  }
+  function advance(){if(!ui.ok)return;if(ui.act<8){ui.act++;ui.round=0;render();return;}
+    var l=ui.lesson,r=rec(l.id);r.done=true;r.reps=0;r.due=Date.now()+SRS[0]*86400000;r.at=Date.now();touch();state.xp+=10;save();toast('Lesson mastered');
+    var nx=nextLesson();if(nx){ui.li=nx.levelIndex;ui.ui_=nx.unitIndex;}exitLesson();}
 
-  /* ---------- nine stages ---------- */
-  function observe(host, l) {
-    var f = scene(host, l.image, l.phrase, true);
-    prompt(host, l.question + ' — انظر واستمع.');
-    f._sound.onclick = function () { say(l.phrase, f._sound); gate(true); note('استمعت إلى الجملة.', 'ok'); };
-    say(l.phrase, f._sound);
-  }
-  function listenPicture(host, l) {
-    prompt(host, 'استمع، ثم اختر الصورة التي تسمعها.');
-    var r = document.createElement('div'); r.className = 'sentence-row';
-    var b = document.createElement('button'); b.className = 'sound'; b.textContent = '🔊'; b.onclick = function () { say(l.phrase, b); };
-    r.appendChild(b); host.appendChild(r);
-    photoChoices(host, l.imageOptions.slice(0, 4), 0, function (ok) { if (ok) say(l.phrase); });
-    say(l.phrase);
-  }
-  function wordPicture(host, l) {
-    prompt(host, 'استمع إلى الكلمة واربطها بالصورة.');
-    var r = document.createElement('div'); r.className = 'sentence-row';
-    var b = document.createElement('button'); b.className = 'sound'; b.textContent = '🔊'; b.onclick = function () { say(l.focus, b); };
-    r.appendChild(b); host.appendChild(r);
-    photoChoices(host, l.imageOptions.slice(0, 4), 0, function (ok) { if (ok) say(l.focus); });
-    say(l.focus);
-  }
-  function selectPicture(host, l) {
-    scene(host, '', l.phrase, true);
-    prompt(host, 'اختر الصورة التي تطابق الجملة.');
-    photoChoices(host, l.imageOptions.slice(0, 4), 0, function (ok) { if (ok) say(l.phrase); });
-    say(l.phrase);
-  }
-  function context(host, l) {
-    scene(host, l.image, null, false);
-    prompt(host, 'أكمل الجملة من السياق.');
-    var line = document.createElement('div'); line.className = 'sentence en'; line.style.fontSize = '20px';
-    line.innerHTML = l.blank.split('____')[0] + '<span style="color:var(--gold)">____</span>' + (l.blank.split('____')[1] || '');
-    host.appendChild(line);
-    textChoices(host, l.wordOptions, 0, function (ok, w) { if (ok) { say(l.phrase); note('ممتاز — ' + w, 'ok'); } });
-  }
-  function recognize(host, l) {
-    scene(host, l.image, null, false);
-    prompt(host, 'أي جملة تصف الصورة؟');
-    textChoices(host, l.phraseOptions, 0, function (ok, t) { if (ok) say(t); });
-  }
-  function build(host, l) {
-    scene(host, l.image, null, false);
-    prompt(host, 'رتّب الكلمات لتكوين الجملة.');
-    var line = document.createElement('div'); line.className = 'wordline en';
-    var bank = document.createElement('div'); bank.className = 'words en';
-    var placed = [];
-    shuffled(l.words.map(function (w, i) { return { w: w, i: i }; }), l.index + 3).forEach(function (t) {
-      var c = document.createElement('button'); c.className = 'chip'; c.textContent = t.w;
-      c.onclick = function () { c.classList.add('used'); placed.push(t); draw(); };
-      bank.appendChild(c);
-    });
-    function draw() {
-      line.innerHTML = '';
-      placed.forEach(function (t, j) {
-        var c = document.createElement('button'); c.className = 'chip placed'; c.textContent = t.w;
-        c.onclick = function () {
-          placed.splice(j, 1);
-          var o = [].slice.call(bank.children).filter(function (x) { return x.textContent === t.w && x.classList.contains('used'); })[0];
-          if (o) o.classList.remove('used'); draw();
-        };
-        line.appendChild(c);
-      });
-      var ok = placed.map(function (t) { return t.w; }).join(' ') === l.words.join(' ');
-      gate(ok);
-      if (ok) { note('جملة صحيحة.', 'ok'); say(l.phrase); }
-    }
-    host.append(line, bank);
-  }
-  function speak(host, l) {
-    scene(host, l.image, l.phrase, true)._sound.onclick = function () { say(l.phrase); };
-    prompt(host, 'استمع ثم قل الجملة بصوت عالٍ.');
-    var b = document.createElement('button'); b.className = 'mic'; b.textContent = '🎙 ابدأ التحدث';
-    var m = document.createElement('div'); m.className = 'meter'; m.innerHTML = '<span></span>';
-    var s = document.createElement('div'); s.className = 'prompt'; s.textContent = 'إن لم يتوفر التعرف الصوتي، تدرب ثم أكّد أدناه.';
-    var self = document.createElement('button'); self.className = 'mini'; self.textContent = 'تدربت بصوت عالٍ (دون تقييم)';
-    host.append(b, m, s, self);
-    b.onclick = function () { speechCheck(l, b, m.firstChild, s); };
-    self.onclick = function () { state.stats.speaking++; save(); gate(true); note('تم التدريب — لم يُقيَّم النطق آليًا.', 'ok'); };
-  }
-  function speechCheck(l, btn, bar, st) {
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { st.textContent = 'التعرف الصوتي غير متاح في هذا المتصفح.'; note('لا يمكن تقييم النطق هنا.', 'bad'); return; }
-    try {
-      var r = new SR(); r.lang = 'en-US'; r.interimResults = false;
-      btn.classList.add('rec'); bar.style.width = '35%'; st.textContent = 'جارٍ الاستماع...';
-      r.onresult = function (e) {
-        btn.classList.remove('rec'); var said = e.results[0][0].transcript;
-        bar.style.width = '100%'; st.textContent = 'سمعت: "' + said + '"';
-        if (norm(said) === norm(l.phrase)) {
-          state.stats.speaking++; save(); gate(true);
-          note('تم التعرف على الجملة بدقة.', 'ok');
-        } else { gate(false); note('حاول مرة أخرى.', 'bad'); }
-      };
-      r.onerror = function (e) { btn.classList.remove('rec'); bar.style.width = '0%'; st.textContent = 'خطأ في الميكروفون: ' + (e.error || ''); note('لم يتم تقييم النطق.', 'bad'); };
-      r.onend = function () { btn.classList.remove('rec'); };
-      r.start();
-    } catch (e) { btn.classList.remove('rec'); st.textContent = 'تعذّر بدء الميكروفون.'; }
-  }
-  function review(host, l) {
-    prompt(host, 'راجع ما تعلّمته قبل إتقان الدرس.');
-    var g = document.createElement('div'); g.className = 'choices';
-    var answered = 0, ok = 0;
-    l.review.forEach(function (p, k) {
-      var c = document.createElement('div'); c.style.cssText = 'grid-column:1/-1;margin-bottom:10px';
-      var h = document.createElement('div'); h.className = 'prompt'; h.textContent = (k + 1) + '. ' + p.title;
-      var row = document.createElement('div'); row.className = 'choices';
-      var opts = shuffled([p.image].concat(l.imageOptions.slice(1, 4)), p.title.length + k);
-      opts.forEach(function (src) {
-        var b = document.createElement('button'); b.className = 'opt'; b.appendChild(img(src));
-        b.onclick = function () {
-          if (b.dataset.lock) return;
-          [].slice.call(row.children).forEach(function (x) { x.dataset.lock = '1'; });
-          answered++;
-          if (src === p.image) { ok++; b.classList.add('correct'); } else b.classList.add('wrong');
-          if (answered === l.review.length) {
-            if (ok === l.review.length) { note('مراجعة ممتازة — أكمل الإتقان.', 'ok'); master(host, l); }
-            else { gate(false); note('راجع الصور ثم حاول.', 'bad'); }
-          }
-        };
-        row.appendChild(b);
-      });
-      c.append(h, row); g.appendChild(c);
-    });
-    host.appendChild(g);
-  }
-  function master(host, l) {
-    var box = document.createElement('div');
-    box.style.cssText = 'grid-column:1/-1;border-top:1px solid var(--line);margin-top:12px;padding-top:12px';
-    var h = document.createElement('div'); h.className = 'prompt'; h.textContent = 'إتقان الدرس — 3 أسئلة';
-    box.appendChild(h);
-    var qs = [
-      { p: l.phrase, list: shuffled(l.imageOptions.slice(0, 4), l.index + 31), type: 'img', right: l.image },
-      { p: l.question, list: shuffled(l.phraseOptions, l.index + 41), type: 'txt', right: l.phrase },
-      { p: l.blank, list: shuffled(l.wordOptions, l.index + 53), type: 'txt', right: l.focus }
-    ];
-    var done = 0, ok = 0;
-    qs.forEach(function (q, qi) {
-      var c = document.createElement('div'); c.style.marginBottom = '10px';
-      var p = document.createElement('div'); p.className = 'prompt en'; p.style.textAlign = 'center'; p.textContent = (qi + 1) + '. ' + q.p;
-      var row = document.createElement('div'); row.className = q.type === 'img' ? 'choices' : 'choices';
-      if (q.type !== 'img') row.style.gridTemplateColumns = '1fr';
-      q.list.forEach(function (opt) {
-        var b = document.createElement('button');
-        b.className = q.type === 'img' ? 'opt' : 'opt-text en';
-        if (q.type === 'img') b.appendChild(img(opt)); else b.textContent = opt;
-        b.onclick = function () {
-          if (b.dataset.lock) return;
-          [].slice.call(row.children).forEach(function (x) { x.dataset.lock = '1'; x.classList.remove('correct', 'wrong'); });
-          done++;
-          var right = opt === q.right;
-          if (right) { ok++; b.classList.add('correct'); } else b.classList.add('wrong');
-          if (done === qs.length) {
-            if (ok === qs.length) { gate(true); note('إتقان كامل.', 'ok'); }
-            else { gate(false); note('أجب عن الثلاثة بشكل صحيح.', 'bad'); }
-          }
-        };
-        row.appendChild(b);
-      });
-      c.append(p, row); box.appendChild(c);
-    });
-    host.querySelector('.choices').appendChild(box);
-  }
-  function advance() {
-    if (!ui.ok) return;
-    if (ui.stage < 8) { ui.stage++; render(); return; }
-    var l = ui.lesson, r = rec(l.id);
-    r.done = true; r.reps = 0; r.due = Date.now() + SRS[0] * 86400000; r.at = Date.now();
-    touch(); state.xp += 10; save(); toast('تم إتقان الدرس');
-    var nx = nextLesson();
-    if (nx) { ui.level = nx.levelIndex; ui.unit = nx.unitIndex; }
-    closeLesson();
-  }
+  /* tests */
+  function startTest(type){var lv=ui.li,base=type==='unit'?lv*12+ui.ui_*4:lv*12;var src=[];for(var k=base;k<base+(type==='unit'?4:12);k++)src.push(C.allLessons[k]);
+    ui.quiz={type:type,id:(type==='unit'?'U-'+lv+'-'+ui.ui_:'L-'+lv),qs:shuffle(src,Date.now()%997).slice(0,type==='unit'?4:6),i:0,res:[]};question();}
+  function question(){var q=ui.quiz;if(q.i>=q.qs.length){testEnd();return;}
+    var l=q.qs[q.i],kind=q.i%3,body=$('testWrap');body.innerHTML='';
+    var cap=document.createElement('div');cap.className='caption';cap.style.justifyContent='center';var s=document.createElement('div');s.className='sent en';
+    var right,opts,imgs=false;
+    if(kind===0){s.textContent=l.main.phrase;right=l.main.image;opts=shuffle(l.images,l.index+3);imgs=true;}
+    else if(kind===1){s.textContent=l.titleSub;right=l.main.phrase;opts=shuffle(l.phrases,l.index+7);}
+    else{s.innerHTML=l.main.phrase.replace(new RegExp('\\b'+l.main.key+'\\b','i'),'____');right=l.main.key;opts=shuffle(l.scenes.map(function(x){return x.key;}),l.index+11);}
+    cap.appendChild(s);body.appendChild(cap);
+    if(imgs)imageRow(body,opts,right,function(){q.res.push(true);q.i++;question();});
+    else{textLine(body,opts,right,function(){q.res.push(true);q.i++;question();});
+      [].slice.call(body.querySelectorAll('.word-opt')).forEach(function(b){if(b.textContent!==right){var old=b.onclick;b.onclick=function(){mark(0);q.res.push(false);q.i++;question();};}});}
+    $('testModal').classList.add('on');}
+  function testEnd(){var q=ui.quiz,pct=Math.round(q.res.filter(Boolean).length/q.qs.length*100),pass=pct>=75;var old=state.tests[q.id];
+    if(pass&&!(old&&old.pass))state.xp+=q.type==='unit'?25:50;state.tests[q.id]={pass:pass||(old&&old.pass),score:Math.max(pct,old?old.score:0)};touch();save();
+    $('testWrap').innerHTML='<div class="caption" style="justify-content:center"><div class="sent" style="font-size:34px">'+pct+'%</div></div><div class="caption" style="justify-content:center"><div class="sent">'+(pass?'PASSED':'TRY AGAIN')+'</div></div><button class="next" style="margin:16px auto" id="tclose">OK</button>';
+    $('tclose').onclick=function(){$('testModal').classList.remove('on');home();};}
+  function openReview(){var list=C.allLessons.filter(function(l){return due(l.id);}),box=$('reviewWrap');box.innerHTML='';
+    if(!list.length)box.innerHTML='<div class="caption" style="justify-content:center"><div class="sent">Nothing due now</div></div>';
+    list.slice(0,10).forEach(function(l){var row=document.createElement('div');row.className='line';row.style.marginBottom='10px';var b=document.createElement('button');b.className='word-opt en';b.textContent=l.main.phrase;b.onclick=function(){
+      var opts=shuffle(l.images,l.index+19);row.innerHTML='';imageRow(row,opts,l.main.image,function(){var r=rec(l.id);r.reps++;r.due=Date.now()+SRS[Math.min(r.reps-1,SRS.length-1)]*86400000;state.stats.reviews++;state.xp+=3;save();toast('Reviewed');$('reviewModal').classList.remove('on');home();});};row.appendChild(b);box.appendChild(row);});
+    $('reviewModal').classList.add('on');}
 
-  /* ---------- tests ---------- */
-  function q(l, k) {
-    if (k === 0) return { p: l.phrase, list: shuffled(l.imageOptions.slice(0, 4), l.index + 7), right: l.image, img: true };
-    if (k === 1) return { p: l.question, list: shuffled(l.phraseOptions, l.index + 11), right: l.phrase, img: false };
-    return { p: l.blank, list: shuffled(l.wordOptions, l.index + 17), right: l.focus, img: false };
-  }
-  var testState = null;
-  function startTest(type) {
-    var lv = C.levels[ui.level];
-    var src = type === 'unit' ? lv.units[ui.unit].lessons : C.allLessons.filter(function (l) { return l.levelIndex === ui.level; });
-    testState = { type: type, id: (type === 'unit' ? 'U-' + lv.units[ui.unit].id : 'L-' + lv.id),
-      qs: shuffled(src, Date.now() % 997).slice(0, type === 'unit' ? 4 : 6).map(function (l, i) { return q(l, i % 3); }), i: 0, res: [] };
-    testShow();
-  }
-  function testShow() {
-    var t = testState;
-    if (t.i >= t.qs.length) { testEnd(); return; }
-    var qq = t.qs[t.i], box = $('testArea');
-    box.innerHTML = '<div class="prompt">' + (t.type === 'unit' ? 'اختبار الوحدة' : 'اختبار المستوى') + ' — ' + (t.i + 1) + '/' + t.qs.length + '</div>' +
-      '<div class="prompt en" style="font-size:18px;color:var(--ink)">' + qq.p + '</div>' +
-      '<div class="choices" id="testChoices" style="grid-column:1/-1"></div>';
-    var row = $('testChoices');
-    if (!qq.img) row.style.gridTemplateColumns = '1fr';
-    qq.list.forEach(function (opt) {
-      var b = document.createElement('button'); b.className = qq.img ? 'opt' : 'opt-text en';
-      if (qq.img) b.appendChild(img(opt)); else b.textContent = opt;
-      b.onclick = function () { t.res.push(opt === qq.right); t.i++; testShow(); };
-      row.appendChild(b);
-    });
-    $('testModal').classList.add('on');
-  }
-  function testEnd() {
-    var t = testState, good = t.res.filter(Boolean).length, pct = Math.round(good / t.qs.length * 100), pass = pct >= 75;
-    var old = state.tests[t.id];
-    if (pass && !(old && old.pass)) state.xp += t.type === 'unit' ? 25 : 50;
-    state.tests[t.id] = { pass: pass || (old && old.pass), score: Math.max(pct, old ? old.score : 0) };
-    touch(); save();
-    $('testArea').innerHTML = '<div class="prompt" style="font-size:22px;color:var(--ink)">' + pct + '%</div>' +
-      '<div class="prompt">' + (pass ? 'اجتزت الاختبار' : 'حاول مرة أخرى') + '</div>' +
-      '<button class="go" id="testClose" style="margin:auto">حسنًا</button>';
-    $('testClose').onclick = function () { $('testModal').classList.remove('on'); renderHome(); };
-  }
-
-  /* ---------- review ---------- */
-  function openReview() {
-    var list = C.allLessons.filter(function (l) { return due(l.id); });
-    $('reviewArea').innerHTML = list.length ? '' : '<div class="prompt">لا توجد مراجعات مستحقة الآن.</div>';
-    list.slice(0, 12).forEach(function (l) {
-      var r = document.createElement('div'); r.className = 'review-row';
-      r.innerHTML = '<div><div class="en">' + l.phrase + '</div><small>' + l.titleAr + '</small></div><button class="mini go">راجع</button>';
-      r.querySelector('button').onclick = function () { doReview(l, r); };
-      $('reviewArea').appendChild(r);
-    });
-    $('reviewModal').classList.add('on');
-  }
-  function doReview(l, row) {
-    var qq = q(l, l.index % 2);
-    row.innerHTML = '<div class="prompt en">' + qq.p + '</div><div class="choices" id="rv"></div>';
-    var box = row.querySelector('#rv');
-    if (!qq.img) box.style.gridTemplateColumns = '1fr';
-    qq.list.forEach(function (opt) {
-      var b = document.createElement('button'); b.className = qq.img ? 'opt' : 'opt-text en';
-      if (qq.img) b.appendChild(img(opt)); else b.textContent = opt;
-      b.onclick = function () {
-        if (opt === qq.right) { var r = rec(l.id); r.reps++; r.due = Date.now() + SRS[Math.min(r.reps - 1, SRS.length - 1)] * 86400000;
-          state.stats.reviews++; state.xp += 3; save(); toast('مراجعة ناجحة'); }
-        else { var r2 = rec(l.id); r2.reps = 0; r2.due = Date.now() + 86400000; toast('ستعود غدًا'); }
-        $('reviewModal').classList.remove('on'); renderHome();
-      };
-      box.appendChild(b);
-    });
-  }
-
-  /* ---------- boot ---------- */
-  function boot() {
-    if (!C || !C.allLessons.length) { $('loading').classList.add('hide'); return; }
-    state = load();
-    $('goBtn').onclick = advance;
-    $('exitBtn').onclick = closeLesson;
-    $('reviewBtn').onclick = openReview;
-    $('testCloseX').onclick = function () { $('testModal').classList.remove('on'); };
-    $('reviewCloseX').onclick = function () { $('reviewModal').classList.remove('on'); };
-    renderHome();
-    setTimeout(function () { $('loading').classList.add('hide'); }, 250);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  function boot(){if(!C){$('loading').classList.add('hide');return;}state=load();
+    $('next').onclick=advance;$('exit').onclick=exitLesson;
+    $('texit').onclick=function(){$('testModal').classList.remove('on');};$('rexit').onclick=function(){$('reviewModal').classList.remove('on');};
+    home();setTimeout(function(){$('loading').classList.add('hide');},220);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
