@@ -1,526 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lingo Gold</title>
-
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lingo Gold — Classic Lesson</title>
 <style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #d6d8db;
-  color: #30343a;
-  overflow: hidden;
-}
-
-.app {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #e8e9eb;
-}
-
-/* TOP BAR */
-.topbar {
-  height: 48px;
-  background: linear-gradient(#f8f8f8, #d5d7da);
-  border-bottom: 1px solid #a9aaad;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-}
-
-.brand {
-  font-size: 20px;
-  font-weight: bold;
-  color: #96762c;
-  letter-spacing: 1px;
-}
-
-.top-right {
-  font-size: 12px;
-  color: #555;
-}
-
-/* MAIN LAYOUT */
-.layout {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
-/* SIDEBAR */
-.sidebar {
-  width: 220px;
-  background: linear-gradient(90deg, #e5e6e8, #d3d5d8);
-  border-right: 1px solid #aeb0b4;
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.course-title {
-  font-size: 13px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.course-subtitle {
-  font-size: 11px;
-  color: #777;
-  margin-bottom: 18px;
-}
-
-.unit-title {
-  padding: 10px;
-  background: linear-gradient(#f7f7f7, #d9dadd);
-  border: 1px solid #b9bbc0;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 6px;
-}
-
-.lesson-list {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.lesson {
-  padding: 10px;
-  font-size: 12px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  color: #4b4d51;
-}
-
-.lesson:hover {
-  background: #f1f2f3;
-  border-color: #c3c5c8;
-}
-
-.lesson.active {
-  background: linear-gradient(#fdfdfd, #dfe1e3);
-  border: 1px solid #aaaeb3;
-  color: #96772d;
-  font-weight: bold;
-}
-
-.sidebar-bottom {
-  margin-top: auto;
-  border-top: 1px solid #bbb;
-  padding-top: 12px;
-  font-size: 11px;
-  color: #777;
-}
-
-/* CONTENT */
-.content {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.toolbar {
-  height: 42px;
-  border-bottom: 1px solid #c2c4c7;
-  background: linear-gradient(#f7f7f8, #e0e1e3);
-  display: flex;
-  align-items: center;
-  padding: 0 18px;
-  gap: 15px;
-  font-size: 12px;
-}
-
-.progress {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-}
-
-.progress span {
-  height: 6px;
-  background: #c5c7ca;
-  border: 1px solid #b5b7ba;
-  flex: 1;
-}
-
-.progress span.done {
-  background: #a38a4a;
-  border-color: #8c7539;
-}
-
-.main {
-  flex: 1;
-  min-height: 0;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* EXERCISE */
-.instruction {
-  font-size: 13px;
-  color: #65686c;
-  margin: 4px 0 14px;
-  text-align: center;
-}
-
-.sentence-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 18px;
-  min-height: 54px;
-}
-
-.sentence {
-  font-size: clamp(20px, 2.2vw, 28px);
-  color: #34373b;
-  text-align: center;
-}
-
-.audio-button {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid #a9adb1;
-  background: linear-gradient(#fff, #d9dcdf);
-  color: #73777b;
-  cursor: pointer;
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.audio-button:hover {
-  background: #fff;
-}
-
-.images {
-  width: min(100%, 950px);
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 10px;
-}
-
-.choice {
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-  border: 3px solid #d1d3d6;
-  background: #fff;
-  cursor: pointer;
-  transition: border-color 0.12s;
-}
-
-.choice:hover {
-  border-color: #a4a6a9;
-}
-
-.choice img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.choice.correct {
-  border-color: #6e9b6d;
-}
-
-.choice.wrong {
-  border-color: #b47777;
-}
-
-.choice-number {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(255,255,255,.88);
-  color: #555;
-  font-size: 11px;
-  padding: 4px 7px;
-}
-
-/* FOOTER */
-.bottom {
-  height: 62px;
-  border-top: 1px solid #bfc1c4;
-  background: linear-gradient(#eeeeef, #d7d9dc);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-}
-
-.feedback {
-  font-size: 13px;
-  color: #777;
-}
-
-.next-button {
-  min-width: 120px;
-  padding: 11px 22px;
-  border: 1px solid #9e9fa2;
-  background: linear-gradient(#fff, #d8dadd);
-  color: #414348;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.next-button:hover {
-  background: linear-gradient(#fff, #c9cdd1);
-}
-
-.next-button:disabled {
-  opacity: .5;
-  cursor: default;
-}
-
-/* RESPONSIVE */
-@media (max-width: 700px) {
-  .sidebar {
-    width: 125px;
-    padding: 10px 6px;
-  }
-
-  .lesson {
-    padding: 9px 5px;
-    font-size: 11px;
-  }
-
-  .main {
-    padding: 10px;
-  }
-
-  .images {
-    gap: 6px;
-  }
-
-  .sentence {
-    font-size: 19px;
-  }
-
-  .bottom {
-    height: 54px;
-    padding: 0 10px;
-  }
-
-  .next-button {
-    min-width: 90px;
-    padding: 10px;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<div class="app">
-
-  <header class="topbar">
-    <div class="brand">LINGO GOLD</div>
-    <div class="top-right">ENGLISH COURSE · UNIT 1</div>
-  </header>
-
-  <div class="layout">
-
-    <aside class="sidebar">
-      <div class="course-title">ENGLISH – LEVEL 1</div>
-      <div class="course-subtitle">BASIC LANGUAGE</div>
-
-      <div class="unit-title">UNIT 1 · BASICS</div>
-
-      <div class="lesson-list">
-        <div class="lesson active">01 &nbsp; Greetings</div>
-        <div class="lesson">02 &nbsp; People</div>
-        <div class="lesson">03 &nbsp; Objects</div>
-        <div class="lesson">04 &nbsp; Places</div>
-        <div class="lesson">05 &nbsp; Actions</div>
-        <div class="lesson">06 &nbsp; Review</div>
-      </div>
-
-      <div class="sidebar-bottom">
-        LESSON PROGRESS<br>
-        <span id="lessonCount">0 / 10</span>
-      </div>
-    </aside>
-
-    <section class="content">
-
-      <div class="toolbar">
-        <span>LESSON 01</span>
-        <div class="progress" id="progress"></div>
-        <span id="roundLabel">1 / 10</span>
-      </div>
-
-      <main class="main">
-
-        <div class="instruction" id="instruction">
-          Listen and choose the correct picture.
-        </div>
-
-        <div class="sentence-row">
-          <div class="sentence" id="sentence">The man is walking.</div>
-          <button class="audio-button" id="audioButton" title="Listen">▶</button>
-        </div>
-
-        <div class="images" id="images"></div>
-
-      </main>
-
-      <footer class="bottom">
-        <div class="feedback" id="feedback">Select a picture.</div>
-        <button class="next-button" id="nextButton" disabled>Continue ›</button>
-      </footer>
-
-    </section>
-  </div>
+:root{--bg:#d4d3ce;--panel:#e7e6e1;--line:#9b9a94;--dark:#4c4c48;--gold:#9b8144;--text:#282927}
+*{box-sizing:border-box}body{margin:0;background:#c9c9c4;color:var(--text);font:13px Tahoma,Arial,sans-serif}
+.app{height:100vh;min-height:600px;display:flex;flex-direction:column;background:linear-gradient(#dad9d4,#c9c8c2);border:1px solid #777}
+.top{height:35px;background:linear-gradient(#f2f1ed,#d6d5cf);border-bottom:1px solid #a5a49d;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+.logo{font-weight:bold;letter-spacing:2px;color:#92773b;font-size:16px}.topmeta{color:#666;font-size:11px}
+.units{height:78px;display:flex;align-items:stretch;padding:7px 10px;gap:7px;background:linear-gradient(#e5e4df,#c9c8c2);border-bottom:1px solid #a5a49d}
+.unit{width:140px;display:flex;align-items:center;gap:7px;border:1px solid #aaa9a2;background:linear-gradient(#f4f3ef,#d4d3cc);padding:5px;color:#4c4b47;font-size:11px;cursor:pointer}
+.unit img{width:48px;height:54px;object-fit:cover;border:1px solid #999}.unit.active{border:2px solid #98804b;background:linear-gradient(#f7f6f2,#deddd6)}
+.course{height:35px;display:flex;align-items:center;background:linear-gradient(#f0efeb,#d4d3cd);border-bottom:1px solid #aaa9a3;padding:0 12px;gap:18px;font-size:11px;color:#555}
+.course .selected{font-weight:bold;color:#8d7339;border-bottom:2px solid #a28a55;height:100%;display:flex;align-items:center;padding:0 7px}
+.work{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;padding:12px 3vw 8px;gap:9px}
+.prompt{height:42px;width:min(100%,900px);background:linear-gradient(#fff,#f0efeb);border:1px solid #aaa9a3;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333;position:relative}
+.sound{position:absolute;right:8px;top:5px;height:30px;width:32px;border:1px solid #aaa;background:linear-gradient(#fff,#ddd);cursor:pointer;color:#555}
+.grid{width:min(100%,920px);flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px}
+.choice{border:2px solid #a8a7a1;background:#eee;position:relative;overflow:hidden;cursor:pointer;min-height:0}
+.choice img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.88)}.choice:hover{border-color:#777}.choice.selected{border:4px solid #9a8047}.choice.correct{border:4px solid #6f8d64}.choice.wrong{border:4px solid #a35c56}
+.controls{height:36px;width:min(100%,920px);display:flex;align-items:center;justify-content:space-between;color:#5c5b55;font-size:11px}
+.pips{display:flex;gap:5px;align-items:center}.pip{width:17px;height:17px;border:1px solid #aaa;background:linear-gradient(#eee,#ccc);text-align:center;line-height:15px;cursor:pointer}.pip.active{background:#9a8047;color:white;border-color:#77643b}
+.bottom{height:44px;background:linear-gradient(#deddd7,#c4c3bd);border-top:1px solid #9d9c96;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+.btn{background:linear-gradient(#f7f6f2,#d3d2cc);border:1px solid #9d9c96;padding:6px 14px;color:#4d4c47;cursor:pointer;font-size:11px}.btn:hover{background:#f7f6f2}.status{font-size:11px;color:#696862}
+@media(max-width:650px){.app{min-height:480px}.units{height:66px;overflow-x:auto}.unit{min-width:110px;width:110px}.unit img{width:36px;height:46px}.course{gap:10px;overflow:hidden;white-space:nowrap}.work{padding:8px 8px 5px}.prompt{font-size:15px;height:40px}.grid{gap:5px}.bottom{height:40px;padding:0 7px}.btn{padding:6px 9px}.controls{height:30px}}
+</style></head>
+<body><div class="app">
+<header class="top"><div class="logo">LINGO GOLD</div><div class="topmeta">ENGLISH COURSE&nbsp; · &nbsp;LEVEL 1</div></header>
+<nav class="units" aria-label="Units">
+<div class="unit active"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=160&q=80"><span>UNIT 1<br>Greetings</span></div>
+<div class="unit"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=160&q=80"><span>UNIT 2<br>People</span></div>
+<div class="unit"><img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=160&q=80"><span>UNIT 3<br>Everyday</span></div>
+<div class="unit"><img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=160&q=80"><span>UNIT 4<br>Places</span></div>
+</nav>
+<nav class="course"><span>Course</span><span>Lesson 1</span><span class="selected" id="activityName">Core Lesson</span><span>Practice</span><span>Review</span></nav>
+<main class="work"><div class="prompt"><span id="sentence">The woman is drinking.</span><button class="sound" id="audio" title="Play audio">▶</button></div>
+<div class="grid" id="choices"></div>
+<div class="controls"><div class="pips" id="pips"></div><span id="status">Select the picture that matches.</span><span>Screen <b id="screenNo">1</b> / 6</span></div></main>
+<footer class="bottom"><button class="btn" id="answers">Answers</button><div class="status" id="feedback">Choose one picture.</div><div><button class="btn" id="back">‹ Back</button> <button class="btn" id="advance">Advance ›</button></div></footer>
 </div>
-
 <script>
-const lessons = [
-  {
-    sentence: "The man is walking.",
-    answer: 0,
-    images: [
-      "https://images.unsplash.com/photo- walking",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9",
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb"
-    ]
-  },
-  {
-    sentence: "The woman is drinking water.",
-    answer: 1,
-    images: [
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
-      "https://images.unsplash.com/photo-1544145945-f90425340c7e",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e"
-    ]
-  },
-  {
-    sentence: "The boy is running.",
-    answer: 2,
-    images: [
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-      "https://images.unsplash.com/photo-1552674605-db6ffd4facb5",
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2"
-    ]
-  }
+const rounds=[
+{sentence:'The woman is drinking.',correct:0,photos:['photo-1544145945-f90425340c7e','photo-1544005313-94ddf0286df2','photo-1500648767791-00dcc994a43e','photo-1517841905240-472988babdf9']},
+{sentence:'The man is walking.',correct:2,photos:['photo-1517841905240-472988babdf9','photo-1544005313-94ddf0286df2','photo-1552674605-db6ffd4facb5','photo-1500648767791-00dcc994a43e']},
+{sentence:'The boy is running.',correct:1,photos:['photo-1500648767791-00dcc994a43e','photo-1552674605-db6ffd4facb5','photo-1517841905240-472988babdf9','photo-1544145945-f90425340c7e']},
+{sentence:'The woman is reading.',correct:3,photos:['photo-1544145945-f90425340c7e','photo-1500648767791-00dcc994a43e','photo-1552674605-db6ffd4facb5','photo-1519681393784-d120267933ba']},
+{sentence:'The man is eating.',correct:0,photos:['photo-1544145945-f90425340c7e','photo-1517841905240-472988babdf9','photo-1500648767791-00dcc994a43e','photo-1552674605-db6ffd4facb5']},
+{sentence:'The child is playing.',correct:2,photos:['photo-1544005313-94ddf0286df2','photo-1500648767791-00dcc994a43e','photo-1552674605-db6ffd4facb5','photo-1517841905240-472988babdf9']}
 ];
-
-let current = 0;
-let selected = false;
-
-const imagesEl = document.getElementById("images");
-const sentenceEl = document.getElementById("sentence");
-const feedbackEl = document.getElementById("feedback");
-const nextButton = document.getElementById("nextButton");
-const progressEl = document.getElementById("progress");
-const roundLabel = document.getElementById("roundLabel");
-const lessonCount = document.getElementById("lessonCount");
-
-function renderProgress() {
-  progressEl.innerHTML = "";
-
-  for (let i = 0; i < 10; i++) {
-    const segment = document.createElement("span");
-    if (i < current) segment.classList.add("done");
-    progressEl.appendChild(segment);
-  }
-}
-
-function loadLesson() {
-  const lesson = lessons[current % lessons.length];
-  selected = false;
-
-  sentenceEl.textContent = lesson.sentence;
-  feedbackEl.textContent = "Select a picture.";
-  nextButton.disabled = true;
-  roundLabel.textContent = `${current + 1} / 10`;
-  lessonCount.textContent = `${current} / 10`;
-
-  renderProgress();
-  imagesEl.innerHTML = "";
-
-  lesson.images.forEach((url, index) => {
-    const card = document.createElement("div");
-    card.className = "choice";
-
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = "Exercise image";
-    img.loading = "eager";
-
-    card.appendChild(img);
-
-    card.addEventListener("click", () => choose(index, card));
-
-    imagesEl.appendChild(card);
-  });
-}
-
-function choose(index, card) {
-  if (selected) return;
-
-  const lesson = lessons[current % lessons.length];
-
-  if (index === lesson.answer) {
-    selected = true;
-    card.classList.add("correct");
-    feedbackEl.textContent = "Correct";
-    nextButton.disabled = false;
-  } else {
-    card.classList.add("wrong");
-    feedbackEl.textContent = "Try again.";
-    setTimeout(() => card.classList.remove("wrong"), 600);
-  }
-}
-
-function speak() {
-  const utterance = new SpeechSynthesisUtterance(
-    lessons[current % lessons.length].sentence
-  );
-
-  utterance.lang = "en-US";
-  utterance.rate = 0.85;
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-}
-
-document.getElementById("audioButton").addEventListener("click", speak);
-
-nextButton.addEventListener("click", () => {
-  if (!selected) return;
-
-  current++;
-
-  if (current >= 10) {
-    current = 0;
-    feedbackEl.textContent = "Lesson completed.";
-  }
-
-  loadLesson();
-});
-
-loadLesson();
-</script>
-
-</body>
-</html>
+let idx=0,chosen=false,answered=false;const $=id=>document.getElementById(id);
+function url(id){return 'https://images.unsplash.com/'+id+'?auto=format&fit=crop&w=900&q=85'}
+function render(){let r=rounds[idx];chosen=false;answered=false;$('sentence').textContent=r.sentence;$('feedback').textContent='Choose one picture.';$('status').textContent='Select the picture that matches.';$('screenNo').textContent=idx+1;$('advance').disabled=false;$('choices').innerHTML='';r.photos.forEach((p,i)=>{let el=document.createElement('div');el.className='choice';el.innerHTML='<img alt="Picture choice" src="'+url(p)+'">';el.onclick=()=>select(i,el);$('choices').appendChild(el)});$('pips').innerHTML='';rounds.forEach((_,i)=>{let pip=document.createElement('button');pip.className='pip'+(i===idx?' active':'');pip.textContent=i+1;pip.onclick=()=>{idx=i;render()};$('pips').appendChild(pip)})}
+function select(i,el){if(chosen)return;let r=rounds[idx];if(i===r.correct){chosen=true;el.classList.add('correct');$('feedback').textContent='Correct';$('status').textContent='Correct answer';}else{el.classList.add('wrong');$('feedback').textContent='Try again';setTimeout(()=>el.classList.remove('wrong'),550)}}
+$('audio').onclick=()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(rounds[idx].sentence);u.lang='en-US';u.rate=.88;speechSynthesis.speak(u)};
+$('advance').onclick=()=>{if(!chosen){$('feedback').textContent='Choose the correct picture first.';return}idx=(idx+1)%rounds.length;render()};$('back').onclick=()=>{idx=(idx-1+rounds.length)%rounds.length;render()};$('answers').onclick=()=>{$('feedback').textContent='Correct picture: '+(rounds[idx].correct+1)};
+render();
+</script></body></html>
