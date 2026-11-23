@@ -1,55 +1,526 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lingo Gold — Visual Immersion</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lingo Gold</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #d6d8db;
+  color: #30343a;
+  overflow: hidden;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #e8e9eb;
+}
+
+/* TOP BAR */
+.topbar {
+  height: 48px;
+  background: linear-gradient(#f8f8f8, #d5d7da);
+  border-bottom: 1px solid #a9aaad;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: bold;
+  color: #96762c;
+  letter-spacing: 1px;
+}
+
+.top-right {
+  font-size: 12px;
+  color: #555;
+}
+
+/* MAIN LAYOUT */
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: linear-gradient(90deg, #e5e6e8, #d3d5d8);
+  border-right: 1px solid #aeb0b4;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-title {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.course-subtitle {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 18px;
+}
+
+.unit-title {
+  padding: 10px;
+  background: linear-gradient(#f7f7f7, #d9dadd);
+  border: 1px solid #b9bbc0;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lesson {
+  padding: 10px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: #4b4d51;
+}
+
+.lesson:hover {
+  background: #f1f2f3;
+  border-color: #c3c5c8;
+}
+
+.lesson.active {
+  background: linear-gradient(#fdfdfd, #dfe1e3);
+  border: 1px solid #aaaeb3;
+  color: #96772d;
+  font-weight: bold;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid #bbb;
+  padding-top: 12px;
+  font-size: 11px;
+  color: #777;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  height: 42px;
+  border-bottom: 1px solid #c2c4c7;
+  background: linear-gradient(#f7f7f8, #e0e1e3);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 15px;
+  font-size: 12px;
+}
+
+.progress {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.progress span {
+  height: 6px;
+  background: #c5c7ca;
+  border: 1px solid #b5b7ba;
+  flex: 1;
+}
+
+.progress span.done {
+  background: #a38a4a;
+  border-color: #8c7539;
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* EXERCISE */
+.instruction {
+  font-size: 13px;
+  color: #65686c;
+  margin: 4px 0 14px;
+  text-align: center;
+}
+
+.sentence-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  min-height: 54px;
+}
+
+.sentence {
+  font-size: clamp(20px, 2.2vw, 28px);
+  color: #34373b;
+  text-align: center;
+}
+
+.audio-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid #a9adb1;
+  background: linear-gradient(#fff, #d9dcdf);
+  color: #73777b;
+  cursor: pointer;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.audio-button:hover {
+  background: #fff;
+}
+
+.images {
+  width: min(100%, 950px);
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice {
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  border: 3px solid #d1d3d6;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+
+.choice:hover {
+  border-color: #a4a6a9;
+}
+
+.choice img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.choice.correct {
+  border-color: #6e9b6d;
+}
+
+.choice.wrong {
+  border-color: #b47777;
+}
+
+.choice-number {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255,255,255,.88);
+  color: #555;
+  font-size: 11px;
+  padding: 4px 7px;
+}
+
+/* FOOTER */
+.bottom {
+  height: 62px;
+  border-top: 1px solid #bfc1c4;
+  background: linear-gradient(#eeeeef, #d7d9dc);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.feedback {
+  font-size: 13px;
+  color: #777;
+}
+
+.next-button {
+  min-width: 120px;
+  padding: 11px 22px;
+  border: 1px solid #9e9fa2;
+  background: linear-gradient(#fff, #d8dadd);
+  color: #414348;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.next-button:hover {
+  background: linear-gradient(#fff, #c9cdd1);
+}
+
+.next-button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .sidebar {
+    width: 125px;
+    padding: 10px 6px;
+  }
+
+  .lesson {
+    padding: 9px 5px;
+    font-size: 11px;
+  }
+
+  .main {
+    padding: 10px;
+  }
+
+  .images {
+    gap: 6px;
+  }
+
+  .sentence {
+    font-size: 19px;
+  }
+
+  .bottom {
+    height: 54px;
+    padding: 0 10px;
+  }
+
+  .next-button {
+    min-width: 90px;
+    padding: 10px;
+  }
+}
+</style>
 </head>
+
 <body>
-  <div class="loading" id="loading"><div style="text-align:center"><div style="font-size:36px">🌊</div><div class="status" style="margin-top:8px">Loading lessons...</div></div></div>
 
-  <div id="home">
-    <header class="top">
-      <div class="logo"><i>LG</i><span>Lingo Gold</span></div>
-      <div class="prog" id="progress">0 / 48</div>
-    </header>
-    <div class="shell">
-      <aside class="side"><h4>LEVELS</h4><div id="side"></div></aside>
-      <main class="mainbox">
-        <h1 id="title">Unit</h1>
-        <div class="sub" id="titleSub">Visual immersion · English only</div>
-        <div class="headrow"><h2>LESSONS</h2><span>Learn through context</span></div>
-        <div class="path" id="path"></div>
-        <div class="headrow"><h2>ASSESSMENT</h2><span>75% to pass</span></div>
-        <div class="tools" id="tools"></div>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">LINGO GOLD</div>
+    <div class="top-right">ENGLISH COURSE · UNIT 1</div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <div class="course-title">ENGLISH – LEVEL 1</div>
+      <div class="course-subtitle">BASIC LANGUAGE</div>
+
+      <div class="unit-title">UNIT 1 · BASICS</div>
+
+      <div class="lesson-list">
+        <div class="lesson active">01 &nbsp; Greetings</div>
+        <div class="lesson">02 &nbsp; People</div>
+        <div class="lesson">03 &nbsp; Objects</div>
+        <div class="lesson">04 &nbsp; Places</div>
+        <div class="lesson">05 &nbsp; Actions</div>
+        <div class="lesson">06 &nbsp; Review</div>
+      </div>
+
+      <div class="sidebar-bottom">
+        LESSON PROGRESS<br>
+        <span id="lessonCount">0 / 10</span>
+      </div>
+    </aside>
+
+    <section class="content">
+
+      <div class="toolbar">
+        <span>LESSON 01</span>
+        <div class="progress" id="progress"></div>
+        <span id="roundLabel">1 / 10</span>
+      </div>
+
+      <main class="main">
+
+        <div class="instruction" id="instruction">
+          Listen and choose the correct picture.
+        </div>
+
+        <div class="sentence-row">
+          <div class="sentence" id="sentence">The man is walking.</div>
+          <button class="audio-button" id="audioButton" title="Listen">▶</button>
+        </div>
+
+        <div class="images" id="images"></div>
+
       </main>
-    </div>
+
+      <footer class="bottom">
+        <div class="feedback" id="feedback">Select a picture.</div>
+        <button class="next-button" id="nextButton" disabled>Continue ›</button>
+      </footer>
+
+    </section>
   </div>
+</div>
 
-  <section class="stage" id="stage">
-    <div class="bar">
-      <button class="exit" id="exit" title="Exit">✕</button>
-      <div class="track" id="pieces"></div>
-      <div class="kind" id="kind">OBSERVE</div>
-      <div class="count" id="count">1/9</div>
-    </div>
-    <div class="viewport"><div class="wrap" id="wrap"></div></div>
-    <div class="foot"><div class="mark" id="mark"></div><button class="next" id="next" disabled>Next →</button></div>
-  </section>
+<script>
+const lessons = [
+  {
+    sentence: "The man is walking.",
+    answer: 0,
+    images: [
+      "https://images.unsplash.com/photo- walking",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9",
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb"
+    ]
+  },
+  {
+    sentence: "The woman is drinking water.",
+    answer: 1,
+    images: [
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+      "https://images.unsplash.com/photo-1544145945-f90425340c7e",
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e"
+    ]
+  },
+  {
+    sentence: "The boy is running.",
+    answer: 2,
+    images: [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+      "https://images.unsplash.com/photo-1552674605-db6ffd4facb5",
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2"
+    ]
+  }
+];
 
-  <section class="stage" id="testModal">
-    <div class="bar"><button class="exit" id="texit">✕</button><div class="track"></div><div class="kind">TEST</div></div>
-    <div class="viewport"><div class="wrap" id="testWrap"></div></div>
-  </section>
+let current = 0;
+let selected = false;
 
-  <section class="stage" id="reviewModal">
-    <div class="bar"><button class="exit" id="rexit">✕</button><div class="track"></div><div class="kind">REVIEW</div></div>
-    <div class="viewport"><div class="wrap" id="reviewWrap"></div></div>
-  </section>
+const imagesEl = document.getElementById("images");
+const sentenceEl = document.getElementById("sentence");
+const feedbackEl = document.getElementById("feedback");
+const nextButton = document.getElementById("nextButton");
+const progressEl = document.getElementById("progress");
+const roundLabel = document.getElementById("roundLabel");
+const lessonCount = document.getElementById("lessonCount");
 
-  <div class="toast" id="toast"></div>
-  <script src="curriculum.js"></script>
-  <script src="app.js"></script>
+function renderProgress() {
+  progressEl.innerHTML = "";
+
+  for (let i = 0; i < 10; i++) {
+    const segment = document.createElement("span");
+    if (i < current) segment.classList.add("done");
+    progressEl.appendChild(segment);
+  }
+}
+
+function loadLesson() {
+  const lesson = lessons[current % lessons.length];
+  selected = false;
+
+  sentenceEl.textContent = lesson.sentence;
+  feedbackEl.textContent = "Select a picture.";
+  nextButton.disabled = true;
+  roundLabel.textContent = `${current + 1} / 10`;
+  lessonCount.textContent = `${current} / 10`;
+
+  renderProgress();
+  imagesEl.innerHTML = "";
+
+  lesson.images.forEach((url, index) => {
+    const card = document.createElement("div");
+    card.className = "choice";
+
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Exercise image";
+    img.loading = "eager";
+
+    card.appendChild(img);
+
+    card.addEventListener("click", () => choose(index, card));
+
+    imagesEl.appendChild(card);
+  });
+}
+
+function choose(index, card) {
+  if (selected) return;
+
+  const lesson = lessons[current % lessons.length];
+
+  if (index === lesson.answer) {
+    selected = true;
+    card.classList.add("correct");
+    feedbackEl.textContent = "Correct";
+    nextButton.disabled = false;
+  } else {
+    card.classList.add("wrong");
+    feedbackEl.textContent = "Try again.";
+    setTimeout(() => card.classList.remove("wrong"), 600);
+  }
+}
+
+function speak() {
+  const utterance = new SpeechSynthesisUtterance(
+    lessons[current % lessons.length].sentence
+  );
+
+  utterance.lang = "en-US";
+  utterance.rate = 0.85;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+document.getElementById("audioButton").addEventListener("click", speak);
+
+nextButton.addEventListener("click", () => {
+  if (!selected) return;
+
+  current++;
+
+  if (current >= 10) {
+    current = 0;
+    feedbackEl.textContent = "Lesson completed.";
+  }
+
+  loadLesson();
+});
+
+loadLesson();
+</script>
+
 </body>
 </html>
